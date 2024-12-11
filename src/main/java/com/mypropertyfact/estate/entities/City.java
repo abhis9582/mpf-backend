@@ -13,6 +13,11 @@ public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    private String metaTitle;
+    @Column(columnDefinition = "TEXT")
+    private String metaKeyWords;
+    @Column(columnDefinition = "TEXT")
+    private String metaDescription;
     private String name;
     private String state;
     private String slugUrl;

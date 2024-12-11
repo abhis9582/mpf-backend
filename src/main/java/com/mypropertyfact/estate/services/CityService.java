@@ -37,7 +37,7 @@ public class CityService {
         Response response = new Response();
         try {
             City existingCity = this.cityRepository.findByName(city.getName());
-            if (existingCity != null && existingCity.getName().equals(city.getName()) && existingCity.getState().equals(city.getState())) {
+            if (existingCity != null && existingCity.getId() != city.getId()) {
                 response.setMessage(ConstantMessages.CITY_EXISTS);
                 return response;
             }
@@ -62,6 +62,9 @@ public class CityService {
                     dbCity.setState(city.getState());
                     dbCity.setName(city.getName());
                     dbCity.setSlugUrl(finalSlug);
+                    dbCity.setMetaTitle(city.getMetaTitle());
+                    dbCity.setMetaKeyWords(city.getMetaKeyWords());
+                    dbCity.setMetaDescription(city.getMetaDescription());
                     this.cityRepository.save(dbCity);
                     response.setIsSuccess(1);
                     response.setMessage(ConstantMessages.CITY_UPDATED);
