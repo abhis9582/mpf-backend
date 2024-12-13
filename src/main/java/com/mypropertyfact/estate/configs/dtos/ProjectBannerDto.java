@@ -12,4 +12,5 @@ public class ProjectBannerDto {
     private int projectId;
     private String type;
     private String projectName;
+    private String slugURL;
 }

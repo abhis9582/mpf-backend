@@ -53,7 +53,7 @@ public class ProjectBannerService {
             if (projectBannerDto.getProjectId() > 0) {
                 Property property = this.propertyRepository.findById(projectBannerDto.getProjectId()).orElse(null);
                 if (property != null) {
-                    projectBannerDto.setProjectName(property.getProjectName());
+                    projectBannerDto.setSlugURL(property.getSlugURL());
                 }
             }
 
@@ -83,7 +83,7 @@ public class ProjectBannerService {
                 String desktopNewFileName = renameFile(desktopBannerFile);
 
                 // Save the file to the destination
-                response =  saveFile(desktopBannerFile, projectBannerDto.getProjectName(), desktopNewFileName, projectBannerDto);
+                response =  saveFile(desktopBannerFile, projectBannerDto.getSlugURL(), desktopNewFileName, projectBannerDto);
 
             }
 
