@@ -18,10 +18,48 @@ import java.nio.file.Paths;
 public class FetchImageController {
     @Value("${uploads_path}")
     private String uploadDir;
-    @GetMapping("/properties/{filename}")
-    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+    @Value("${upload_amenity_path}")
+    private String amenityPath;
+    @Value("${upload_icon_path}")
+    private String iconPath;
+    @GetMapping("/properties/{projectname}/{filename}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename, @PathVariable String projectname) {
         try {
-            Path imagePath = Paths.get(uploadDir, filename);
+            Path imagePath = Paths.get(uploadDir, projectname+"/"+filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG) // or determine the correct type dynamically
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @GetMapping("/amenity/{filename}")
+    public ResponseEntity<Resource> getAmenityImage(@PathVariable String filename) {
+        try {
+            Path imagePath = Paths.get(amenityPath, filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG) // or determine the correct type dynamically
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @GetMapping("/icon/{filename}")
+    public ResponseEntity<Resource> getIcon(@PathVariable String filename) {
+        try {
+            Path imagePath = Paths.get(iconPath, filename);
             Resource resource = new UrlResource(imagePath.toUri());
 
             if (resource.exists()) {
