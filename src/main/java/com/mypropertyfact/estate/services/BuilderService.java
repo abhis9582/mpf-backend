@@ -57,6 +57,9 @@ public class BuilderService {
                 savedBuilder.setBuilderName(builder.getBuilderName());
                 savedBuilder.setSlugUrl(builder.getSlugUrl());
                 savedBuilder.setBuilderDesc(builder.getBuilderDesc());
+                savedBuilder.setMetaTitle(builder.getMetaTitle());
+                savedBuilder.setMetaKeyword(builder.getMetaKeyword());
+                savedBuilder.setMetaDesc(builder.getMetaDesc());
                 this.builderRepository.save(savedBuilder);
                 response.setIsSuccess(1);
                 response.setMessage("Builder Updated Successfully...");

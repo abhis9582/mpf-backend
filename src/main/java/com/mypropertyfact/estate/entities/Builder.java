@@ -15,6 +15,11 @@ public class Builder {
     private String slugUrl;
     @Column(columnDefinition = "TEXT")
     private String builderDesc;
+    private String metaTitle;
+    @Column(columnDefinition = "TEXT")
+    private String metaDesc;
+    @Column(columnDefinition = "TEXT")
+    private String metaKeyword;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

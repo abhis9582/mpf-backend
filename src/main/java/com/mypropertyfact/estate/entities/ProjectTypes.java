@@ -13,6 +13,11 @@ public class ProjectTypes {
     private int id;
     private String projectTypeName;
     private String slugUrl;
+    private String metaTitle;
+    @Column(columnDefinition = "TEXT")
+    private String metaKeyword;
+    @Column(columnDefinition = "TEXT")
+    private String metaDesc;
     @Column(columnDefinition = "TEXT")
     private String projectTypeDesc;
     private LocalDateTime createdAt;

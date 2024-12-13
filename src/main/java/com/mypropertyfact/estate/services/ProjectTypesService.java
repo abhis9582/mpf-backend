@@ -52,6 +52,9 @@ public class ProjectTypesService {
                     dbProjectTypes.setProjectTypeName(projectTypes.getProjectTypeName());
                     dbProjectTypes.setSlugUrl(projectTypes.getSlugUrl());
                     dbProjectTypes.setProjectTypeDesc(projectTypes.getProjectTypeDesc());
+                    dbProjectTypes.setMetaDesc(projectTypes.getMetaDesc());
+                    dbProjectTypes.setMetaKeyword(projectTypes.getMetaKeyword());
+                    dbProjectTypes.setMetaTitle(projectTypes.getMetaTitle());
                     this.projectTypeRepository.save(dbProjectTypes);
                     response.setIsSuccess(1);
                     response.setMessage("Project type updated successfully...");
