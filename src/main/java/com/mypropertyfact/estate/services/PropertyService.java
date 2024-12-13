@@ -59,13 +59,17 @@ public class PropertyService {
             if (locationMap.isEmpty() || projectLogo.isEmpty() || projectThumbnail.isEmpty()) {
                 response.setMessage(Constants.NO_FILE_SELECTED);
             }
-
+            String [] slugUrl = propertyDetailDto.getProjectName().split(" ");
+            String resultUrl = slugUrl[0];
+            for(int i=1;i<slugUrl.length;i++){
+                resultUrl+= "-"+slugUrl[i];
+            }
             String contentType = locationMap.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 response.setMessage(Constants.IMAGE_ALLOWED);
             }
             // Create directory if it doesn't exist
-            File dir = new File(uploadDir + propertyDetailDto.getProjectName().trim());
+            File dir = new File(uploadDir + resultUrl.toLowerCase().trim());
             if (!dir.exists()) {
                 dir.mkdirs();
             }
@@ -122,11 +126,6 @@ public class PropertyService {
             property.setProjectBy(propertyDetailDto.getProjectBy());
             property.setProjectConfiguration(propertyDetailDto.getProjectConfiguration());
             property.setCountry(propertyDetailDto.getCountry());
-            String [] slugUrl = propertyDetailDto.getProjectName().split(" ");
-            String resultUrl = slugUrl[0];
-            for(int i=1;i<slugUrl.length;i++){
-                resultUrl+= "-"+slugUrl[i];
-            }
             property.setSlugURL(resultUrl.toLowerCase());
             this.propertyRepository.save(property);
             response.setMessage(Constants.PROJECT_SAVED);
