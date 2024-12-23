@@ -14,4 +14,6 @@ public interface ProjectRepository extends JpaRepository<Project ,Integer> {
     Project findBySlugURL(String url);
     @Query("SELECT p FROM Project p WHERE projectBy = :builderId")
     List<Project> getAllBuilderProjects(@Param("builderId")int builderId);
+    @Query("SELECT p FROM Project p WHERE propertyType = :id")
+    List<Project> getAllProjectsByType(@Param("id") int id);
 }

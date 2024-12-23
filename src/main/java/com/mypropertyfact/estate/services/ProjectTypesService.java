@@ -1,7 +1,9 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.ProjectTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,19 +15,22 @@ public class ProjectTypesService {
     @Autowired
     private ProjectTypeRepository projectTypeRepository;
 
+    @Autowired
+    private ProjectRepository projectRepository;
+
     public List<ProjectTypes> getAllProjectTypes() {
         return this.projectTypeRepository.findAll();
     }
 
-    public Response addUpdateProjectType(ProjectTypes projectTypes){
+    public Response addUpdateProjectType(ProjectTypes projectTypes) {
         Response response = new Response();
-        try{
-            if(projectTypes == null || projectTypes.getProjectTypeName().isEmpty()){
+        try {
+            if (projectTypes == null || projectTypes.getProjectTypeName().isEmpty()) {
                 response.setMessage("Project Type is required !");
                 return response;
             }
             ProjectTypes existingData = this.projectTypeRepository.findByProjectTypeName(projectTypes.getProjectTypeName());
-            if(existingData != null && existingData.getId() != projectTypes.getId()){
+            if (existingData != null && existingData.getId() != projectTypes.getId()) {
                 response.setMessage("Project type already exists...");
                 return response;
             }
@@ -46,9 +51,9 @@ public class ProjectTypesService {
             projectTypes.setSlugUrl(finalSlug);
 
 
-            if(projectTypes.getId() > 0){
+            if (projectTypes.getId() > 0) {
                 ProjectTypes dbProjectTypes = this.projectTypeRepository.findById(projectTypes.getId()).get();
-                if(dbProjectTypes != null){
+                if (dbProjectTypes != null) {
                     dbProjectTypes.setProjectTypeName(projectTypes.getProjectTypeName());
                     dbProjectTypes.setSlugUrl(projectTypes.getSlugUrl());
                     dbProjectTypes.setProjectTypeDesc(projectTypes.getProjectTypeDesc());
@@ -59,17 +64,24 @@ public class ProjectTypesService {
                     response.setIsSuccess(1);
                     response.setMessage("Project type updated successfully...");
                 }
-            }else{
+            } else {
                 this.projectTypeRepository.save(projectTypes);
                 response.setMessage("Project type added successfully...");
                 response.setIsSuccess(1);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setMessage(e.getMessage());
         }
         return response;
     }
-    public ProjectTypes getBySlug(String url){
+
+    public ProjectTypes getBySlug(String url) {
         return this.projectTypeRepository.findBySlugUrl(url);
+    }
+
+    public List<Project> getPropertiesBySlug(String url) {
+        ProjectTypes projectTypes = this.projectTypeRepository.findBySlugUrl(url);
+        List<Project> projects = this.projectRepository.getAllProjectsByType(projectTypes.getId());
+        return projects;
     }
 }

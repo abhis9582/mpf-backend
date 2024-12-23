@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectTypesService;
@@ -28,5 +29,9 @@ public class ProjectTypesController {
     @GetMapping("/get/{url}")
     public ResponseEntity<ProjectTypes> getBySlug(@PathVariable("url")String url){
         return new ResponseEntity<>(this.projectTypesService.getBySlug(url), HttpStatus.OK);
+    }
+    @GetMapping("/{url}")
+    public ResponseEntity<List<Project>> getPropertiesBySlug(@PathVariable("url")String url){
+        return new ResponseEntity<>(this.projectTypesService.getPropertiesBySlug(url), HttpStatus.OK);
     }
 }
