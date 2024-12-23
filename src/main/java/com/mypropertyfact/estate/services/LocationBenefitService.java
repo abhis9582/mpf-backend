@@ -2,9 +2,11 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.configs.dtos.LocationBenefitDto;
 import com.mypropertyfact.estate.entities.LocationBenefit;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.Property;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.LocationBenefitRepository;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +22,7 @@ public class LocationBenefitService {
     @Autowired
     private LocationBenefitRepository locationBenefitRepository;
     @Autowired
-    private PropertyRepository propertyRepository;
+    private ProjectRepository projectRepository;
     @Value("${upload_icon_path}")
     private String uploadDir;
     public List<LocationBenefitDto> getAllBenefits(){
@@ -57,7 +59,7 @@ public class LocationBenefitService {
                 destinationDir.mkdirs();
             }
             if(locationBenefitDto.getProjectId() > 0){
-                Property property = this.propertyRepository.findById(locationBenefitDto.getProjectId()).get();
+                Project property = this.projectRepository.findById(locationBenefitDto.getProjectId()).get();
                 locationBenefitDto.setSlugUrl(property.getSlugURL());
             }
             File destinationFile = new File(destinationDir, iconImageName);

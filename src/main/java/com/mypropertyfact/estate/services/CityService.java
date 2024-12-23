@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.ConstantMessages;
 import com.mypropertyfact.estate.configs.dtos.ProjectWithBannerDTO;
 import com.mypropertyfact.estate.entities.City;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.PropertyRepository;
@@ -127,15 +128,7 @@ public class CityService {
     public City getBySlug(String url){
         return this.cityRepository.findBySlugUrl(url);
     }
-    public List<ProjectWithBannerDTO> getByCityName(String cityName){
-        List<Object[]> response = this.propertyRepository.getAllByCity(cityName);
-        return response.stream().map(result -> new ProjectWithBannerDTO(
-                (int) result[0],
-                (String) result[1], // projectName
-                (String) result[2],  // price
-                (String) result[3],  // location
-                (String) result[4],  // image (bannerUrl)
-                (String) result[5]   // (slug)
-        )).collect(Collectors.toList());
+    public List<Project> getByCityName(String cityName){
+        return this.propertyRepository.getAllByCity(cityName);
     }
 }

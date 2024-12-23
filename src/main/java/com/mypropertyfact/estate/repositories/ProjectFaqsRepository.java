@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ProjectFaqsRepository extends JpaRepository<ProjectFaqs, Integer> {
     @Query("SELECT p.projectName as projectName, fq.faqQuestion as question, fq.faqAnswer as answer FROM " +
-            " Property p INNER JOIN ProjectFaqs fq ON p.id = fq.projectId")
+            " Project p INNER JOIN ProjectFaqs fq ON p.id = fq.projectId")
     List<Object[]> getAllWithProjectName();
 
     List<ProjectFaqs> findBySlugUrl(String url);

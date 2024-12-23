@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ProjectGalleryRepository extends JpaRepository<ProjectGallery, Integer> {
-    @Query("SELECT p.projectName as pName, pg.image as image FROM Property p INNER JOIN " +
+    @Query("SELECT p.projectName as pName, pg.image as image, p.slugURL as slugURL FROM Project p INNER JOIN " +
             " ProjectGallery pg on p.id = pg.projectId")
     List<Object[]> getAllGalleyImages();
 

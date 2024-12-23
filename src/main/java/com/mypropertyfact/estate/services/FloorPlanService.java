@@ -2,9 +2,11 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.configs.dtos.FloorPlansDto;
 import com.mypropertyfact.estate.entities.FloorPlan;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.Property;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.FloorPlanRepository;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +20,7 @@ public class FloorPlanService {
     @Autowired
     private FloorPlanRepository floorPlanRepository;
     @Autowired
-    private PropertyRepository propertyRepository;
+    private ProjectRepository projectRepository;
     public List<FloorPlansDto> getAllPlans() {
         List<Object[]> plans = this.floorPlanRepository.getAllFloorPlans();
         return plans.stream().map(result -> new FloorPlansDto(
@@ -39,8 +41,8 @@ public class FloorPlanService {
             }
             double areaSqMt = floorPlan.getAreaSqft() * 0.092903;
             floorPlan.setAreaSqmt(areaSqMt);
-            Property property = this.propertyRepository.findById(floorPlan.getProjectId()).get();
-            floorPlan.setSlugUrl(property.getSlugURL());
+            Project project = this.projectRepository.findById(floorPlan.getProjectId()).get();
+            floorPlan.setSlugUrl(project.getSlugURL());
             if (floorPlan.getId() > 0) {
                 FloorPlan savedFloorPlan = this.floorPlanRepository.findById(floorPlan.getId()).get();
                 if (savedFloorPlan != null) {

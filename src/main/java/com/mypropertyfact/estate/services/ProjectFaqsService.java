@@ -1,10 +1,12 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.configs.dtos.FaqResponse;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
 import com.mypropertyfact.estate.entities.Property;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectFaqsRepository;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ public class ProjectFaqsService {
     @Autowired
     private ProjectFaqsRepository projectFaqsRepository;
     @Autowired
-    private PropertyRepository propertyRepository;
+    private ProjectRepository projectRepository;
 
     public List<FaqResponse> getAllFaqs(){
         List<Object[]> response = this.projectFaqsRepository.getAllWithProjectName();
@@ -36,8 +38,8 @@ public class ProjectFaqsService {
             if(projectFaqs == null || projectFaqs.getFaqQuestion().isEmpty() || projectFaqs.getFaqAnswer().isEmpty()){
                 response.setMessage("All fields are required !");
             }
-            Property property = this.propertyRepository.findById(projectFaqs.getProjectId()).get();
-            projectFaqs.setSlugUrl(property.getSlugURL());
+            Project project = this.projectRepository.findById(projectFaqs.getProjectId()).get();
+            projectFaqs.setSlugUrl(project.getSlugURL());
             if(projectFaqs.getId() > 0){
                 ProjectFaqs savedFaqs = this.projectFaqsRepository.findById(projectFaqs.getId()).get();
                 if(savedFaqs != null){

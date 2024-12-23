@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ProjectGalleryResponse {
     private String pName;
     private String image;
+    private String slugURL;
 }

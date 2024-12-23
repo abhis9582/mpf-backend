@@ -2,10 +2,12 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.configs.dtos.ProjectGalleryDto;
 import com.mypropertyfact.estate.configs.dtos.ProjectGalleryResponse;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectGallery;
 import com.mypropertyfact.estate.entities.Property;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectGalleryRepository;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,8 @@ public class ProjectGalleryService {
     private ProjectGalleryRepository projectGalleryRepository;
     @Autowired
     private PropertyRepository propertyRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
     @Value("${uploads_path}")
     private String uploadDir;
 
@@ -32,7 +36,8 @@ public class ProjectGalleryService {
         return projectImages.stream().map(item ->
                 new ProjectGalleryResponse(
                         (String) item[0],
-                        (String) item[1]
+                        (String) item[1],
+                        (String) item[2]
                 )).collect(Collectors.toList());
     }
 
@@ -54,9 +59,9 @@ public class ProjectGalleryService {
             }
             // Rename the image file (using UUID)
             String newFileName = renameFile(projectGalleryDto.getImage());
-            Property property = this.propertyRepository.findById(projectGalleryDto.getProjectId()).get();
+            Project project = this.projectRepository.findById(projectGalleryDto.getProjectId()).get();
             // Save the file to the destination
-            response = saveFile(projectGalleryDto.getImage(), newFileName, property, projectGalleryDto);
+            response = saveFile(projectGalleryDto.getImage(), newFileName, project, projectGalleryDto);
         } catch (Exception e) {
 
         }
@@ -80,9 +85,9 @@ public class ProjectGalleryService {
         return UUID.randomUUID().toString() + fileExtension;
     }
 
-    private Response saveFile(MultipartFile file, String fileName, Property property, ProjectGalleryDto projectGalleryDto) throws IOException {
+    private Response saveFile(MultipartFile file, String fileName, Project project, ProjectGalleryDto projectGalleryDto) throws IOException {
         // Determine the path to save the file
-        String galleryFolder = uploadDir + property.getProjectName() + "/";
+        String galleryFolder = uploadDir + project.getSlugURL() + "/";
         File destinationDir = new File(galleryFolder);
         if (!destinationDir.exists()) {
             destinationDir.mkdirs();
@@ -92,7 +97,7 @@ public class ProjectGalleryService {
         file.transferTo(destinationFile);
         ProjectGallery projectGallery = new ProjectGallery();
         projectGallery.setProjectId(projectGalleryDto.getProjectId());
-        projectGallery.setSlugUrl(property.getSlugURL());
+        projectGallery.setSlugUrl(project.getSlugURL());
         projectGallery.setType("");
         projectGallery.setImage(fileName);
         this.projectGalleryRepository.save(projectGallery);
