@@ -1,27 +1,25 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.ConstantMessages;
-import com.mypropertyfact.estate.configs.dtos.ProjectWithBannerDTO;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
-import com.mypropertyfact.estate.repositories.PropertyRepository;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CityService {
 
     private CityRepository cityRepository;
-    private PropertyRepository propertyRepository;
+    private ProjectRepository projectRepository;
 
-    public CityService(CityRepository cityRepository, PropertyRepository propertyRepository) {
+    public CityService(CityRepository cityRepository, ProjectRepository projectRepository) {
         this.cityRepository = cityRepository;
-        this.propertyRepository = propertyRepository;
+        this.projectRepository = projectRepository;
     }
 
     public List<City> getAllCities() {
@@ -129,6 +127,6 @@ public class CityService {
         return this.cityRepository.findBySlugUrl(url);
     }
     public List<Project> getByCityName(String cityName){
-        return this.propertyRepository.getAllByCity(cityName);
+        return this.projectRepository.getAllByCity(cityName);
     }
 }

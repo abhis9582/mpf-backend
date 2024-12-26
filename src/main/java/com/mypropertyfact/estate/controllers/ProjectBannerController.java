@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,11 +20,11 @@ public class ProjectBannerController {
     private ProjectBannerService projectBannerService;
     @GetMapping("/get-all")
     public ResponseEntity<List<ProjectBanner>> getAllBanners(){
-        return new ResponseEntity<>(this.projectBannerService.getAllDesktopBanners(), HttpStatus.OK);
+        return new ResponseEntity<>(this.projectBannerService.getAllBanners(), HttpStatus.OK);
     }
-    @GetMapping("/get-mobile-banners")
-    public ResponseEntity<List<ProjectBanner>> getAllMobileBanners(){
-        return new ResponseEntity<>(this.projectBannerService.getAllMobileBanners(), HttpStatus.OK);
+    @GetMapping("/get/{url}")
+    public ResponseEntity<ProjectBanner> getAllMobileBanners(@PathVariable("url")String url){
+        return new ResponseEntity<>(this.projectBannerService.getBySlug(url), HttpStatus.OK);
     }
     @PostMapping("/add-banner")
     public ResponseEntity<Response> postBanner(@ModelAttribute ProjectBannerDto projectBannerDto){

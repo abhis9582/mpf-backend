@@ -3,8 +3,12 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.Constants;
 import com.mypropertyfact.estate.configs.dtos.AmenityDto;
 import com.mypropertyfact.estate.entities.Amenity;
+import com.mypropertyfact.estate.entities.Project;
+import com.mypropertyfact.estate.entities.ProjectAmenity;
+import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.AmenityRepository;
+import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,11 +24,14 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AmenityService {
     @Autowired
     private AmenityRepository amenityRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @Value("${upload_amenity_path}")
     private String uploadDir;

@@ -4,11 +4,9 @@ import com.mypropertyfact.estate.configs.dtos.ProjectGalleryDto;
 import com.mypropertyfact.estate.configs.dtos.ProjectGalleryResponse;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectGallery;
-import com.mypropertyfact.estate.entities.Property;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectGalleryRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
-import com.mypropertyfact.estate.repositories.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,8 +22,6 @@ import java.util.stream.Collectors;
 public class ProjectGalleryService {
     @Autowired
     private ProjectGalleryRepository projectGalleryRepository;
-    @Autowired
-    private PropertyRepository propertyRepository;
     @Autowired
     private ProjectRepository projectRepository;
     @Value("${uploads_path}")

@@ -3,11 +3,9 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.configs.dtos.FaqResponse;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
-import com.mypropertyfact.estate.entities.Property;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectFaqsRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
-import com.mypropertyfact.estate.repositories.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

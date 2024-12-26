@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 public class PropertyDetailDto {
+    private int id;
     private String metaTitle;
     private String metaKeyword;
     private String metaDescription;

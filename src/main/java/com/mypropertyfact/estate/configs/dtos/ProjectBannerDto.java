@@ -7,10 +7,11 @@ import java.io.File;
 
 @Data
 public class ProjectBannerDto {
+    private int id;
     private MultipartFile desktopBanner;
     private MultipartFile mobileBanner;
     private int projectId;
-    private String type;
+    private String altTag;
     private String projectName;
     private String slugURL;
 }
