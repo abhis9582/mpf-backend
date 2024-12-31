@@ -30,4 +30,8 @@ public class FloorPlanController {
     public ResponseEntity<Response> addUpdateFloorPlan(@RequestBody FloorPlan floorPlan){
         return new ResponseEntity<>(this.floorPlanService.addUpdatePlan(floorPlan), HttpStatus.OK);
     }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Response> deleteFloorPlan(@PathVariable("id")int id){
+        return new ResponseEntity<>(this.floorPlanService.deleteFloorPlan(id), HttpStatus.OK);
+    }
 }

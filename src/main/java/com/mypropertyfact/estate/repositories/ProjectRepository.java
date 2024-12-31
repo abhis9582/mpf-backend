@@ -19,4 +19,13 @@ public interface ProjectRepository extends JpaRepository<Project ,Integer> {
 
     @Query("SELECT p FROM Project p WHERE cityLocation = :cityName")
     List<Project> getAllByCity(@Param("cityName") String cityName);
+    @Query(value = "SELECT pa.project_id AS projectId, " +
+            "p.project_name AS projectName, " +
+            "GROUP_CONCAT(a.title ORDER BY a.title SEPARATOR ', ') AS amenities " +
+            "FROM project_amenity pa " +
+            "JOIN amenity a ON pa.amenity_id = a.id " +
+            "JOIN Projects p ON pa.project_id = p.id " +
+            "GROUP BY pa.project_id, p.project_name",
+            nativeQuery = true)
+    List<Object[]> getAllProjectAmenity();
 }

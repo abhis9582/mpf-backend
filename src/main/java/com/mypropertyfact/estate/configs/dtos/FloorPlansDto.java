@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class FloorPlansDto {
+    private int projectId;
     private String pName;
     private String type;
     private Double areaSq;
     private Double areaMt;
+    private int floorId;
 }

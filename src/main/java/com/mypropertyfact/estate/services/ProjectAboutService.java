@@ -2,8 +2,8 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.Constants;
 import com.mypropertyfact.estate.entities.Project;
-import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.entities.ProjectsAbout;
+import com.mypropertyfact.estate.models.ProjectAboutResponse;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectAboutRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectAboutService {
@@ -21,8 +22,16 @@ public class ProjectAboutService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<ProjectsAbout> getAllProjectsAbout(){
-        return this.projectAboutRepository.findAll();
+    public List<ProjectAboutResponse> getAllProjectsAbout(){
+        List<Object[]> response = this.projectAboutRepository.getAllProjectAbout();
+        return response.stream().map(item->
+                new ProjectAboutResponse(
+                        (int)item[0],
+                        (int)item[1],
+                        (String)item[2],
+                        (String)item[3],
+                        (String)item[4]
+                )).collect(Collectors.toList());
     }
 
     public Response addUpdate(ProjectsAbout projectsAbout){

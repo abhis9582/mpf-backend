@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.entities.ProjectsAbout;
+import com.mypropertyfact.estate.models.ProjectAboutResponse;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectAboutService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class ProjectsAboutController {
     @Autowired
     private ProjectAboutService projectAboutService;
     @GetMapping("/get")
-    public ResponseEntity<List<ProjectsAbout>> getAllProjectsAbout(){
+    public ResponseEntity<List<ProjectAboutResponse>> getAllProjectsAbout(){
         return new ResponseEntity<>(this.projectAboutService.getAllProjectsAbout(), HttpStatus.OK);
     }
     @PostMapping("/add-update")

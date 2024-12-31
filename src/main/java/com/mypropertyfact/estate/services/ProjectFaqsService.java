@@ -27,7 +27,9 @@ public class ProjectFaqsService {
                 new FaqResponse(
                         (String)item[0],
                         (String)item[1],
-                        (String)item[2]
+                        (String)item[2],
+                        (int)item[3],
+                        (int)item[4]
                 )).collect(Collectors.toList());
     }
     public Response addUpdateFaqs(ProjectFaqs projectFaqs){

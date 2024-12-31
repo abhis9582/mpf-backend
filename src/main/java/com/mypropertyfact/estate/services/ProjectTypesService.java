@@ -84,4 +84,9 @@ public class ProjectTypesService {
         List<Project> projects = this.projectRepository.getAllProjectsByType(projectTypes.getId());
         return projects;
     }
+
+    public Response deleteProjectType(int id) {
+        this.projectTypeRepository.deleteById(id);
+        return new Response(1, "Project type deleted successfully...");
+    }
 }

@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ProjectAmenityResponse {
+public class ProjectAboutResponse {
+    private int id;
     private int projectId;
     private String projectName;
-    private String amenities;
+    private String shortDesc;
+    private String longDesc;
 }

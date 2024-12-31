@@ -19,13 +19,16 @@ public class FloorPlanService {
     private FloorPlanRepository floorPlanRepository;
     @Autowired
     private ProjectRepository projectRepository;
+
     public List<FloorPlansDto> getAllPlans() {
         List<Object[]> plans = this.floorPlanRepository.getAllFloorPlans();
         return plans.stream().map(result -> new FloorPlansDto(
-                        (String) result[0],
+                        (int) result[0],
                         (String) result[1],
-                        (Double) result[2],
-                        (Double) result[3]
+                        (String) result[2],
+                        (Double) result[3],
+                        (Double) result[4],
+                        (int) result[5]
                 )
         ).collect(Collectors.toList());
     }
@@ -66,5 +69,15 @@ public class FloorPlanService {
 
     public List<FloorPlan> getBySlugUrl(String url) {
         return this.floorPlanRepository.findBySlugUrl(url);
+    }
+    public Response deleteFloorPlan(int id){
+        Response response = new Response();
+        try{
+            this.floorPlanRepository.deleteById(id);
+            new Response(1, "Deleted successfully...");
+        }catch (Exception e){
+            new Response(0, e.getMessage());
+        }
+        return response;
     }
 }

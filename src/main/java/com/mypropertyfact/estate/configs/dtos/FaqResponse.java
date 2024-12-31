@@ -11,4 +11,6 @@ public class FaqResponse {
     private String projectName;
     private String question;
     private String answer;
+    private int projectId;
+    private int id;
 }

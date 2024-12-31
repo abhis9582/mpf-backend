@@ -22,45 +22,41 @@ public class ProjectAmenityService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<ProjectAmenityDto> getAllProjectAmenity(){
-        return null;
+    public List<ProjectAmenityResponse> getAllProjectAmenity() {
+        List<Object[]> response = this.projectRepository.getAllProjectAmenity();
+        return response.stream().map(item ->
+                new ProjectAmenityResponse(
+                        (int) item[0],
+                        (String) item[1],
+                        (String) item[2]
+                )).collect(Collectors.toList());
     }
-
-    public Response addProjectAmenity(ProjectAmenityDto projectAmenityDto){
+    public Response addProjectAmenity(ProjectAmenityDto projectAmenityDto) {
         Response response = new Response();
-        try{
-            if(projectAmenityDto.getProjectId() == 0 || projectAmenityDto.getAmenityList() == null){
+        try {
+            if (projectAmenityDto.getProjectId() == 0 || projectAmenityDto.getAmenityList() == null) {
                 response.setMessage(Constants.ALL_FIELDS_REQUIRED);
                 return response;
             }
 
             Project project = this.projectRepository.findById(projectAmenityDto.getProjectId()).get();
-            if(project != null){
+            if (project != null) {
                 projectAmenityDto.setSlugURL(project.getSlugURL());
             }
-            if(projectAmenityDto.getId() > 0){
-                ProjectAmenity amenity = this.projectAmenityRepository.findById(projectAmenityDto.getId()).get();
-                if(amenity != null){
-                    for(int i=0;i < projectAmenityDto.getAmenityList().size();i++) {
-                        amenity.setAmenityId(projectAmenityDto.getAmenityList().get(i).getId());
-                        amenity.setProjectId(projectAmenityDto.getProjectId());
-                        this.projectAmenityRepository.save(amenity);
-                    }
-                    response.setIsSuccess(1);
-                    response.setMessage("Amenity updated successfully...");
-                }
-            }else{
-                for(int i=0;i < projectAmenityDto.getAmenityList().size();i++) {
-                    ProjectAmenity amenity = new ProjectAmenity();
-                    amenity.setProjectId(projectAmenityDto.getProjectId());
-                    amenity.setSlugURL(projectAmenityDto.getSlugURL());
-                    amenity.setAmenityId(projectAmenityDto.getAmenityList().get(i).getId());
-                    this.projectAmenityRepository.save(amenity);
-                }
-                response.setIsSuccess(1);
-                response.setMessage("Amenity saved successfully...");
+            List<ProjectAmenity> dbAmenity = this.projectAmenityRepository.findByProjectId(projectAmenityDto.getProjectId());
+            if (dbAmenity.size() > 0) {
+                this.projectAmenityRepository.deleteByProjectId(projectAmenityDto.getProjectId());
             }
-        }catch (Exception e){
+            for (int i = 0; i < projectAmenityDto.getAmenityList().size(); i++) {
+                ProjectAmenity amenity = new ProjectAmenity();
+                amenity.setProjectId(projectAmenityDto.getProjectId());
+                amenity.setSlugURL(projectAmenityDto.getSlugURL());
+                amenity.setAmenityId(projectAmenityDto.getAmenityList().get(i).getId());
+                this.projectAmenityRepository.save(amenity);
+            }
+            response.setIsSuccess(1);
+            response.setMessage("Amenity saved successfully...");
+        } catch (Exception e) {
             response.setMessage(e.getMessage());
         }
         return response;
@@ -68,5 +64,13 @@ public class ProjectAmenityService {
 
     public List<Amenity> getBySlug(String url) {
         return this.projectAmenityRepository.findBySlugURL(url);
+    }
+
+    public List<Amenity> getById(int id) {
+        return this.projectAmenityRepository.findListByProjectId(id);
+    }
+    public Response deleteProjectAmenity(int projectId){
+        this.projectAmenityRepository.deleteByProjectId(projectId);
+        return new Response(1, "Project amenity deleted successfully...");
     }
 }
