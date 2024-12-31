@@ -24,7 +24,7 @@ public interface ProjectRepository extends JpaRepository<Project ,Integer> {
             "GROUP_CONCAT(a.title ORDER BY a.title SEPARATOR ', ') AS amenities " +
             "FROM project_amenity pa " +
             "JOIN amenity a ON pa.amenity_id = a.id " +
-            "JOIN Projects p ON pa.project_id = p.id " +
+            "JOIN projects p ON pa.project_id = p.id " +
             "GROUP BY pa.project_id, p.project_name",
             nativeQuery = true)
     List<Object[]> getAllProjectAmenity();
