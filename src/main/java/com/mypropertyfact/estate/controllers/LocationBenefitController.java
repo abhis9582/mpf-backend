@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,11 +23,17 @@ public class LocationBenefitController {
         return new ResponseEntity<>(this.locationBenefitService.getAllBenefits(), HttpStatus.OK);
     }
     @PostMapping("/add-new")
-    public ResponseEntity<Response> addUpdate(@ModelAttribute LocationBenefitDto locationBenefitDto){
-        return new ResponseEntity<>(this.locationBenefitService.addUpdateBenefit(locationBenefitDto), HttpStatus.OK);
+    public ResponseEntity<Response> addUpdate(@RequestParam(required = false) MultipartFile iconImage, @ModelAttribute LocationBenefitDto locationBenefitDto){
+        return new ResponseEntity<>(this.locationBenefitService.addUpdateBenefit(iconImage, locationBenefitDto), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")
     public ResponseEntity<List<LocationBenefit>> getBySlug(@PathVariable("url")String url){
         return new ResponseEntity<>(this.locationBenefitService.getBySlug(url), HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Response> deleteBenefit(@PathVariable("id")int id){
+        return new ResponseEntity<>(this.locationBenefitService.deleteLocationBenefit(id), HttpStatus.OK);
+    }
+
 }

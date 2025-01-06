@@ -13,12 +13,12 @@ public class Builder {
     private int id;
     private String builderName;
     private String slugUrl;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String builderDesc;
     private String metaTitle;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String metaDesc;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String metaKeyword;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

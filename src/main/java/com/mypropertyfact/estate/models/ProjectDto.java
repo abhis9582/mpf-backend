@@ -24,7 +24,11 @@ public class ProjectDto {
     private MultipartFile projectLogo;
     private MultipartFile projectThumbnail;
     private String propertyType;
+    private String country;
     private String slugURL;
     private boolean showFeaturedProperties;
+    private String amenityDesc;
+    private String floorPlanDesc;
+    private String locationDesc;
     private boolean status;
 }

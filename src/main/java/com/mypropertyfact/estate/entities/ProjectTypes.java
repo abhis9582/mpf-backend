@@ -14,11 +14,11 @@ public class ProjectTypes {
     private String projectTypeName;
     private String slugUrl;
     private String metaTitle;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String metaKeyword;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String metaDesc;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String projectTypeDesc;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

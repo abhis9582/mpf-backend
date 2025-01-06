@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -14,9 +13,9 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String metaTitle;
-    @Column(length = 3000)
+    @Lob
     private String metaKeyword;
-    @Column(length = 3000)
+    @Lob
     private String metaDescription;
     private String projectName;
     private String projectAddress;
@@ -38,6 +37,13 @@ public class Project {
     private String slugURL;
     private boolean showFeaturedProperties;
     private boolean status;
+    private String country;
+    @Lob
+    private String amenityDesc;
+    @Lob
+    private String floorPlanDesc;
+    @Lob
+    private String locationDesc;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 

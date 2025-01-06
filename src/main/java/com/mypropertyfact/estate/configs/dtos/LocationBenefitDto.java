@@ -3,7 +3,6 @@ package com.mypropertyfact.estate.configs.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @AllArgsConstructor
@@ -15,11 +14,10 @@ public class LocationBenefitDto {
     private String image;
     private String projectName;
     private int projectId;
-    private MultipartFile iconImage;
     private String slugUrl;
-
-    public LocationBenefitDto(int id, String distance, String bName, String image, String pName){
+    public LocationBenefitDto(int id, int projectId, String distance, String bName, String image, String pName){
         this.id = id;
+        this.projectId = projectId;
         this.distance = distance;
         this.benefitName = bName;
         this.image = image;

@@ -65,15 +65,15 @@ public class ProjectService {
             }
             // Generate location Map image name (UUID)
             String locationMapExtension = StringUtils.getFilenameExtension(projectDto.getLocationMap().getOriginalFilename());
-            String locationMapImageName = UUID.randomUUID().toString() + "." + locationMapExtension;
+            String locationMapImageName = UUID.randomUUID() + "." + locationMapExtension;
 
             // Generate project logo name (UUID)
             String projectLogoExtension = StringUtils.getFilenameExtension(projectDto.getLocationMap().getOriginalFilename());
-            String projectLogoName = UUID.randomUUID().toString() + "." + projectLogoExtension;
+            String projectLogoName = UUID.randomUUID() + "." + projectLogoExtension;
 
             // Generate project thumbnail name (UUID)
             String projectThumbnailExtension = StringUtils.getFilenameExtension(projectDto.getLocationMap().getOriginalFilename());
-            String projectThumbnailName = UUID.randomUUID().toString() + "." + projectThumbnailExtension;
+            String projectThumbnailName = UUID.randomUUID() + "." + projectThumbnailExtension;
 
             // Create directory if it doesn't exist
             File dir = new File(uploadDir + projectDto.getSlugURL().toLowerCase().trim());
@@ -112,6 +112,10 @@ public class ProjectService {
             project.setPropertyType(projectDto.getPropertyType());
             project.setSlugURL(projectDto.getSlugURL());
             project.setShowFeaturedProperties(true);
+            project.setCountry(projectDto.getCountry());
+            project.setAmenityDesc(projectDto.getAmenityDesc());
+            project.setLocationDesc(projectDto.getLocationDesc());
+            project.setFloorPlanDesc(projectDto.getFloorPlanDesc());
             project.setStatus(true);
             this.projectRepository.save(project);
             response.setMessage(Constants.PROJECT_SAVED);

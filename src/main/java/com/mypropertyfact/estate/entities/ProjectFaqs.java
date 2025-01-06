@@ -12,9 +12,9 @@ public class ProjectFaqs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private int projectId;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String faqQuestion;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String faqAnswer;
     private String slugUrl;
     private LocalDateTime createdAt = LocalDateTime.now();

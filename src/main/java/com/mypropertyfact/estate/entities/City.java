@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "city")
@@ -14,14 +13,14 @@ public class City {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String metaTitle;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String metaKeyWords;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String metaDescription;
     private String name;
     private String state;
     private String slugUrl;
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String cityDisc;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
