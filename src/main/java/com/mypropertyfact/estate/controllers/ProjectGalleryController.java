@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/project-gallery")
-@CrossOrigin("*")
 public class ProjectGalleryController {
     @Autowired
     private ProjectGalleryService projectGalleryService;

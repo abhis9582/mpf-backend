@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/location-benefit")
-@CrossOrigin("*")
 public class LocationBenefitController {
     @Autowired
     private LocationBenefitService locationBenefitService;

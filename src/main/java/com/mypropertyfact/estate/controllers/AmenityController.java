@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/amenity")
-@CrossOrigin("*")
 public class AmenityController {
     @Autowired
     private AmenityService amenityService;

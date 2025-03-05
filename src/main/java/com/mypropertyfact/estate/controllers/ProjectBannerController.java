@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/project-banner")
-@CrossOrigin("*")
 public class ProjectBannerController {
     @Autowired
     private ProjectBannerService projectBannerService;

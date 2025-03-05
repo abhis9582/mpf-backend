@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/project-walkthrough")
-@CrossOrigin("*")
 public class ProjectWalkthroughController {
     @Autowired
     private ProjectWalkthroughService projectWalkthroughService;

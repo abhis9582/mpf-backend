@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/projects")
-@CrossOrigin("*")
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
@@ -31,8 +30,8 @@ public class ProjectController {
             @ModelAttribute ProjectDto projectDto){
         return new ResponseEntity<>(this.projectService.saveProject(
                 projectLogo,
-                projectThumbnail,
                 locationMap,
+                projectThumbnail,
                 projectDto
         ), HttpStatus.OK);
     }

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/builders")
-@CrossOrigin("*")
 public class BuilderController {
     @Autowired
     private BuilderService builderService;

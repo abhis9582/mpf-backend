@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/get/images")
-@CrossOrigin("*")
 public class FetchImageController {
     @Value("${uploads_path}")
     private String uploadDir;

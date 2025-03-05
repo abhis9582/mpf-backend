@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/project-types")
-@CrossOrigin("*")
 public class ProjectTypesController {
     @Autowired
     private ProjectTypesService projectTypesService;

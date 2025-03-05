@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/project-amenity")
-@CrossOrigin("*")
 public class ProjectAmenityController {
     @Autowired
     private ProjectAmenityService projectAmenityService;

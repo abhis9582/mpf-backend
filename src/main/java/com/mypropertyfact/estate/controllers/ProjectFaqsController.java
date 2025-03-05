@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/project-faqs")
-@CrossOrigin("*")
 public class ProjectFaqsController {
     @Autowired
     private ProjectFaqsService projectFaqsService;
