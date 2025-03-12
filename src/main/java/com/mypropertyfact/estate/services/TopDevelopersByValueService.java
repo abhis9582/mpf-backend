@@ -27,9 +27,10 @@ public class TopDevelopersByValueService {
         List<Object[]> res = topDevelopersByValueRepository.getAllData();
         List<TopDevelopersByValue> developersByValue =  res.stream().map(item->{
             TopDevelopersByValue ress = new TopDevelopersByValue();
-            ress.setDeveloperName((String)item[0]);
-            ress.setNoOfTransactions((String) item[1]);
-            ress.setSaleRentValue((String) item[2]);
+            ress.setId((int)item[0]);
+            ress.setDeveloperName((String)item[1]);
+            ress.setNoOfTransactions((String) item[2]);
+            ress.setSaleRentValue((String) item[3]);
             return ress;
         }).collect(Collectors.toList());
         return developersByValue;

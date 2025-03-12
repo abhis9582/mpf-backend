@@ -24,7 +24,7 @@ public interface TopDevelopersByValueRepository extends JpaRepository<TopDevelop
             left join city cy on tt.city = cy.id order by field(aggregation_from_display_name, '1Yr', '6M', '3M') desc;
             """, nativeQuery = true)
     List<Object[]> getAllTopDevelopersByValue();
-    @Query(value = "SELECT t.developer_name, FORMAT(t.no_of_transactions, 0) AS formattedTransactions, " +
+    @Query(value = "SELECT t.id, t.developer_name, FORMAT(t.no_of_transactions, 0) AS formattedTransactions, " +
             "CONCAT('₹ ', FORMAT(t.sale_rent_value, 0)) AS formattedSaleValue " +
             "FROM top_developers_by_value t", nativeQuery = true)
     List<Object[]> getAllData();

@@ -28,4 +28,13 @@ public interface ProjectRepository extends JpaRepository<Project ,Integer> {
             "GROUP BY pa.project_id, p.project_name",
             nativeQuery = true)
     List<Object[]> getAllProjectAmenity();
+    @Query(value = """
+                    select * from projects where property_type= :propertyType
+                    and city_location = :propertyLocation
+                    and project_price between :startBudget
+                    and :endBudget
+                    """, nativeQuery = true)
+    List<Project> searchByPropertyTypeLocationBudget(@Param("propertyType") String propertyType, @Param("propertyLocation") String propertyLocation,
+                                                     @Param("startBudget") int startBudget,
+                                                     @Param("endBudget") int endBudget);
 }

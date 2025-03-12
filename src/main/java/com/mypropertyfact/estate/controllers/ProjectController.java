@@ -47,4 +47,10 @@ public class ProjectController {
     public ResponseEntity<Response> deleteProject(@PathVariable("id")int id){
         return new ResponseEntity<>(this.projectService.deleteProject(id), HttpStatus.OK);
     }
+    @GetMapping("/search-by-type-city-budget")
+    public ResponseEntity<?> searchByPropertyTypeLocationBudget(@RequestParam("propertyType")String propertyType,
+                                                                @RequestParam("propertyLocation")String propertyLocation,
+                                                                @RequestParam("budget")String budget){
+        return new ResponseEntity<>(projectService.searchByPropertyTypeLocationBudget(propertyType, propertyLocation, budget), HttpStatus.OK);
+    }
 }

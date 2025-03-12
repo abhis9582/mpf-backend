@@ -178,4 +178,24 @@ public class ProjectService {
         project.setFloorPlanDesc(dto.getFloorPlanDesc());
         project.setStatus(true);
     }
+
+    public List<Project> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
+        int start = 0;
+        int end = 0;
+        if(budget.equals("Up to 1Cr*") ){
+            start = 0;
+            end = 1;
+        } else if (budget.equals("1-3 Cr*")) {
+            start = 1;
+            end = 3;
+        }else if (budget.equals("3-5 Cr*")){
+            start = 3;
+            end = 5;
+        }else if (budget.equals("Above 5 Cr*")){
+            start = 5;
+            end = 10;
+        }
+        return projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
+                start, end);
+    }
 }
