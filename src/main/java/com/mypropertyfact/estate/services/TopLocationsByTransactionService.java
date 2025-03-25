@@ -10,10 +10,7 @@ import com.mypropertyfact.estate.repositories.HeaderRepository;
 import com.mypropertyfact.estate.repositories.TopLocationsByTransactionRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TopLocationsByTransactionService {
@@ -66,61 +63,58 @@ public class TopLocationsByTransactionService {
         return response;
     }
 
-    public List<TopLocationByTransactionResponse> getAllCategoryWiseData(){
+    public List<TopLocationByTransactionResponse> getAllCategoryWiseData() {
         List<Object[]> rowData = topLocationsByTransactionRepository.getAllCategoryWiseData();
-        try{
-            Map<String, TopLocationByTransactionResponse> dataMap = new HashMap<>();
-            for(Object[] data: rowData){
-                String category = (String)data[0];
-                String categoryDisplayName = (String)data[1];
+        Map<String, TopLocationByTransactionResponse> dataMap = new HashMap<>();
 
+        try {
+            List<Headers> headers = headerRepository.getTopLocationsByTransactionHeaders(); // Fetch headers once
+
+            for (Object[] data : rowData) {
+                String category = (String) data[0];
+                String categoryDisplayName = (String) data[1];
+
+                // Use computeIfAbsent to create or retrieve the response object
                 TopLocationByTransactionResponse response = dataMap.computeIfAbsent(category, k -> {
                     TopLocationByTransactionResponse res = new TopLocationByTransactionResponse();
                     res.setCategory(category);
                     res.setCategoryDisplayName(categoryDisplayName);
-                    res.setHeaders(new ArrayList<>());
+                    res.setHeaders(new ArrayList<>(headers)); // Set headers only once
                     res.setAggregationFromList(new ArrayList<>());
                     return res;
                 });
 
-                response.setCategory(response.getCategory());
-                response.setCategoryDisplayName(response.getCategoryDisplayName());
-                response.setAggregationFromList(new ArrayList<>());
-                response.setHeaders(new ArrayList<>());
-
-                List<Headers> headers = headerRepository.getTopLocationsByTransactionHeaders();
-
-                if(response.getHeaders().size() < 1){
-                    response.setHeaders(headers);
-                }
-
-                String aggregationFrom = (String)data[2];
+                // Get or create AggregationFromList using computeIfAbsent
+                String aggregationFrom = (String) data[2];
                 AggregationFromList aggregation = response.getAggregationFromList().stream()
-                        .filter(a-> a.getAggregationFrom().equals(aggregationFrom))
+                        .filter(a -> a.getAggregationFrom().equals(aggregationFrom))
                         .findFirst()
-                        .orElse(null);
+                        .orElseGet(() -> {
+                            AggregationFromList newAggregation = new AggregationFromList();
+                            newAggregation.setAggregationFrom(aggregationFrom);
+                            newAggregation.setAggregationFromDisplayName((String) data[3]);
+                            newAggregation.setLegendHeader(null);
+                            newAggregation.setLocationDetails(new ArrayList<>());
+                            response.getAggregationFromList().add(newAggregation);
+                            return newAggregation;
+                        });
 
-                if(aggregation == null){
-                    aggregation = new AggregationFromList();
-                    aggregation.setAggregationFrom(aggregationFrom);
-                    aggregation.setAggregationFromDisplayName((String) data[3]);
-                    aggregation.setLegendHeader(null);
-                    aggregation.setLocationDetails(new ArrayList<>());
-                    response.getAggregationFromList().add(aggregation);
-                }
+                // Map data to TopLocationsByTransactionMapper
+                TopLocationsByTransactionMapper locationDetails = new TopLocationsByTransactionMapper();
+                locationDetails.setCity((String) data[4]);
+                locationDetails.setCurrentPrice((String) data[5]);
+                locationDetails.setLocation((String) data[6]);
+                locationDetails.setSaleValue((int) data[7]);
+                locationDetails.setTransactions((String) data[8]);
 
-                TopLocationsByTransactionMapper topLocationsByTransactionMapper = new TopLocationsByTransactionMapper();
-                topLocationsByTransactionMapper.setCity((String) data[4]);
-                topLocationsByTransactionMapper.setCurrentPrice((String)data[5]);
-                topLocationsByTransactionMapper.setLocation((String) data[6]);
-                topLocationsByTransactionMapper.setSaleValue((int) data[7]);
-                topLocationsByTransactionMapper.setTransactions((String)data[8]);
-                aggregation.getLocationDetails().add(topLocationsByTransactionMapper);
+                aggregation.getLocationDetails().add(locationDetails);
             }
+
             return new ArrayList<>(dataMap.values());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
+            return Collections.emptyList(); // Return an empty list instead of null to prevent NullPointerException
         }
-        return null;
     }
+
 }
