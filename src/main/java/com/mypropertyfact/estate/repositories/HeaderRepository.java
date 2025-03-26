@@ -15,7 +15,7 @@ public interface HeaderRepository extends JpaRepository<Headers, Integer> {
     List<Headers> getAll();
 
     @Query(value = """
-            SELECT * FROM Headers h
+            SELECT * FROM headers h
             WHERE h.id IN (5, 2, 3, 6)
             ORDER BY FIELD(h.id, 5, 2, 3, 6);
             """, nativeQuery = true)
