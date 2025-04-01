@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,6 +69,23 @@ public class ProjectFaqsService {
             response = this.projectFaqsRepository.findBySlugUrl(url);
         }catch (Exception e){
             response = new ArrayList<>();
+        }
+        return response;
+    }
+
+    public Response deleteFaq(int id){
+        Response response = new Response();
+        try{
+            Optional<ProjectFaqs> byId = projectFaqsRepository.findById(id);
+            if(byId.isPresent()){
+                projectFaqsRepository.deleteById(id);
+                response.setMessage("FAQ deleted successfully...");
+                response.setIsSuccess(1);
+            }else{
+                response.setMessage("FAQ already deleted or not exists");
+            }
+        }catch (Exception e){
+            response.setMessage(e.getMessage());
         }
         return response;
     }

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface HeaderRepository extends JpaRepository<Headers, Integer> {
     @Query(value = """
-            SELECT * FROM Headers h
+            SELECT * FROM headers h
             WHERE h.id IN (5, 2, 3, 4)
             ORDER BY FIELD(h.id, 5, 2, 3, 4);
             """, nativeQuery = true)

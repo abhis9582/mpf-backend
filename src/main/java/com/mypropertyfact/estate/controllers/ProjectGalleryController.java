@@ -30,4 +30,9 @@ public class ProjectGalleryController {
     public ResponseEntity<List<ProjectGallery>> getBySlugUrl(@PathVariable("url")String url){
         return new ResponseEntity<>(this.projectGalleryService.getBySlugUrl(url), HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Response> deleteGalleryImage(@PathVariable("id") int id){
+        return new ResponseEntity<>(projectGalleryService.deleteGalleryImage(id), HttpStatus.OK);
+    }
 }

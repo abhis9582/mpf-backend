@@ -28,4 +28,9 @@ public class ProjectFaqsController {
     public ResponseEntity<List<ProjectFaqs>> getBySlug(@PathVariable("url")String url){
         return new ResponseEntity<>(this.projectFaqsService.getBySlug(url), HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Response> deleteFaq(@PathVariable("id")int id){
+        return new ResponseEntity<>(projectFaqsService.deleteFaq(id), HttpStatus.OK);
+    }
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ProjectGalleryResponse {
+    private int id;
     private String pName;
     private String image;
     private String slugURL;

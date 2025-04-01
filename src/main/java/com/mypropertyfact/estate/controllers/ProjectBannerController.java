@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,15 @@ public class ProjectBannerController {
         return new ResponseEntity<>(this.projectBannerService.getBySlug(url), HttpStatus.OK);
     }
     @PostMapping("/add-banner")
-    public ResponseEntity<Response> postBanner(@ModelAttribute ProjectBannerDto projectBannerDto){
-        return new ResponseEntity<>(this.projectBannerService.postBanner(projectBannerDto), HttpStatus.OK);
+    public ResponseEntity<Response> postBanner(
+            @RequestParam(required = false) MultipartFile mobileBanner,
+            @RequestParam(required = false) MultipartFile desktopBanner,
+            @ModelAttribute ProjectBannerDto projectBannerDto){
+        return new ResponseEntity<>(this.projectBannerService.postBanner(mobileBanner, desktopBanner, projectBannerDto), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Response> deleteBanner(@PathVariable("id")int id){
+        return new ResponseEntity<>(projectBannerService.deleteBanner(id), HttpStatus.OK);
     }
 }

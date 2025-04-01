@@ -31,9 +31,10 @@ public class ProjectGalleryService {
         List<Object[]> projectImages = this.projectGalleryRepository.getAllGalleyImages();
         return projectImages.stream().map(item ->
                 new ProjectGalleryResponse(
-                        (String) item[0],
+                        (int) item[0],
                         (String) item[1],
-                        (String) item[2]
+                        (String) item[2],
+                        (String) item[3]
                 )).collect(Collectors.toList());
     }
 
@@ -101,5 +102,19 @@ public class ProjectGalleryService {
     }
     public List<ProjectGallery> getBySlugUrl(String url){
         return this.projectGalleryRepository.findBySlugUrl(url);
+    }
+
+    public Response deleteGalleryImage(int id){
+        Response response = new Response();
+        try{
+            projectGalleryRepository.findById(id).ifPresent(p->{
+                projectGalleryRepository.deleteById(id);
+            });
+            response.setMessage("Gallery image deleted successfully...");
+            response.setIsSuccess(1);
+        }catch (Exception e){
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 }
