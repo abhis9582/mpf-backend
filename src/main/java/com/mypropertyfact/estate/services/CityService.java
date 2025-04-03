@@ -64,6 +64,7 @@ public class CityService {
                     dbCity.setMetaTitle(city.getMetaTitle());
                     dbCity.setMetaKeyWords(city.getMetaKeyWords());
                     dbCity.setMetaDescription(city.getMetaDescription());
+                    dbCity.setCityDisc(city.getCityDisc());
                     this.cityRepository.save(dbCity);
                     response.setIsSuccess(1);
                     response.setMessage(ConstantMessages.CITY_UPDATED);

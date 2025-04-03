@@ -102,10 +102,12 @@ public class AmenityService {
         Response response = new Response();
         try {
             Amenity amenity = this.amenityRepository.findById(id).get();
-            Path imagePath = Paths.get(uploadDir, amenity.getAmenityImageUrl());
-            // Check if the image exists and delete it
-            if (Files.exists(imagePath)) {
-                Files.delete(imagePath);
+            if(!amenity.getAmenityImageUrl().isEmpty()){
+                Path imagePath = Paths.get(uploadDir, amenity.getAmenityImageUrl());
+                // Check if the image exists and delete it
+                if (Files.exists(imagePath)) {
+                    Files.delete(imagePath);
+                }
             }
             this.amenityRepository.deleteById(id);
             response.setMessage("Data deleted successfully...");
