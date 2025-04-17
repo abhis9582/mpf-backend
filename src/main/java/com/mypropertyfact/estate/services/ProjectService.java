@@ -88,7 +88,6 @@ public class ProjectService {
             // Generating path for storing image
             String projectDir = uploadDir + projectDto.getSlugURL().toLowerCase().trim();
             createDirectory(projectDir);
-
             // Process images only if new files are provided
             if (projectLogo != null) {
                 deleteExistingFile(projectDir, project.getProjectLogo());

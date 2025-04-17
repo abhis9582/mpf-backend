@@ -22,6 +22,7 @@ public class City {
     private String slugUrl;
     @Lob
     private String cityDisc;
+    private String cityImage;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

@@ -32,7 +32,7 @@ public class EnqueryService {
                     dbEnquery.setUpdatedAt(LocalDateTime.now());
                     enqueryRepository.save(dbEnquery);
                     response.setIsSuccess(1);
-                    response.setMessage("Enquery updated successfully...");
+                    response.setMessage("Data updated successfully...");
                 }else{
                     response.setMessage("No data found !!");
                 }
@@ -40,7 +40,7 @@ public class EnqueryService {
                 enqueryRepository.save(enquery);
 //                sendEmailHandler.sendEmail(enquery.getEmail(), "Thank you for giving details", "Hi, Thank you out team will get back to you");
                 response.setIsSuccess(1);
-                response.setMessage("Enquery saved successfully...");
+                response.setMessage("Data saved successfully...");
             }
         }catch (Exception e){
             response.setMessage(e.getMessage());

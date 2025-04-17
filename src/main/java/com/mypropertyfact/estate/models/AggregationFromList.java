@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.entities.TopDevelopersByValue;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 @Data
 public class AggregationFromList {
@@ -14,4 +15,6 @@ public class AggregationFromList {
     private List<CityPriceDetail> details = new ArrayList<>();
     private List<TopLocationsByTransactionMapper> locationDetails = new ArrayList<>();
     private List<TopDevelopersByValue> developerDetails = new ArrayList<>();
+
+    LinkedList<Integer> l;
 }

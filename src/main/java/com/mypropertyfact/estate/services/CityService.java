@@ -3,10 +3,12 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.ConstantMessages;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Project;
+import com.mypropertyfact.estate.models.InvalidRequestException;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,5 +131,10 @@ public class CityService {
     }
     public List<Project> getByCityName(String cityName){
         return this.projectRepository.getAllByCity(cityName);
+    }
+
+    public Response addUpdateCity(MultipartFile cityImage, City city) {
+        Response response = new Response();
+        return response;
     }
 }
