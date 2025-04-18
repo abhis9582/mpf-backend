@@ -4,13 +4,14 @@ import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.BlogDto;
 import com.mypropertyfact.estate.entities.Blog;
 import com.mypropertyfact.estate.interfaces.BlogService;
+import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BlogRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -87,16 +88,6 @@ public class BlogServiceImpl implements BlogService {
         return new Response(1, "Blog saved successfully...");
     }
 
-
-    @Override
-    public void deleteBlog(int id) {
-        if (!blogRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found");
-        }
-        blogRepository.deleteById(id);
-    }
-
-
     @Override
     public Optional<Blog> getBlogById(int id) {
         if (!blogRepository.existsById(id)) {
@@ -133,5 +124,12 @@ public class BlogServiceImpl implements BlogService {
                 bySlugUrl.getBlogCategory().getCategoryName(),
                 bySlugUrl.getBlogCategory().getId()
                 );
+    }
+    @Override
+    public Response deleteBlog(int id){
+        Blog blog = blogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Blog already deleted or not found"));
+        fileUtils.deleteFileFromDestination(blog.getBlogImage(), upload_dir+"blog/");
+        blogRepository.delete(blog);
+        return new Response(1, "Blog deleted successful...");
     }
 }

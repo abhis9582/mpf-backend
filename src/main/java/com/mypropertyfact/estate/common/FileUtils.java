@@ -44,9 +44,9 @@ public class FileUtils {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.lastIndexOf('.') == -1) {
             // If no extension, just return a UUID as the filename
-            return UUID.randomUUID().toString() + generateSlug(suffix);
+            return suffix;
         }
-        String newFileName = UUID.randomUUID().toString() + generateSlug(suffix);
+        String newFileName = suffix;
         return newFileName;
     }
 

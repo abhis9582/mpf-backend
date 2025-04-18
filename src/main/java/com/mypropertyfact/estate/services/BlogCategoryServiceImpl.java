@@ -1,24 +1,35 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.BlogCategoryDto;
 import com.mypropertyfact.estate.entities.BlogCategory;
 import com.mypropertyfact.estate.interfaces.BlogCategoryService;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BlogCategoryRepository;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class BlogCategoryServiceImpl implements BlogCategoryService {
 
     private BlogCategoryRepository blogCategoryRepository;
 
-    BlogCategoryServiceImpl(BlogCategoryRepository blogCategoryRepository) {
+    @Value("${upload_dir}")
+    private String uploadDir;
+
+    private FileUtils fileUtils;
+
+    BlogCategoryServiceImpl(BlogCategoryRepository blogCategoryRepository,
+                            FileUtils fileUtils) {
         this.blogCategoryRepository = blogCategoryRepository;
+        this.fileUtils = fileUtils;
     }
 
     @Override
@@ -38,10 +49,18 @@ public class BlogCategoryServiceImpl implements BlogCategoryService {
     }
 
     @Override
+    @Transactional
     public Response deleteBlogCategory(int id) {
         BlogCategory blogCategory = blogCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Blog category not found or already deleted"));
-
+        if (blogCategory.getBlogs() != null) {
+            blogCategory.getBlogs().forEach(blog -> {
+                String imageName = blog.getBlogImage();
+                if (imageName != null && !imageName.isEmpty()) {
+                    fileUtils.deleteFileFromDestination(imageName, uploadDir + "blog/");
+                }
+            });
+        }
         blogCategoryRepository.delete(blogCategory);
         return new Response(1, "Blog category deleted successfully");
     }

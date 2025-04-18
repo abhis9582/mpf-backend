@@ -28,7 +28,7 @@ public class Blog {
     @NotBlank(message = "Blog meta description is required")
     private String blogMetaDescription;
     @NotBlank(message = "Blog description is required")
-    @Column(name = "blog_description", columnDefinition = "TEXT")
+    @Column(name = "blog_description", columnDefinition = "LONGTEXT")
     private String blogDescription;
 
     @NotBlank(message = "Slug URL is required")

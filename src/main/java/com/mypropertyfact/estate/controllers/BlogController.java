@@ -46,8 +46,12 @@ public class BlogController {
 
     @GetMapping("/get/{slug}")
     public ResponseEntity<BlogDto> getAll(@PathVariable String slug) {
-
         return ResponseEntity.ok(blogService.getBySlug(slug));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Response> deleteBlog(@PathVariable int id){
+        return ResponseEntity.ok(blogService.deleteBlog(id));
     }
 }
 

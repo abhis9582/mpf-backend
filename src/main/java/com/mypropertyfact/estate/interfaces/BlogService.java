@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface BlogService {
     Response addUpdateBlog(MultipartFile blogImage, Blog blog);
-    void deleteBlog(int id);
+    Response deleteBlog(int id);
     Optional<Blog> getBlogById(int id);
     List<BlogDto> getAllBlogs();
 
