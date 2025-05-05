@@ -9,6 +9,9 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BlogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,6 +128,15 @@ public class BlogServiceImpl implements BlogService {
                 bySlugUrl.getBlogCategory().getId()
                 );
     }
+
+    @Override
+    public Page<Blog> getWithPagination(int page, int size) {
+        int p = page;
+        int s = size;
+        Page<Blog> all = blogRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return all;
+    }
+
     @Override
     public Response deleteBlog(int id){
         Blog blog = blogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Blog already deleted or not found"));

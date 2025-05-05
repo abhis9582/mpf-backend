@@ -6,6 +6,7 @@ import com.mypropertyfact.estate.interfaces.BlogService;
 import com.mypropertyfact.estate.models.Response;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +53,14 @@ public class BlogController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteBlog(@PathVariable int id){
         return ResponseEntity.ok(blogService.deleteBlog(id));
+    }
+
+    @GetMapping("/get")
+    public Page<Blog> getWithPagination(
+            @RequestParam(defaultValue = "0")int page,
+            @RequestParam(defaultValue = "9")int size
+    ){
+        return blogService.getWithPagination(page, size);
     }
 }
 
