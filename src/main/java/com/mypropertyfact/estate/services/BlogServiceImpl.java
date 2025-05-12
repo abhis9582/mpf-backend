@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,7 +39,8 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public Response addUpdateBlog(MultipartFile blogImage, Blog blog) {
         // Generate slug first (to use in filename and DB)
-        blog.setSlugUrl(fileUtils.generateSlug(blog.getSlugUrl()));
+        String generatedSlug = fileUtils.generateSlug(blog.getSlugUrl());
+        blog.setSlugUrl(generatedSlug);
 
         String blogImageName = null;
 
@@ -53,7 +55,8 @@ public class BlogServiceImpl implements BlogService {
 
             // Rename and save image
             String  imageName = fileUtils.renameFile(blogImage, blog.getSlugUrl());
-            blogImageName = fileUtils.saveFile(blogImage, imageName, upload_dir, 1200, 628, 0.9f); // Save resized and converted
+            String dir = Paths.get(upload_dir, "blog").toString();
+            blogImageName = fileUtils.saveFile(blogImage, imageName, dir, 1200, 628, 0.9f); // Save resized and converted
         }
 
         // Update blog

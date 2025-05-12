@@ -63,7 +63,7 @@ public class FileUtils {
     public String saveFile(MultipartFile file, String newFileNameWithoutExtension, String uploadDir, int width, int height, float webpQuality) {
         String imageName =null;
         try {
-            Path uploadPath = Paths.get(uploadDir+"blog/");
+            Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
