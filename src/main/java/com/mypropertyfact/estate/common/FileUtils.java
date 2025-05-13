@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
-import java.util.UUID;
 
 @Component
 public class FileUtils {
@@ -39,6 +37,7 @@ public class FileUtils {
         String contentType = file.getContentType();
         return contentType != null && contentType.toLowerCase().startsWith("image/");
     }
+
     //Renaming the name of file
     public String renameFile(MultipartFile file, String suffix) {
         String originalFilename = file.getOriginalFilename();
@@ -54,14 +53,16 @@ public class FileUtils {
     public String generateSlug(String input) {
         if (input == null) return "";
         return input.trim()
-                .replaceAll("[^a-zA-Z0-9\\s]", "") // remove special chars
+                .replaceAll("[^a-zA-Z0-9\\s-]", "") // allow letters, numbers, spaces, and hyphens
                 .replaceAll("\\s+", "-")           // replace spaces with hyphens
+                .replaceAll("-{2,}", "-")          // replace multiple hyphens with a single one
+                .replaceAll("^-|-$", "")           // trim hyphens from start/end
                 .toLowerCase();
     }
 
     // Saving file to destination
     public String saveFile(MultipartFile file, String newFileNameWithoutExtension, String uploadDir, int width, int height, float webpQuality) {
-        String imageName =null;
+        String imageName = null;
         try {
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {

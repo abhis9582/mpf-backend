@@ -2,7 +2,8 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.entities.BlogContentImage;
-import com.mypropertyfact.estate.interfaces.BlogContentImageRepository;
+import com.mypropertyfact.estate.interfaces.BlogContentImageService;
+import com.mypropertyfact.estate.repositories.BlogContentImageRepository;
 import com.mypropertyfact.estate.models.InvalidRequestException;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;

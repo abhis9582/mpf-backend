@@ -1,4 +1,4 @@
-package com.mypropertyfact.estate.services;
+package com.mypropertyfact.estate.interfaces;
 
 import com.mypropertyfact.estate.entities.BlogContentImage;
 import com.mypropertyfact.estate.models.Response;

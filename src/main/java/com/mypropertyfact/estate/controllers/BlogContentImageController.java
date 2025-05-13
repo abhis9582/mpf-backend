@@ -2,7 +2,7 @@ package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.entities.BlogContentImage;
 import com.mypropertyfact.estate.models.Response;
-import com.mypropertyfact.estate.services.BlogContentImageService;
+import com.mypropertyfact.estate.interfaces.BlogContentImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
