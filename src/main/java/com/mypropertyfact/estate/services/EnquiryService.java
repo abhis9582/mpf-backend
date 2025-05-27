@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class EnqueryService {
+public class EnquiryService {
     @Autowired
     private EnqueryRepository enqueryRepository;
     @Autowired
@@ -48,12 +48,12 @@ public class EnqueryService {
         return response;
     }
 
-    public Response deleteEnquery(int id){
+    public Response deleteEnquiry(int id){
         try{
             Enquery dbEnquery = enqueryRepository.findById(id).orElse(null);
             if(dbEnquery != null){
                 enqueryRepository.deleteById(id);
-                return new Response(1, "Enquery deleted successfully...");
+                return new Response(1, "Enquiry deleted successfully...");
             }else{
                 throw new Exception("data already deleted or not found !!");
             }

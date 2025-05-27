@@ -8,10 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/city")
 public class CityController {
-    private CityService cityService;
+    private final CityService cityService;
 
     public CityController(CityService cityService) {
         this.cityService = cityService;
@@ -19,7 +21,7 @@ public class CityController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllCities() {
-        return new ResponseEntity<>(this.cityService.getAllCities(), HttpStatus.OK);
+        return new ResponseEntity<>(cityService.getAllCities(), HttpStatus.OK);
     }
 
     @PostMapping("/add-new")
@@ -55,6 +57,10 @@ public class CityController {
     public ResponseEntity<Response> addUpdateCity(@RequestParam(required = false) MultipartFile cityImage,
                                                   @RequestBody City city) {
         return new ResponseEntity<>(cityService.addUpdateCity(cityImage, city), HttpStatus.OK);
+    }
+    @GetMapping("/get-all-cities")
+    public ResponseEntity<List<City>> getAllCityList() {
+        return ResponseEntity.ok(cityService.getAllCityList());
     }
 
 }

@@ -14,15 +14,10 @@ public class BuilderService {
     @Autowired
     private BuilderRepository builderRepository;
 
+    //Getting all builders
     public BuilderResponse getAllBuilders() {
-        BuilderResponse builderResponse = new BuilderResponse();
-        try {
-            builderResponse.setBuilders(this.builderRepository.findAll());
-            builderResponse.setResponse(new Response(1, "All Builder fetched successfully..."));
-        } catch (Exception e) {
-            builderResponse.setResponse(new Response(0, e.getMessage()));
-        }
-        return builderResponse;
+        return new BuilderResponse(builderRepository.findAllProjectedBy(),
+                new Response(1, "All builders fetched successfully..."));
     }
 
     public Response addUpdateBuilder(Builder builder) {
@@ -89,5 +84,9 @@ public class BuilderService {
     }
     public Builder getBySlug(String url){
         return this.builderRepository.findBySlugUrl(url);
+    }
+
+    public List<Builder> getAllBuildersList() {
+        return builderRepository.findAll();
     }
 }

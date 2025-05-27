@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.Constants;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.projections.ProjectView;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,8 +27,8 @@ public class ProjectService {
     @Value("${uploads_path}")
     private String uploadDir;
 
-    public List<Project> getAllProjects() {
-        return this.projectRepository.findAll();
+    public List<ProjectView> getAllProjects() {
+        return projectRepository.findAllProjectedBy();
     }
 
     public Project getBySlugUrl(String url) {

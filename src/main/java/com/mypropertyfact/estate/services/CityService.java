@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.InvalidRequestException;
 import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.projections.CityView;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
@@ -16,22 +17,20 @@ import java.util.List;
 @Service
 public class CityService {
 
-    private CityRepository cityRepository;
-    private ProjectRepository projectRepository;
+    private final CityRepository cityRepository;
+    private final ProjectRepository projectRepository;
 
     public CityService(CityRepository cityRepository, ProjectRepository projectRepository) {
         this.cityRepository = cityRepository;
         this.projectRepository = projectRepository;
     }
 
-    public List<City> getAllCities() {
-        List<City> cityList = new ArrayList<>();
-        try {
-            cityList = this.cityRepository.findAll();
-        } catch (Exception e) {
-            cityList = new ArrayList<>();
-        }
-        return cityList;
+    public List<CityView> getAllCities() {
+        return cityRepository.findAllProjectedBy();
+    }
+
+    public List<City> getAllCityList() {
+        return cityRepository.findAll();
     }
 
     public Response postNewCity(City city) {
@@ -126,10 +125,12 @@ public class CityService {
         }
         return city;
     }
-    public City getBySlug(String url){
+
+    public City getBySlug(String url) {
         return this.cityRepository.findBySlugUrl(url);
     }
-    public List<Project> getByCityName(String cityName){
+
+    public List<Project> getByCityName(String cityName) {
         return this.projectRepository.getAllByCity(cityName);
     }
 

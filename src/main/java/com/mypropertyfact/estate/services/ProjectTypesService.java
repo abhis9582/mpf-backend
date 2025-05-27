@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.projections.ProjectTypeView;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.ProjectTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,8 @@ public class ProjectTypesService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<ProjectTypes> getAllProjectTypes() {
-        return this.projectTypeRepository.findAll();
+    public List<ProjectTypeView> getAllProjectTypes() {
+        return this.projectTypeRepository.findAllProjectedBy();
     }
 
     public Response addUpdateProjectType(ProjectTypes projectTypes) {
@@ -88,5 +89,9 @@ public class ProjectTypesService {
     public Response deleteProjectType(int id) {
         this.projectTypeRepository.deleteById(id);
         return new Response(1, "Project type deleted successfully...");
+    }
+
+    public List<ProjectTypes> getAllProjectTypesList() {
+        return projectTypeRepository.findAll();
     }
 }

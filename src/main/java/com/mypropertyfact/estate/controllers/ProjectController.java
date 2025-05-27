@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.projections.ProjectView;
 import com.mypropertyfact.estate.services.ProjectService;
 import jdk.jfr.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
     @GetMapping("/get-all")
-    public ResponseEntity<List<Project>> getAllProjects(){
+    public ResponseEntity<List<ProjectView>> getAllProjects(){
         return new ResponseEntity<>(this.projectService.getAllProjects(), HttpStatus.OK);
     }
     @PostMapping("/add-new")

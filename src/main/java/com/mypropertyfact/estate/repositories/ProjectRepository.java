@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.repositories;
 
 import com.mypropertyfact.estate.entities.Project;
+import com.mypropertyfact.estate.projections.ProjectView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +11,8 @@ import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project ,Integer> {
+
+    List<ProjectView> findAllProjectedBy();
 
     Project findBySlugURL(String url);
     @Query("SELECT p FROM Project p WHERE projectBy = :builderId")

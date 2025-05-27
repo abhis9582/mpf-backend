@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.projections.ProjectTypeView;
 import com.mypropertyfact.estate.services.ProjectTypesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,13 @@ public class ProjectTypesController {
     @Autowired
     private ProjectTypesService projectTypesService;
     @GetMapping("/get-all")
-    public ResponseEntity<List<ProjectTypes>> getAllProjectTypes(){
+    public ResponseEntity<List<ProjectTypeView>> getAllProjectTypes(){
         return new ResponseEntity<>(this.projectTypesService.getAllProjectTypes(), HttpStatus.OK);
+    }
+
+    @GetMapping("/get-all-types")
+    public ResponseEntity<List<ProjectTypes>> getAllProjectTypesList(){
+        return new ResponseEntity<>(this.projectTypesService.getAllProjectTypesList(), HttpStatus.OK);
     }
     @PostMapping("/add-update")
     public ResponseEntity<Response> addUpdateProjectType(@RequestBody ProjectTypes projectTypes){

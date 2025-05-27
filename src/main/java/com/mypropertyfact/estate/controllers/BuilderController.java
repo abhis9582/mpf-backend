@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/builders")
 public class BuilderController {
@@ -17,12 +19,12 @@ public class BuilderController {
 
     @GetMapping("/get-all")
     public ResponseEntity<BuilderResponse> getAllBuilders() {
-        BuilderResponse builderResponse = this.builderService.getAllBuilders();
-        if (builderResponse.getResponse().getIsSuccess() == 1) {
-            return new ResponseEntity<>(builderResponse, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(builderResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return new ResponseEntity<>(builderService.getAllBuilders(), HttpStatus.OK);
+    }
+
+    @GetMapping("/get-all-builders")
+    public ResponseEntity<List<Builder>> getAllBuildersList() {
+        return ResponseEntity.ok(builderService.getAllBuildersList());
     }
 
     @PostMapping("/add-update")
