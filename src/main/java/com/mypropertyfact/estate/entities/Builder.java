@@ -1,9 +1,12 @@
 package com.mypropertyfact.estate.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Data
 @Table(name = "builders")
@@ -22,4 +25,8 @@ public class Builder {
     private String metaKeyword;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "builder", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Project> projects;
 }

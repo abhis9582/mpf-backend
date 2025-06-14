@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.FloorPlansDto;
+import com.mypropertyfact.estate.configs.dtos.FloorPlanDto;
 import com.mypropertyfact.estate.entities.FloorPlan;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
@@ -9,9 +9,7 @@ import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class FloorPlanService {
@@ -20,44 +18,64 @@ public class FloorPlanService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<FloorPlansDto> getAllPlans() {
-        List<Object[]> plans = this.floorPlanRepository.getAllFloorPlans();
-        return plans.stream().map(result -> new FloorPlansDto(
-                        (int) result[0],
-                        (String) result[1],
-                        (String) result[2],
-                        (Double) result[3],
-                        (Double) result[4],
-                        (int) result[5]
-                )
-        ).collect(Collectors.toList());
+    public List<Map<String, Object>> getAllPlans() {
+        List<FloorPlan> allFloorPlans = this.floorPlanRepository.findAll();
+
+        Map<Integer, Map<String, Object>> groupedByProject = new HashMap<>();
+
+        for (FloorPlan floorPlan : allFloorPlans) {
+            int projectId = floorPlan.getProject().getId();
+
+            Map<String, Object> projectMap = groupedByProject.computeIfAbsent(projectId, id -> {
+                Map<String, Object> newProjectMap = new HashMap<>();
+                newProjectMap.put("projectId", id);
+                newProjectMap.put("projectName", floorPlan.getProject().getProjectName());
+                newProjectMap.put("plans", new ArrayList<Map<String, Object>>());
+                return newProjectMap;
+            });
+
+            List<Map<String, Object>> plans = (List<Map<String, Object>>) projectMap.get("plans");
+
+            Map<String, Object> planMap = new HashMap<>();
+            planMap.put("id", floorPlan.getId());
+            planMap.put("planType", floorPlan.getPlanType());
+            planMap.put("areaSqft", floorPlan.getAreaSqft());
+            planMap.put("areaSqMt", floorPlan.getAreaSqmt());
+            plans.add(planMap);
+        }
+
+        return new ArrayList<>(groupedByProject.values());
     }
 
-    public Response addUpdatePlan(FloorPlan floorPlan) {
+    public Response addUpdatePlan(FloorPlanDto floorPlan) {
         Response response = new Response();
         try {
             if (floorPlan == null || floorPlan.getPlanType().isEmpty()) {
                 response.setMessage("Plan type is required");
                 return response;
             }
-            double areaSqMt = floorPlan.getAreaSqft() * 0.092903;
-            floorPlan.setAreaSqmt(areaSqMt);
-            Project project = this.projectRepository.findById(floorPlan.getProjectId()).get();
-            floorPlan.setSlugUrl(project.getSlugURL());
-            if (floorPlan.getId() > 0) {
-                FloorPlan savedFloorPlan = this.floorPlanRepository.findById(floorPlan.getId()).get();
-                if (savedFloorPlan != null) {
-                    savedFloorPlan.setPlanType(floorPlan.getPlanType());
-                    savedFloorPlan.setAreaSqft(floorPlan.getAreaSqft());
-                    savedFloorPlan.setAreaSqmt(floorPlan.getAreaSqmt());
-                    savedFloorPlan.setSlugUrl(floorPlan.getSlugUrl());
-                    savedFloorPlan.setUpdatedAt(LocalDateTime.now());
-                    this.floorPlanRepository.save(savedFloorPlan);
+            double areaSqMt = floorPlan.getAreaSqFt() * 0.092903;
+            floorPlan.setAreaSqMt(areaSqMt);
+            Optional<Project> projectById = this.projectRepository.findById(floorPlan.getProjectId());
+            if (floorPlan.getFloorId() > 0) {
+                Optional<FloorPlan> plan = this.floorPlanRepository.findById(floorPlan.getFloorId());
+                if (plan.isPresent()) {
+                    FloorPlan dbFloorPlan = plan.get();
+                    dbFloorPlan.setPlanType(floorPlan.getPlanType());
+                    dbFloorPlan.setAreaSqft(floorPlan.getAreaSqFt());
+                    dbFloorPlan.setAreaSqmt(floorPlan.getAreaSqMt());
+                    projectById.ifPresent(dbFloorPlan::setProject);
+                    this.floorPlanRepository.save(dbFloorPlan);
                     response.setMessage("Floor Plan Updated Successfully...");
                     response.setIsSuccess(1);
                 }
             } else {
-                this.floorPlanRepository.save(floorPlan);
+                FloorPlan floorPlanObj = new FloorPlan();
+                floorPlanObj.setPlanType(floorPlan.getPlanType());
+                floorPlanObj.setAreaSqmt(floorPlan.getAreaSqMt());
+                floorPlanObj.setAreaSqft(floorPlan.getAreaSqFt());
+                projectById.ifPresent(floorPlanObj::setProject);
+                this.floorPlanRepository.save(floorPlanObj);
                 response.setMessage("Floor Plan Saved Successfully...");
                 response.setIsSuccess(1);
             }
@@ -67,17 +85,12 @@ public class FloorPlanService {
         return response;
     }
 
-    public List<FloorPlan> getBySlugUrl(String url) {
-        return this.floorPlanRepository.findBySlugUrl(url);
-    }
-    public Response deleteFloorPlan(int id){
-        Response response = new Response();
-        try{
+    public Response deleteFloorPlan(int id) {
+        try {
             this.floorPlanRepository.deleteById(id);
-            new Response(1, "Deleted successfully...");
-        }catch (Exception e){
-            new Response(0, e.getMessage());
+            return new Response(1, "Deleted successfully...");
+        } catch (Exception e) {
+            return new Response(0, e.getMessage());
         }
-        return response;
     }
 }

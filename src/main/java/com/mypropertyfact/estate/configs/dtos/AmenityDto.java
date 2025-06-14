@@ -6,4 +6,5 @@ public class AmenityDto {
     private int id;
     private String title;
     private String altTag;
+    private String image;
 }

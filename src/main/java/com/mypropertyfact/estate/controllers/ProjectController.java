@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.entities.Project;
+import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.ProjectView;
@@ -9,10 +10,12 @@ import jdk.jfr.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/projects")
@@ -23,6 +26,12 @@ public class ProjectController {
     public ResponseEntity<List<ProjectView>> getAllProjects(){
         return new ResponseEntity<>(this.projectService.getAllProjects(), HttpStatus.OK);
     }
+    @Transactional
+    @GetMapping("/get-all-projects-list")
+    public ResponseEntity<List<Map<String, Object>>> getAllProjectsList(){
+        return ResponseEntity.ok(projectService.getAllProjectsList());
+    }
+
     @PostMapping("/add-new")
     public ResponseEntity<Response> saveProject(
             @RequestParam(required = false) MultipartFile projectLogo,
@@ -36,14 +45,15 @@ public class ProjectController {
                 projectDto
         ), HttpStatus.OK);
     }
+
     @GetMapping("/get/{url}")
-    public ResponseEntity<Project> getBySlug(@PathVariable("url")String url){
+    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url")String url){
         return new ResponseEntity<>(this.projectService.getBySlugUrl(url), HttpStatus.OK);
     }
-    @GetMapping("/builder/{id}")
-    public ResponseEntity<List<Project>> getAllBuilderProjects(@PathVariable("id")int id){
-        return new ResponseEntity<>(this.projectService.getAllBuilderProjects(id), HttpStatus.OK);
-    }
+//    @GetMapping("/builder/{id}")
+//    public ResponseEntity<List<Project>> getAllBuilderProjects(@PathVariable("id")int id){
+//        return new ResponseEntity<>(this.projectService.getAllBuilderProjects(id), HttpStatus.OK);
+//    }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteProject(@PathVariable("id")int id){
         return new ResponseEntity<>(this.projectService.deleteProject(id), HttpStatus.OK);
@@ -53,5 +63,10 @@ public class ProjectController {
                                                                 @RequestParam("propertyLocation")String propertyLocation,
                                                                 @RequestParam("budget")String budget){
         return new ResponseEntity<>(projectService.searchByPropertyTypeLocationBudget(propertyType, propertyLocation, budget), HttpStatus.OK);
+    }
+
+    @PostMapping("/add-update-amenity")
+    public ResponseEntity<Response> addUpdateAmenity(@RequestBody ProjectAmenityDto projectAmenityDto){
+        return new ResponseEntity<>(projectService.addUpdateAmenity(projectAmenityDto), HttpStatus.OK);
     }
 }

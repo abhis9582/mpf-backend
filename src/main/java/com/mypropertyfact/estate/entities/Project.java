@@ -1,9 +1,14 @@
 package com.mypropertyfact.estate.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -18,12 +23,8 @@ public class Project {
     @Lob
     private String metaDescription;
     private String projectName;
-    private String projectAddress;
-    private String state;
-    private String cityLocation;
     private String projectLocality;
     private String projectConfiguration;
-    private String projectBy;
     private String projectPrice;
     private String ivrNo;
     private String locationMap;
@@ -33,11 +34,14 @@ public class Project {
     private String projectStatus;
     private String projectLogo;
     private String projectThumbnail;
-    private String propertyType;
     private String slugURL;
     private boolean showFeaturedProperties;
     private boolean status;
-    private String country;
+
+    @ManyToOne
+    @JoinColumn(name = "city_Id")
+    private City city;
+
     @Lob
     private String amenityDesc;
     @Lob
@@ -46,5 +50,44 @@ public class Project {
     private String locationDesc;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "project_amenities",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "amenity_id")
+    )
+    private List<Amenity> amenities;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ProjectBanner> projectBanners;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<FloorPlan> floorPlans;
+
+    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL)
+    private ProjectsAbout projectsAbout;
+
+    @ManyToOne
+    @JoinColumn(name = "builder_id")
+    private Builder builder;
+
+    @ManyToOne
+    @JoinColumn(name = "property_type")
+    private ProjectTypes projectTypes;
+
+    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL)
+    private ProjectWalkthrough projectWalkthrough;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private List<LocationBenefit> locationBenefits;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private List<ProjectGallery> projectGalleries;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private List<ProjectFaqs> projectFaqs;
 
 }

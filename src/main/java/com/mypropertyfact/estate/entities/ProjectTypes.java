@@ -1,9 +1,11 @@
 package com.mypropertyfact.estate.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -22,4 +24,8 @@ public class ProjectTypes {
     private String projectTypeDesc;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "projectTypes", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Project> project;
 }

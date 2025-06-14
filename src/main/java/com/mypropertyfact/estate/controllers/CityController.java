@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.configs.dtos.CityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.CityService;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/city")
@@ -25,8 +27,8 @@ public class CityController {
     }
 
     @PostMapping("/add-new")
-    public ResponseEntity<?> postNewCity(@RequestBody City city) {
-        return new ResponseEntity<>(this.cityService.postNewCity(city), HttpStatus.CREATED);
+    public ResponseEntity<?> postNewCity(@RequestBody CityDto cityDto) {
+        return new ResponseEntity<>(this.cityService.postNewCity(cityDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{id}")
@@ -45,21 +47,21 @@ public class CityController {
     }
 
     @GetMapping("/get/{url}")
-    public ResponseEntity<City> getBySlug(@PathVariable("url") String url) {
+    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url") String url) {
         return new ResponseEntity<>(this.cityService.getBySlug(url), HttpStatus.OK);
     }
 
-    @GetMapping("/{city}")
-    public ResponseEntity<?> getByCityName(@PathVariable("city") String city) {
-        return new ResponseEntity<>(this.cityService.getByCityName(city), HttpStatus.OK);
-    }
+//    @GetMapping("/{city}")
+//    public ResponseEntity<?> getByCityName(@PathVariable("city") String city) {
+//        return new ResponseEntity<>(this.cityService.getByCityName(city), HttpStatus.OK);
+//    }
 
     public ResponseEntity<Response> addUpdateCity(@RequestParam(required = false) MultipartFile cityImage,
                                                   @RequestBody City city) {
         return new ResponseEntity<>(cityService.addUpdateCity(cityImage, city), HttpStatus.OK);
     }
     @GetMapping("/get-all-cities")
-    public ResponseEntity<List<City>> getAllCityList() {
+    public ResponseEntity<List<Map<String, Object>>> getAllCityList() {
         return ResponseEntity.ok(cityService.getAllCityList());
     }
 

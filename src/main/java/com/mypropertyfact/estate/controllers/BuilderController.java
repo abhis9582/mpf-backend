@@ -10,9 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/builders")
+@RequestMapping("/builder")
 public class BuilderController {
     @Autowired
     private BuilderService builderService;
@@ -37,7 +38,7 @@ public class BuilderController {
         return new ResponseEntity<>(this.builderService.deleteBuilder(id), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")
-    public ResponseEntity<Builder> deleteBuilder(@PathVariable("url") String url){
+    public ResponseEntity<Map<String, Object>> deleteBuilder(@PathVariable("url") String url){
         return new ResponseEntity<>(this.builderService.getBySlug(url), HttpStatus.OK);
     }
 }

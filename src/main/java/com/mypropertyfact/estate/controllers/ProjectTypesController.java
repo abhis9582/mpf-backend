@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/project-types")
@@ -31,13 +32,13 @@ public class ProjectTypesController {
         return new ResponseEntity<>(this.projectTypesService.addUpdateProjectType(projectTypes), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")
-    public ResponseEntity<ProjectTypes> getBySlug(@PathVariable("url")String url){
+    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url")String url){
         return new ResponseEntity<>(this.projectTypesService.getBySlug(url), HttpStatus.OK);
     }
-    @GetMapping("/{url}")
-    public ResponseEntity<List<Project>> getPropertiesBySlug(@PathVariable("url")String url){
-        return new ResponseEntity<>(this.projectTypesService.getPropertiesBySlug(url), HttpStatus.OK);
-    }
+//    @GetMapping("/{url}")
+//    public ResponseEntity<List<Project>> getPropertiesBySlug(@PathVariable("url")String url){
+//        return new ResponseEntity<>(this.projectTypesService.getPropertiesBySlug(url), HttpStatus.OK);
+//    }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteProjectType(@PathVariable("id")int id){
         return new ResponseEntity<>(this.projectTypesService.deleteProjectType(id), HttpStatus.OK);

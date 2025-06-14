@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/location-benefit")
@@ -18,16 +19,12 @@ public class LocationBenefitController {
     @Autowired
     private LocationBenefitService locationBenefitService;
     @GetMapping("/get-all")
-    public ResponseEntity<List<LocationBenefitDto>> getAllBenefits(){
+    public ResponseEntity<List<Map<String, Object>>> getAllBenefits(){
         return new ResponseEntity<>(this.locationBenefitService.getAllBenefits(), HttpStatus.OK);
     }
     @PostMapping("/add-new")
     public ResponseEntity<Response> addUpdate(@RequestParam(required = false) MultipartFile iconImage, @ModelAttribute LocationBenefitDto locationBenefitDto){
         return new ResponseEntity<>(this.locationBenefitService.addUpdateBenefit(iconImage, locationBenefitDto), HttpStatus.OK);
-    }
-    @GetMapping("/get/{url}")
-    public ResponseEntity<List<LocationBenefit>> getBySlug(@PathVariable("url")String url){
-        return new ResponseEntity<>(this.locationBenefitService.getBySlug(url), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")

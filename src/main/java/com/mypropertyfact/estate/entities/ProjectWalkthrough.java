@@ -11,11 +11,24 @@ public class ProjectWalkthrough {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int projectId;
     @Lob
     private String walkthroughDesc;
-    private String slugURL;
     private String walkthroughImage;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @OneToOne
+    @JoinColumn(name = "project_Id")
+    private Project project;
+
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

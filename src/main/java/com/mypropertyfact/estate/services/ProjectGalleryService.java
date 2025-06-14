@@ -14,8 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,15 +26,30 @@ public class ProjectGalleryService {
     @Value("${uploads_path}")
     private String uploadDir;
 
-    public List<ProjectGalleryResponse> getAllGalleryImages() {
-        List<Object[]> projectImages = this.projectGalleryRepository.getAllGalleyImages();
-        return projectImages.stream().map(item ->
-                new ProjectGalleryResponse(
-                        (int) item[0],
-                        (String) item[1],
-                        (String) item[2],
-                        (String) item[3]
-                )).collect(Collectors.toList());
+    public List<Map<String, Object>> getAllGalleryImages() {
+        List<ProjectGallery> galleryImages = this.projectGalleryRepository.findAll();
+        Map<Integer, Map<String, Object>> resultObj = new HashMap<>();
+
+        for(ProjectGallery galleryImage: galleryImages){
+            int projectId = galleryImage.getProject().getId();
+
+            Map<String, Object> projectData = resultObj.computeIfAbsent(projectId, id->{
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("projectId", id);
+                obj.put("pName", galleryImage.getProject().getProjectName());
+                obj.put("slugURL", galleryImage.getProject().getSlugURL());
+                obj.put("galleryImage", new ArrayList<Map<String, Object>>());
+                return obj;
+            });
+
+            List<Map<String, Object>> galleryList = (List<Map<String, Object>>) projectData.get("galleryImage");
+
+            Map<String, Object> galleryData = new HashMap<>();
+            galleryData.put("image", galleryImage.getImage());
+            galleryData.put("id", galleryImage.getId());
+            galleryList.add(galleryData);
+        }
+        return new ArrayList<>(resultObj.values());
     }
 
     public Response postGalleryImage(ProjectGalleryDto projectGalleryDto) {
@@ -93,7 +107,6 @@ public class ProjectGalleryService {
         File destinationFile = new File(destinationDir, fileName);
         file.transferTo(destinationFile);
         ProjectGallery projectGallery = new ProjectGallery();
-        projectGallery.setProjectId(projectGalleryDto.getProjectId());
         projectGallery.setSlugUrl(project.getSlugURL());
         projectGallery.setType("");
         projectGallery.setImage(fileName);

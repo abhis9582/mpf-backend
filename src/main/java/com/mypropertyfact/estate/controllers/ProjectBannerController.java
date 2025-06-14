@@ -7,19 +7,23 @@ import com.mypropertyfact.estate.services.ProjectBannerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/project-banner")
 public class ProjectBannerController {
     @Autowired
     private ProjectBannerService projectBannerService;
+
+    @Transactional
     @GetMapping("/get-all")
-    public ResponseEntity<List<ProjectBanner>> getAllBanners(){
+    public ResponseEntity<List<Map<String, Object>>> getAllBanners(){
         return new ResponseEntity<>(this.projectBannerService.getAllBanners(), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")

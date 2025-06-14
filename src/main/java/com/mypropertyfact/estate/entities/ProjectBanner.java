@@ -12,7 +12,6 @@ public class ProjectBanner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int projectId;
     private String desktopBanner;
     private String mobileBanner;
     private String altTag;
@@ -20,4 +19,8 @@ public class ProjectBanner {
     private String slugURL;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
 }

@@ -16,12 +16,12 @@ import java.util.List;
 public interface ProjectAmenityRepository extends JpaRepository<ProjectAmenity, Integer> {
     @Query("SELECT a FROM Amenity a WHERE id IN (SELECT amenityId FROM ProjectAmenity WHERE slugURL = :slugURL)")
     List<Amenity> findBySlugURL(@Param("slugURL")String slugURL);
-    @Query("SELECT a FROM Amenity a WHERE id IN (SELECT amenityId FROM ProjectAmenity WHERE projectId = :id)")
+    @Query("SELECT a FROM Amenity a")
     List<Amenity> findListByProjectId(@Param("id") int id);
 
     List<ProjectAmenity> findByProjectId(int projectId);
     @Modifying
     @Transactional
-    @Query("DELETE FROM ProjectAmenity pa WHERE pa.projectId = :projectId")
+    @Query("DELETE FROM ProjectAmenity")
     void deleteByProjectId(int projectId);
 }

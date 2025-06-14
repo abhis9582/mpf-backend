@@ -13,11 +13,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,16 +29,30 @@ public class LocationBenefitService {
     @Value("${upload_icon_path}")
     private String uploadDir;
 
-    public List<LocationBenefitDto> getAllBenefits() {
-        List<Object[]> response = this.locationBenefitRepository.getAllWithProjectName();
-        return response.stream().map(item -> new LocationBenefitDto(
-                (int) item[0],
-                (int) item[1],
-                (String) item[2],
-                (String) item[3],
-                (String) item[4],
-                (String) item[5]
-        )).collect(Collectors.toList());
+    public List<Map<String, Object>> getAllBenefits() {
+        List<LocationBenefit> locationBenefits = locationBenefitRepository.findAll();
+
+        Map<Integer, Map<String, Object>> result = new HashMap<>();
+        for (LocationBenefit locationBenefit: locationBenefits){
+            int projectId = locationBenefit.getProject().getId();
+            Map<String, Object> projectLocationBenefitObj = result.computeIfAbsent(projectId, id -> {
+                Map<String, Object> projectObj = new HashMap<>();
+                projectObj.put("projectId", id);
+                projectObj.put("projectName", locationBenefit.getProject().getProjectName());
+                projectObj.put("locationBenefits", new ArrayList<>());
+                return projectObj;
+            });
+
+            List<Map<String, Object>> locationBenefitList = (List<Map<String, Object>>) projectLocationBenefitObj.get("locationBenefits");
+            Map<String, Object> locationObj = new HashMap<>();
+            locationObj.put("benefitName", locationBenefit.getBenefitName());
+            locationObj.put("distance", locationBenefit.getDistance());
+            locationObj.put("id", locationBenefit.getId());
+            locationObj.put("image", locationBenefit.getIconImage());
+            locationBenefitList.add(locationObj);
+        }
+
+        return new ArrayList<>(result.values());
     }
 
     public Response addUpdateBenefit(MultipartFile file, LocationBenefitDto locationBenefitDto) {
@@ -53,10 +67,7 @@ public class LocationBenefitService {
             if (!destinationDir.exists()) {
                 destinationDir.mkdirs();
             }
-            Project project = this.projectRepository.findById(locationBenefitDto.getProjectId()).get();
-            if(project != null) {
-                locationBenefitDto.setSlugUrl(project.getSlugURL());
-            }
+            Optional<Project> project = this.projectRepository.findById(locationBenefitDto.getProjectId());
             if (file != null) {
                 if (!file.getContentType().startsWith("image/")) {
                     response.setMessage("Only image is allowed !");
@@ -71,30 +82,33 @@ public class LocationBenefitService {
                 file.transferTo(destinationFile);
             }
             if (locationBenefitDto.getId() > 0) {
-                LocationBenefit locationBenefit = this.locationBenefitRepository.findById(locationBenefitDto.getId()).get();
-                if(locationBenefit != null){
-                    if(!iconImageName.isEmpty()) {
-                        Path imagePath = Paths.get(uploadDir, locationBenefit.getIconImage());
-                        if(Files.exists(imagePath)){
-                            Files.delete(imagePath);
+                Optional<LocationBenefit> locationBenefit = this.locationBenefitRepository.findById(locationBenefitDto.getId());
+                if (locationBenefit.isPresent()) {
+                    LocationBenefit benefit = locationBenefit.get();
+                    if (!iconImageName.isEmpty()) {
+                        Path imagePath = Paths.get(uploadDir, benefit.getIconImage());
+                        try {
+                            if (Files.exists(imagePath)) {
+                                Files.delete(imagePath);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace(); // Or handle logging more gracefully
                         }
-                        locationBenefit.setIconImage(iconImageName);
+                        benefit.setIconImage(iconImageName);
                     }
+                    benefit.setBenefitName(locationBenefitDto.getBenefitName());
+                    benefit.setDistance(locationBenefitDto.getDistance());
+                    project.ifPresent(benefit::setProject);
+                    locationBenefitRepository.save(benefit);
+                    response.setIsSuccess(1);
+                    response.setMessage("Location benefit updated successfully...");
                 }
-                locationBenefit.setBenefitName(locationBenefitDto.getBenefitName());
-                locationBenefit.setDistance(locationBenefitDto.getDistance());
-                locationBenefit.setSlugUrl(locationBenefitDto.getSlugUrl());
-                locationBenefit.setProjectId(locationBenefitDto.getProjectId());
-                this.locationBenefitRepository.save(locationBenefit);
-                response.setIsSuccess(1);
-                response.setMessage("Location benefit updated successfully...");
             } else {
                 LocationBenefit locationBenefit = new LocationBenefit();
                 locationBenefit.setBenefitName(locationBenefitDto.getBenefitName());
                 locationBenefit.setDistance(locationBenefitDto.getDistance());
-                locationBenefit.setSlugUrl(locationBenefitDto.getSlugUrl());
                 locationBenefit.setIconImage(iconImageName);
-                locationBenefit.setProjectId(locationBenefitDto.getProjectId());
+                project.ifPresent(locationBenefit::setProject);
                 this.locationBenefitRepository.save(locationBenefit);
                 response.setMessage("Location benefit added successfully...");
                 response.setIsSuccess(1);
@@ -103,10 +117,6 @@ public class LocationBenefitService {
             response.setMessage(e.getMessage());
         }
         return response;
-    }
-
-    public List<LocationBenefit> getBySlug(String url) {
-        return this.locationBenefitRepository.findBySlugUrl(url);
     }
 
     public Response deleteLocationBenefit(int id) {

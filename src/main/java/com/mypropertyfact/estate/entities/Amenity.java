@@ -1,12 +1,14 @@
 package com.mypropertyfact.estate.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -20,5 +22,4 @@ public class Amenity {
     private boolean status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }

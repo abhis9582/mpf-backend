@@ -7,9 +7,11 @@ import com.mypropertyfact.estate.projections.ProjectTypeView;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.ProjectTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ProjectTypesService {
@@ -20,7 +22,7 @@ public class ProjectTypesService {
     private ProjectRepository projectRepository;
 
     public List<ProjectTypeView> getAllProjectTypes() {
-        return this.projectTypeRepository.findAllProjectedBy();
+        return this.projectTypeRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "projectTypeName"));
     }
 
     public Response addUpdateProjectType(ProjectTypes projectTypes) {
@@ -76,15 +78,40 @@ public class ProjectTypesService {
         return response;
     }
 
-    public ProjectTypes getBySlug(String url) {
-        return this.projectTypeRepository.findBySlugUrl(url);
+    @Transactional
+    public Map<String, Object> getBySlug(String url) {
+        Optional<ProjectTypes> projectTypeData = this.projectTypeRepository.findBySlugUrl(url);
+        Map<String, Object> responseObj = new HashMap<>();
+        projectTypeData.ifPresent(projectType -> {
+            responseObj.put("id", projectType.getId());
+            responseObj.put("projectTypeName", projectType.getProjectTypeName());
+            responseObj.put("projectTypeDesc", projectType.getProjectTypeDesc());
+            responseObj.put("metaTitle", projectType.getMetaTitle());
+            responseObj.put("metaKeyword", projectType.getMetaKeyword());
+            responseObj.put("metaDesc", projectType.getMetaDesc());
+            List<Map<String, Object>> projectList = new ArrayList<>();
+            projectList = projectType.getProject().stream().map(project-> {
+                Map<String, Object> projectObj = new HashMap<>();
+                projectObj.put("projectId", project.getId());
+                projectObj.put("projectName", project.getProjectName());
+                if(project.getCity() != null) {
+                    projectObj.put("projectAddress", project.getProjectLocality() + project.getCity().getName());
+                }
+                projectObj.put("projectThumbnail", project.getProjectThumbnail());
+                projectObj.put("projectPrice", project.getProjectPrice());
+                projectObj.put("slugURL", project.getSlugURL());
+                return projectObj;
+            }).toList();
+            responseObj.put("projects", projectList);
+        });
+        return responseObj;
     }
 
-    public List<Project> getPropertiesBySlug(String url) {
-        ProjectTypes projectTypes = this.projectTypeRepository.findBySlugUrl(url);
-        List<Project> projects = this.projectRepository.getAllProjectsByType(projectTypes.getId());
-        return projects;
-    }
+//    public List<Project> getPropertiesBySlug(String url) {
+//        ProjectTypes projectTypes = this.projectTypeRepository.findBySlugUrl(url);
+//        List<Project> projects = this.projectRepository.getAllProjectsByType(projectTypes.getId());
+//        return projects;
+//    }
 
     public Response deleteProjectType(int id) {
         this.projectTypeRepository.deleteById(id);

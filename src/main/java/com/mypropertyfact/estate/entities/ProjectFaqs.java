@@ -11,12 +11,26 @@ public class ProjectFaqs {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int projectId;
     @Lob
     private String faqQuestion;
     @Lob
     private String faqAnswer;
     private String slugUrl;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
+
+    @PrePersist
+    public void onCreate(){
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

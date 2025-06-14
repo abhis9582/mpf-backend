@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/project-gallery")
@@ -19,7 +20,7 @@ public class ProjectGalleryController {
     private ProjectGalleryService projectGalleryService;
 
     @GetMapping("/get-all")
-    public ResponseEntity<List<ProjectGalleryResponse>> getAllProjectGallery() {
+    public ResponseEntity<List<Map<String, Object>>> getAllProjectGallery() {
         return new ResponseEntity<>(this.projectGalleryService.getAllGalleryImages(), HttpStatus.OK);
     }
     @PostMapping("/add-new")

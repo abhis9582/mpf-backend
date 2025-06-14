@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class FloorPlansDto {
+public class FloorPlanDto {
     private int projectId;
     private String pName;
-    private String type;
-    private Double areaSq;
-    private Double areaMt;
+    private String planType;
+    private Double areaSqFt;
+    private Double areaSqMt;
     private int floorId;
 }

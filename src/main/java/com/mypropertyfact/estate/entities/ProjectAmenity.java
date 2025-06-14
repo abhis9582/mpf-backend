@@ -1,9 +1,6 @@
 package com.mypropertyfact.estate.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,9 +12,12 @@ public class ProjectAmenity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int projectId;
     private int amenityId;
     private String slugURL;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
 }

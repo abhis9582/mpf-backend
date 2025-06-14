@@ -5,9 +5,11 @@ import com.mypropertyfact.estate.entities.Builder;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BuilderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class BuilderService {
@@ -16,7 +18,7 @@ public class BuilderService {
 
     //Getting all builders
     public BuilderResponse getAllBuilders() {
-        return new BuilderResponse(builderRepository.findAllProjectedBy(),
+        return new BuilderResponse(builderRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "builderName")),
                 new Response(1, "All builders fetched successfully..."));
     }
 
@@ -82,8 +84,34 @@ public class BuilderService {
         }
         return response;
     }
-    public Builder getBySlug(String url){
-        return this.builderRepository.findBySlugUrl(url);
+
+    @Transactional
+    public Map<String, Object> getBySlug(String url){
+        Optional<Builder> dbBuilder = this.builderRepository.findBySlugUrl(url);
+        Map<String, Object> builderObj = new HashMap<>();
+        dbBuilder.ifPresent(builder-> {
+            builderObj.put("id", builder.getId());
+            builderObj.put("builderName", builder.getBuilderName());
+            builderObj.put("builderDesc", builder.getBuilderDesc());
+            builderObj.put("metaTitle", builder.getMetaTitle());
+            builderObj.put("metaKeyword", builder.getMetaKeyword());
+            builderObj.put("metaDesc", builder.getMetaDesc());
+            List<Map<String, Object>> projectList = new ArrayList<>();
+            projectList = builder.getProjects().stream().map(project-> {
+                Map<String, Object> projectObj = new HashMap<>();
+                projectObj.put("projectId", project.getId());
+                projectObj.put("projectName", project.getProjectName());
+                if(project.getCity() != null) {
+                    projectObj.put("projectAddress", project.getProjectLocality() + project.getCity().getName());
+                }
+                projectObj.put("projectThumbnail", project.getProjectThumbnail());
+                projectObj.put("projectPrice", project.getProjectPrice());
+                projectObj.put("slugURL", project.getSlugURL());
+                return projectObj;
+            }).toList();
+            builderObj.put("projects", projectList);
+        });
+        return builderObj;
     }
 
     public List<Builder> getAllBuildersList() {

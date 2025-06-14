@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,14 +23,9 @@ public class ProjectAmenityService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<ProjectAmenityResponse> getAllProjectAmenity() {
-        List<Object[]> response = this.projectRepository.getAllProjectAmenity();
-        return response.stream().map(item ->
-                new ProjectAmenityResponse(
-                        (int) item[0],
-                        (String) item[1],
-                        (String) item[2]
-                )).collect(Collectors.toList());
+    public List<Project> getAllProjectAmenity() {
+
+        return this.projectRepository.findAll();
     }
     public Response addProjectAmenity(ProjectAmenityDto projectAmenityDto) {
         Response response = new Response();
@@ -38,20 +34,16 @@ public class ProjectAmenityService {
                 response.setMessage(Constants.ALL_FIELDS_REQUIRED);
                 return response;
             }
-
-            Project project = this.projectRepository.findById(projectAmenityDto.getProjectId()).get();
-            if (project != null) {
-                projectAmenityDto.setSlugURL(project.getSlugURL());
-            }
+            Optional<Project> project = this.projectRepository.findById(projectAmenityDto.getProjectId());
+            project.ifPresent(value -> projectAmenityDto.setSlugURL(value.getSlugURL()));
             List<ProjectAmenity> dbAmenity = this.projectAmenityRepository.findByProjectId(projectAmenityDto.getProjectId());
-            if (dbAmenity.size() > 0) {
+            if (!dbAmenity.isEmpty()) {
                 this.projectAmenityRepository.deleteByProjectId(projectAmenityDto.getProjectId());
             }
             for (int i = 0; i < projectAmenityDto.getAmenityList().size(); i++) {
                 ProjectAmenity amenity = new ProjectAmenity();
-                amenity.setProjectId(projectAmenityDto.getProjectId());
                 amenity.setSlugURL(projectAmenityDto.getSlugURL());
-                amenity.setAmenityId(projectAmenityDto.getAmenityList().get(i).getId());
+//                amenity.setAmenityId(projectAmenityDto.getAmenityList().get(i).getId());
                 this.projectAmenityRepository.save(amenity);
             }
             response.setIsSuccess(1);

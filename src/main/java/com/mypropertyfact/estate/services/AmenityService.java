@@ -9,6 +9,7 @@ import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,7 @@ public class AmenityService {
     @Value("${upload_amenity_path}")
     private String uploadDir;
 
+    @Transactional
     public List<Amenity> getAllAmenities() {
         return this.amenityRepository.findAll();
     }

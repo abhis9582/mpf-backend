@@ -1,77 +1,98 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.ConstantMessages;
+import com.mypropertyfact.estate.common.FileUtils;
+import com.mypropertyfact.estate.configs.dtos.CityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Project;
-import com.mypropertyfact.estate.models.InvalidRequestException;
+import com.mypropertyfact.estate.entities.State;
+import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.CityView;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
+import com.mypropertyfact.estate.repositories.StateRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class CityService {
 
     private final CityRepository cityRepository;
-    private final ProjectRepository projectRepository;
+    private final StateRepository stateRepository;
 
-    public CityService(CityRepository cityRepository, ProjectRepository projectRepository) {
+    private final FileUtils fileUtils;
+    public CityService(CityRepository cityRepository, StateRepository stateRepository,
+                       FileUtils fileUtils) {
         this.cityRepository = cityRepository;
-        this.projectRepository = projectRepository;
+        this.stateRepository = stateRepository;
+        this.fileUtils = fileUtils;
     }
 
     public List<CityView> getAllCities() {
-        return cityRepository.findAllProjectedBy();
+        return cityRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "name"));
     }
 
-    public List<City> getAllCityList() {
-        return cityRepository.findAll();
+    public List<Map<String, Object>> getAllCityList() {
+        List<City> cities = cityRepository.findAll();
+        return cities.stream().map(city-> {
+            Map<String, Object> cityObj = new HashMap<>();
+            cityObj.put("id", city.getId());
+            cityObj.put("name", city.getName());
+            if(city.getState() != null) {
+                if(city.getState().getCountry() != null) {
+                    cityObj.put("countryName", city.getState().getCountry().getCountryName());
+                    cityObj.put("countryId", city.getState().getCountry().getId());
+                }
+                cityObj.put("stateName", city.getState().getStateName());
+                cityObj.put("stateId", city.getState().getId());
+            }
+            cityObj.put("metaDescription", city.getMetaDescription());
+            cityObj.put("metaTitle", city.getMetaTitle());
+            cityObj.put("metaKeyWords", city.getMetaKeyWords());
+            cityObj.put("cityDisc", city.getCityDisc());
+            return cityObj;
+        }).toList();
     }
 
-    public Response postNewCity(City city) {
+    public Response postNewCity(CityDto cityDto) {
         Response response = new Response();
         try {
-            City existingCity = this.cityRepository.findByName(city.getName());
-            if (existingCity != null && existingCity.getId() != city.getId()) {
+            City existingCity = this.cityRepository.findByName(cityDto.getName());
+            if (existingCity != null && existingCity.getId() != cityDto.getId()) {
                 response.setMessage(ConstantMessages.CITY_EXISTS);
                 return response;
             }
-            String slugUrl = city.getName().toLowerCase(); // Convert to lowercase
-            String[] words = slugUrl.split(" "); // Split the string by spaces
-            StringBuilder result = new StringBuilder();
-
-            // Iterate over the words
-            for (int i = 0; i < words.length; i++) {
-                result.append(words[i]); // Add the current word to the result
-                // If it's not the last word, add a hyphen
-                if (i < words.length - 1) {
-                    result.append("-");
-                }
-            }
-            // The result is the slug URL
-            String finalSlug = result.toString();
-            city.setSlugUrl(finalSlug);
-            if (city.getId() != 0) {
-                City dbCity = this.cityRepository.findById(city.getId()).get();
-                if (dbCity != null) {
-                    dbCity.setState(city.getState());
-                    dbCity.setName(city.getName());
-                    dbCity.setSlugUrl(finalSlug);
-                    dbCity.setMetaTitle(city.getMetaTitle());
-                    dbCity.setMetaKeyWords(city.getMetaKeyWords());
-                    dbCity.setMetaDescription(city.getMetaDescription());
-                    dbCity.setCityDisc(city.getCityDisc());
-                    this.cityRepository.save(dbCity);
+            cityDto.setSlugUrl(fileUtils.generateSlug(cityDto.getName()));
+            Optional<State> state = stateRepository.findById(cityDto.getStateId());
+            if (cityDto.getId() != 0) {
+                Optional<City> savedCity = cityRepository.findById(cityDto.getId());
+                savedCity.ifPresent(city-> {
+                    state.ifPresent(city::setState);
+                    city.setName(cityDto.getName());
+                    city.setSlugUrl(cityDto.getSlugUrl());
+                    city.setMetaTitle(cityDto.getMetaTitle());
+                    city.setMetaKeyWords(cityDto.getMetaKeyWords());
+                    city.setMetaDescription(cityDto.getMetaDescription());
+                    city.setCityDisc(cityDto.getCityDisc());
+                    cityRepository.save(city);
                     response.setIsSuccess(1);
                     response.setMessage(ConstantMessages.CITY_UPDATED);
-                }
+                });
             } else {
-                this.cityRepository.save(city);
+                City city = new City();
+                state.ifPresent(city::setState);
+                city.setName(cityDto.getName());
+                city.setSlugUrl(cityDto.getSlugUrl());
+                city.setMetaTitle(cityDto.getMetaTitle());
+                city.setMetaKeyWords(cityDto.getMetaKeyWords());
+                city.setMetaDescription(cityDto.getMetaDescription());
+                city.setCityDisc(cityDto.getCityDisc());
+                cityRepository.save(city);
                 response.setIsSuccess(1);
                 response.setMessage(ConstantMessages.CITY_ADDED);
             }
@@ -126,13 +147,45 @@ public class CityService {
         return city;
     }
 
-    public City getBySlug(String url) {
-        return this.cityRepository.findBySlugUrl(url);
+    @Transactional
+    public Map<String, Object> getBySlug(String url) {
+        Optional<City> dbCity = this.cityRepository.findBySlugUrl(url);
+        Map<String, Object> resObj = new HashMap<>();
+        dbCity.ifPresent(city -> {
+            resObj.put("id", city.getId());
+            resObj.put("name", city.getName());
+            resObj.put("metaTitle", city.getMetaTitle());
+            resObj.put("metaKeywords", city.getMetaKeyWords());
+            resObj.put("metaDescription", city.getMetaDescription());
+            if(city.getState() != null) {
+                resObj.put("stateId", city.getState().getId());
+                resObj.put("stateName", city.getState().getStateName());
+                if(city.getState().getCountry() != null) {
+                    resObj.put("countryId", city.getState().getCountry().getId());
+                    resObj.put("countryName", city.getState().getCountry().getCountryName());
+                }
+            }
+            List<Map<String, Object>> projects = new ArrayList<>();
+            projects = city.getProjects().stream().map(project -> {
+                Map<String, Object> projectObj = new HashMap<>();
+                projectObj.put("projectId", project.getId());
+                projectObj.put("projectName", project.getProjectName());
+                projectObj.put("projectAddress", project.getProjectLocality() + city.getName());
+                projectObj.put("projectThumbnail", project.getProjectThumbnail());
+                projectObj.put("projectPrice", project.getProjectPrice());
+                projectObj.put("slugURL", project.getSlugURL());
+                return projectObj;
+            }).toList();
+            resObj.put("projects", projects);
+            resObj.put("cityDesc", city.getCityDisc());
+            resObj.put("cityImage", city.getCityImage());
+        });
+        return resObj;
     }
 
-    public List<Project> getByCityName(String cityName) {
-        return this.projectRepository.getAllByCity(cityName);
-    }
+//    public List<Project> getByCityName(String cityName) {
+//        return this.projectRepository.getAllByCity(cityName);
+//    }
 
     public Response addUpdateCity(MultipartFile cityImage, City city) {
         Response response = new Response();

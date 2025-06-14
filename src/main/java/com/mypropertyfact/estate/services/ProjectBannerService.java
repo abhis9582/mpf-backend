@@ -15,9 +15,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectBannerService {
@@ -31,8 +30,18 @@ public class ProjectBannerService {
     @Value("${uploads_path}")
     private String uploadDir;
 
-    public List<ProjectBanner> getAllBanners() {
-        return this.projectBannerRepository.findAll();
+    public List<Map<String, Object>> getAllBanners() {
+        return this.projectBannerRepository.findAll().stream().map(banner -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", banner.getId());
+            map.put("projectId", banner.getProject().getId());
+            map.put("mobileBanner", banner.getMobileBanner());
+            map.put("desktopBanner", banner.getDesktopBanner());
+            map.put("slugURL", banner.getProject().getSlugURL());
+            map.put("projectName", banner.getProject().getProjectName());
+            map.put("altTag", banner.getAltTag());
+            return map;
+        }).toList();
     }
 
     public Response postBanner(MultipartFile mobileBanner, MultipartFile desktopBanner, ProjectBannerDto projectBannerDto) {
@@ -156,7 +165,6 @@ public class ProjectBannerService {
                     }
 
                     // Update other fields
-                    p.setProjectId(projectBannerDto.getProjectId());
                     p.setProjectName(projectBannerDto.getProjectName());
                     p.setSlugURL(projectBannerDto.getSlugURL());
                     p.setAltTag(projectBannerDto.getAltTag());
@@ -180,7 +188,6 @@ public class ProjectBannerService {
             }
 
             ProjectBanner projectBanner = new ProjectBanner();
-            projectBanner.setProjectId(projectBannerDto.getProjectId());
             projectBanner.setDesktopBanner(desktopNewFileName);
             projectBanner.setMobileBanner(mobileNewFileName);
             projectBanner.setProjectName(projectBannerDto.getProjectName());

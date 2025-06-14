@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProjectWalkthroughRepository extends JpaRepository<ProjectWalkthrough, Integer> {
-    ProjectWalkthrough findBySlugURL(String url);
+
 }

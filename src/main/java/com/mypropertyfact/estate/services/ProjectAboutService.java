@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.Constants;
+import com.mypropertyfact.estate.configs.dtos.ProjectAboutDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectsAbout;
 import com.mypropertyfact.estate.models.ProjectAboutResponse;
@@ -11,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,41 +26,46 @@ public class ProjectAboutService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<ProjectAboutResponse> getAllProjectsAbout(){
-        List<Object[]> response = this.projectAboutRepository.getAllProjectAbout();
-        return response.stream().map(item->
-                new ProjectAboutResponse(
-                        (int)item[0],
-                        (int)item[1],
-                        (String)item[2],
-                        (String)item[3],
-                        (String)item[4]
-                )).collect(Collectors.toList());
+    public List<Map<String, Object>> getAllProjectsAbout(){
+        List<ProjectsAbout> allProjectAbout = projectAboutRepository.findAll();
+        return allProjectAbout.stream().map(about->{
+            Map<String, Object> response= new HashMap<>();
+            response.put("id", about.getId());
+            response.put("longDesc", about.getLongDesc());
+            response.put("shortDesc", about.getShortDesc());
+            if(about.getProject() != null) {
+                response.put("projectId", about.getProject().getId());
+                response.put("projectName", about.getProject().getProjectName());
+            }
+            return response;
+        }).toList();
     }
 
-    public Response addUpdate(ProjectsAbout projectsAbout){
+    public Response addUpdate(ProjectAboutDto projectAboutDto){
         Response response = new Response();
         try{
-            if(projectsAbout.getLongDesc().isEmpty() || projectsAbout.getShortDesc().isEmpty()){
+            if(projectAboutDto.getLongDesc().isEmpty() || projectAboutDto.getShortDesc().isEmpty()){
                 response.setMessage(Constants.ALL_FIELDS_REQUIRED);
                 return response;
             }
-            Project project = this.projectRepository.findById(projectsAbout.getProjectId()).get();
-            projectsAbout.setSlugURL(project.getSlugURL());
-            if(projectsAbout.getId() > 0){
-                ProjectsAbout savedProjectsAbout = this.projectAboutRepository.findById(projectsAbout.getId()).get();
-                if(savedProjectsAbout != null){
-                    savedProjectsAbout.setShortDesc(projectsAbout.getShortDesc());
-                    savedProjectsAbout.setLongDesc(projectsAbout.getLongDesc());
-                    savedProjectsAbout.setSlugURL(projectsAbout.getSlugURL());
-                    savedProjectsAbout.setUpdatedAt(LocalDateTime.now());
-                    this.projectAboutRepository.save(savedProjectsAbout);
-                    response.setMessage("Project's about description updated successfully...");
+            Optional<Project> projectById = projectRepository.findById(projectAboutDto.getProjectId());
+            if(projectAboutDto.getId() > 0){
+                Optional<ProjectsAbout> saveData = projectAboutRepository.findById(projectAboutDto.getId());
+                saveData.ifPresent(about-> {
+                    about.setShortDesc(projectAboutDto.getShortDesc());
+                    about.setLongDesc(projectAboutDto.getLongDesc());
+                    projectById.ifPresent(about::setProject);
+                    projectAboutRepository.save(about);
+                    response.setMessage("Project's about details updated successfully...");
                     response.setIsSuccess(1);
-                }
+                });
             }else{
-                this.projectAboutRepository.save(projectsAbout);
-                response.setMessage("Project's about description saved successfully...");
+                ProjectsAbout projectAbout = new ProjectsAbout();
+                projectAbout.setLongDesc(projectAboutDto.getLongDesc());
+                projectAbout.setShortDesc(projectAboutDto.getShortDesc());
+                projectById.ifPresent(projectAbout::setProject);
+                projectAboutRepository.save(projectAbout);
+                response.setMessage("Project's about details saved successfully...");
                 response.setIsSuccess(1);
             }
         }catch (Exception e){
@@ -66,10 +75,15 @@ public class ProjectAboutService {
     }
 
     public Response deleteProjectsAbout(int id){
+        
         this.projectAboutRepository.deleteById(id);
         return new Response(1,"Data deleted successfully...");
     }
-    public ProjectsAbout getBySlug(String url){
-       return this.projectAboutRepository.findBySlugURL(url);
-    }
+//    public ProjectsAbout getBySlug(String url){
+//        Project projectBySlugURL = projectRepository.findBySlugURL(url);
+//        if(projectBySlugURL != null){
+//
+//        }
+//        return projectAboutRepository.findBySlugURL(url);
+//    }
 }

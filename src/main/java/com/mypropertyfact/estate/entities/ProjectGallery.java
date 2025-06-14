@@ -11,10 +11,13 @@ public class ProjectGallery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int projectId;
     private String image;
     private String slugUrl;
     private String type;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
 }

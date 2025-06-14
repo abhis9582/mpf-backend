@@ -6,4 +6,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProjectGalleryDto {
     private int projectId;
     private MultipartFile image;
+    private String galleyImage;
 }

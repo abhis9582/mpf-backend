@@ -11,8 +11,4 @@ import java.util.Objects;
 @Repository
 public interface ProjectAboutRepository extends JpaRepository<ProjectsAbout, Integer> {
 
-    ProjectsAbout findBySlugURL(String url);
-    @Query("SELECT pa.id, pa.projectId, p.projectName, pa.shortDesc, pa.longDesc FROM ProjectsAbout pa LEFT JOIN " +
-            "Project p ON  p.id = pa.projectId")
-    List<Object[]> getAllProjectAbout();
 }

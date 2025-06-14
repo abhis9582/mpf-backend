@@ -14,4 +14,6 @@ public class ProjectBannerDto {
     private String altTag;
     private String projectName;
     private String slugURL;
+    private String desktopImage;
+    private String mobileImage;
 }
