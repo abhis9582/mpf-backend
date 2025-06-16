@@ -26,19 +26,20 @@ public class LocationBenefitService {
     private LocationBenefitRepository locationBenefitRepository;
     @Autowired
     private ProjectRepository projectRepository;
-    @Value("${upload_icon_path}")
+    @Value("${uploads_path}")
     private String uploadDir;
 
     public List<Map<String, Object>> getAllBenefits() {
         List<LocationBenefit> locationBenefits = locationBenefitRepository.findAll();
 
         Map<Integer, Map<String, Object>> result = new HashMap<>();
-        for (LocationBenefit locationBenefit: locationBenefits){
+        for (LocationBenefit locationBenefit : locationBenefits) {
             int projectId = locationBenefit.getProject().getId();
             Map<String, Object> projectLocationBenefitObj = result.computeIfAbsent(projectId, id -> {
                 Map<String, Object> projectObj = new HashMap<>();
                 projectObj.put("projectId", id);
                 projectObj.put("projectName", locationBenefit.getProject().getProjectName());
+                projectObj.put("slugUrl", locationBenefit.getProject().getSlugURL());
                 projectObj.put("locationBenefits", new ArrayList<>());
                 return projectObj;
             });
@@ -57,17 +58,21 @@ public class LocationBenefitService {
 
     public Response addUpdateBenefit(MultipartFile file, LocationBenefitDto locationBenefitDto) {
         Response response = new Response();
+        Optional<Project> project = this.projectRepository.findById(locationBenefitDto.getProjectId());
         try {
             if (locationBenefitDto == null) {
                 response.setMessage("All fields are required !");
                 return response;
             }
             String iconImageName = "";
-            File destinationDir = new File(uploadDir);
+            String dir = "";
+            if (project.isPresent()) {
+                dir = uploadDir + project.get().getSlugURL()+ "/";
+            }
+            File destinationDir = new File(dir);
             if (!destinationDir.exists()) {
                 destinationDir.mkdirs();
             }
-            Optional<Project> project = this.projectRepository.findById(locationBenefitDto.getProjectId());
             if (file != null) {
                 if (!file.getContentType().startsWith("image/")) {
                     response.setMessage("Only image is allowed !");
