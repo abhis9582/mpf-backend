@@ -83,6 +83,9 @@ public class WebStoryCategoryServiceImpl implements WebStoryCategoryService {
             webStoryCategoryDto.setId(category.getId());
             webStoryCategoryDto.setCategoryName(category.getCategoryName());
             webStoryCategoryDto.setCategoryDescription(category.getCategoryDescription());
+            if(category.getWebStories() != null && !category.getWebStories().isEmpty()) {
+                webStoryCategoryDto.setStoryCategoryImage(category.getWebStories().get(0).getStoryImage());
+            }
             List<WebStoryDto> webStoryDtoList = category.getWebStories().stream().map(webStory -> {
                 WebStoryDto webStoryDto = new WebStoryDto();
                 webStoryDto.setCategoryId(webStory.getWebStoryCategory().getId());

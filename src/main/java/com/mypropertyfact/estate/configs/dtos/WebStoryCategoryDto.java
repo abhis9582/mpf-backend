@@ -11,4 +11,5 @@ public class WebStoryCategoryDto {
     private String categoryName;
     private String categoryDescription;
     private List<WebStoryDto> webStories;
+    private String storyCategoryImage;
 }
