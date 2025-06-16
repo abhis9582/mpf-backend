@@ -237,9 +237,19 @@ public class ProjectService {
                 //save data to database
                 mapDtoToEntity(project, projectDto);
                 projectRepository.save(project);
-                response.setMessage(Constants.PROJECT_SAVED);
+                response.setMessage(Constants.PROJECT_UPDATED);
                 response.setIsSuccess(1);
             });
+            if(dbProject.isEmpty()){
+                Project newProject = new Project();
+                newProject.setProjectLogo(processFile(projectLogo, projectDir));
+                newProject.setLocationMap(processFile(locationMap, projectDir));
+                newProject.setProjectThumbnail(processFile(projectThumbnail, projectDir));
+                mapDtoToEntity(newProject, projectDto);
+                projectRepository.save(newProject);
+                response.setMessage(Constants.PROJECT_SAVED);
+                response.setIsSuccess(1);
+            }
         } catch (Exception e) {
             response.setMessage(e.getMessage());
         }

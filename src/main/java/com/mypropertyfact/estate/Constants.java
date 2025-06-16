@@ -9,4 +9,5 @@ public class Constants {
     public static final String NO_FILE_SELECTED = "No file selected.";
     public static final String AMENITY_TITLE_ALT_TAG_REQUIRED = "Amenity title and alt tag are required.";
     public static final String PROJECT_SAVED = "Project Saved Successfully...";
+    public static final String PROJECT_UPDATED = "Project Updated Successfully...";
 }
