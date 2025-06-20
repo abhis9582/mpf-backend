@@ -9,4 +9,5 @@ public class StateDto {
     private String stateName;
     private String description;
     private String countryName;
+    private int noOfCities;
 }

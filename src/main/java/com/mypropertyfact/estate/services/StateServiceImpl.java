@@ -9,6 +9,7 @@ import com.mypropertyfact.estate.repositories.CountryRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -46,10 +47,11 @@ public class StateServiceImpl implements StateService {
 
     @Override
     public void deleteState(int id) {
-
+        stateRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public List<StateDto> getAll() {
         List<State> stateList = stateRepository.findAll();
         return stateList.stream()
@@ -58,6 +60,9 @@ public class StateServiceImpl implements StateService {
             stateDto.setId(state.getId());
             stateDto.setStateName(state.getStateName());
             stateDto.setDescription(state.getDescription());
+            if(state.getCities() != null){
+                stateDto.setNoOfCities(state.getCities().size());
+            }
             if(state.getCountry() != null) {
                 stateDto.setCountryId(state.getCountry().getId());
                 stateDto.setCountryName(state.getCountry().getCountryName());

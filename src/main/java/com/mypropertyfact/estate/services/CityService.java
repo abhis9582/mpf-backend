@@ -170,10 +170,13 @@ public class CityService {
                 Map<String, Object> projectObj = new HashMap<>();
                 projectObj.put("projectId", project.getId());
                 projectObj.put("projectName", project.getProjectName());
-                projectObj.put("projectAddress", project.getProjectLocality() + city.getName());
+                projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(city.getName()));
                 projectObj.put("projectThumbnail", project.getProjectThumbnail());
                 projectObj.put("projectPrice", project.getProjectPrice());
                 projectObj.put("slugURL", project.getSlugURL());
+                if(project.getProjectTypes() != null) {
+                    projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+                }
                 return projectObj;
             }).toList();
             resObj.put("projects", projects);

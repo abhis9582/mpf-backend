@@ -2,13 +2,13 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Country;
-import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.CountryService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.CountryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -40,7 +40,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     public void deleteCountry(int id) {
-
+        countryRepository.deleteById(id);
     }
 
     @Override
@@ -94,9 +94,18 @@ public class CountryServiceImpl implements CountryService {
         }
         return result;
     }
-
+    @Transactional
     @Override
-    public List<Country> getAllCountry() {
-        return List.of();
+    public List<Map<String, Object>> getAllCountry() {
+        List<Country> allCountries = countryRepository.findAll();
+        return allCountries.stream().map(country -> {
+            Map<String, Object> countryObj = new HashMap<>();
+            countryObj.put("id", country.getId());
+            countryObj.put("countryName", country.getCountryName());
+            countryObj.put("continent", country.getContinent());
+            countryObj.put("noOfStates", country.getStates().size());
+            countryObj.put("countryDesc", country.getDescription());
+            return countryObj;
+        }).toList();
     }
 }

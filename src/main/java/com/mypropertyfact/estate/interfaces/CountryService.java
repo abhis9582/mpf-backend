@@ -11,5 +11,5 @@ public interface CountryService {
     Response addUpdate(Country country);
     void deleteCountry(int id);
     List<Map<String, Object>> getAll();
-    List<Country> getAllCountry();
+    List<Map<String, Object>> getAllCountry();
 }

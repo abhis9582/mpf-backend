@@ -20,6 +20,11 @@ public class CountryController {
         return ResponseEntity.ok(countryService.getAll());
     }
 
+    @GetMapping("/get-all-countries")
+    public ResponseEntity<?> getAllCountries() {
+        return ResponseEntity.ok(countryService.getAllCountry());
+    }
+
     @PostMapping("/add-update")
     public ResponseEntity<Response> addUpdate(@RequestBody Country country){
         return ResponseEntity.ok(countryService.addUpdate(country));

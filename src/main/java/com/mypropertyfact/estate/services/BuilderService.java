@@ -102,11 +102,14 @@ public class BuilderService {
                 projectObj.put("projectId", project.getId());
                 projectObj.put("projectName", project.getProjectName());
                 if(project.getCity() != null) {
-                    projectObj.put("projectAddress", project.getProjectLocality() + project.getCity().getName());
+                    projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
                 }
                 projectObj.put("projectThumbnail", project.getProjectThumbnail());
                 projectObj.put("projectPrice", project.getProjectPrice());
                 projectObj.put("slugURL", project.getSlugURL());
+                if(project.getProjectTypes() != null) {
+                    projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+                }
                 return projectObj;
             }).toList();
             builderObj.put("projects", projectList);

@@ -377,6 +377,7 @@ public class ProjectService {
                 }
                 projectResponse.put("city", city.getId());
                 projectResponse.put("cityName", city.getName());
+                projectResponse.put("projectAddress", project.getProjectLocality().concat(", ").concat(city.getName()));
             });
             projectResponse.put("projectPrice", project.getProjectPrice());
             projectResponse.put("ivrNo", project.getIvrNo());
