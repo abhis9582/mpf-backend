@@ -28,7 +28,7 @@ public interface ProjectRepository extends JpaRepository<Project ,Integer> {
     List<Object[]> getAllProjectAmenity();
     @Query(value = """
                     select * from projects where property_type= :propertyType
-                    and city_location = :propertyLocation
+                    and city_id = :propertyLocation
                     and project_price between :startBudget
                     and :endBudget
                     """, nativeQuery = true)

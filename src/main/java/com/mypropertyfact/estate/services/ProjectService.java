@@ -240,7 +240,7 @@ public class ProjectService {
                 response.setMessage(Constants.PROJECT_UPDATED);
                 response.setIsSuccess(1);
             });
-            if(dbProject.isEmpty()){
+            if (dbProject.isEmpty()) {
                 Project newProject = new Project();
                 newProject.setProjectLogo(processFile(projectLogo, projectDir));
                 newProject.setLocationMap(processFile(locationMap, projectDir));
@@ -317,7 +317,7 @@ public class ProjectService {
         project.setStatus(true);
     }
 
-    public List<Project> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
+    public List<Map<String, Object>> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
         int start = 0;
         int end = 0;
         if (budget.equals("Up to 1Cr*")) {
@@ -333,8 +333,23 @@ public class ProjectService {
             start = 5;
             end = 10;
         }
-        return projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
+        List<Project> projects = projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
                 start, end);
+        return projects.stream().map(project-> {
+            Map<String, Object> projectObj = new HashMap<>();
+            projectObj.put("id", project.getId());
+            projectObj.put("slugURL", project.getSlugURL());
+            projectObj.put("projectThumbnail", project.getProjectThumbnail());
+            projectObj.put("projectName", project.getProjectName());
+            projectObj.put("projectPrice", project.getProjectPrice());
+            if(project.getCity() != null) {
+                projectObj.put("projectAddress", project.getProjectLocality().concat(" , ").concat(project.getCity().getName()));
+            }
+            if(project.getProjectTypes() != null) {
+                projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+            }
+            return projectObj;
+        }).toList();
     }
 
     public List<Map<String, Object>> getAllProjectsList() {
@@ -379,6 +394,7 @@ public class ProjectService {
                 projectResponse.put("cityName", city.getName());
                 projectResponse.put("projectAddress", project.getProjectLocality().concat(", ").concat(city.getName()));
             });
+            projectResponse.put("country", project.getCity().getState().getCountry().getId());
             projectResponse.put("projectPrice", project.getProjectPrice());
             projectResponse.put("ivrNo", project.getIvrNo());
             projectResponse.put("locationMap", project.getLocationMap());
