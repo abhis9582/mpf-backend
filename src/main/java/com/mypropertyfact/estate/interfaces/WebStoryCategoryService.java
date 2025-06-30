@@ -8,5 +8,5 @@ import java.util.List;
 public interface WebStoryCategoryService {
     Response addUpdate(WebStoryCategoryDto webStoryCategoryDto);
     List<WebStoryCategoryDto> getAllCategories();
-    void deleteCategory(int categoryId);
+    Response deleteCategory(int categoryId);
 }

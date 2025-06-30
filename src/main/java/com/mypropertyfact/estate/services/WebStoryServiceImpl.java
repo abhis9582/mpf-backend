@@ -45,8 +45,10 @@ public class WebStoryServiceImpl implements WebStoryService {
             webStoryDto.setId(webStory.getId());
             webStoryDto.setStoryTitle(webStory.getStoryTitle());
             webStoryDto.setStoryDescription(webStory.getStoryDescription());
-            webStoryDto.setCategoryName(webStory.getWebStoryCategory().getCategoryName());
-            webStoryDto.setCategoryId(webStory.getWebStoryCategory().getId());
+            if(webStory.getWebStoryCategory() != null) {
+                webStoryDto.setCategoryName(webStory.getWebStoryCategory().getCategoryName());
+                webStoryDto.setCategoryId(webStory.getWebStoryCategory().getId());
+            }
             webStoryDto.setStoryImage(webStory.getStoryImage());
             return webStoryDto;
         }).toList();
@@ -58,7 +60,7 @@ public class WebStoryServiceImpl implements WebStoryService {
         String webStoryPath = uploadDir.concat("/web-story");
         String savedImageName = "";
         Optional<WebStoryCategory> webStoryCategory = webStoryCategoryRepository.findById(webStoryDto.getCategoryId());
-        if (!storyImage.isEmpty()) {
+        if (storyImage != null && !storyImage.isEmpty()) {
             if (!fileUtils.isTypeImage(storyImage)) {
                 response.setMessage("File should be type of image only");
                 return response;
@@ -71,11 +73,11 @@ public class WebStoryServiceImpl implements WebStoryService {
             if (savedWebStory.isPresent()) {
                 WebStory webStory = savedWebStory.get();
                 webStory.setStoryTitle(webStoryDto.getStoryTitle());
-                webStory.setStoryDescription(webStory.getStoryDescription());
+                webStory.setStoryDescription(webStoryDto.getStoryDescription());
                 if (!savedImageName.isEmpty() && !webStory.getStoryImage().isEmpty()) {
                     fileUtils.deleteFileFromDestination(webStory.getStoryImage(), webStoryPath);
+                    webStory.setStoryImage(savedImageName);
                 }
-                webStory.setStoryImage(savedImageName);
                 webStoryCategory.ifPresent(webStory::setWebStoryCategory);
                 webStoryRepository.save(webStory);
                 response.setMessage("Web story updated successfully...");
@@ -95,8 +97,20 @@ public class WebStoryServiceImpl implements WebStoryService {
     }
 
     @Override
-    public void deleteWebStory(int id) {
-
+    public Response deleteWebStory(int id) {
+        Optional<WebStory> webStory = webStoryRepository.findById(id);
+        String webStoryPath = uploadDir.concat("/web-story");
+        try {
+            if (webStory.isPresent()) {
+                if (!webStory.get().getStoryImage().isEmpty()) {
+                    fileUtils.deleteFileFromDestination(webStory.get().getStoryImage(), webStoryPath);
+                }
+            }
+            webStoryRepository.deleteById(id);
+            return new Response(1, "Story deleted successfully...");
+        }catch (Exception e){
+            return new Response(0, e.getMessage());
+        }
     }
 
     @Override
@@ -126,8 +140,8 @@ public class WebStoryServiceImpl implements WebStoryService {
                     
                         <!-- Logo Layer -->
                         <amp-story-grid-layer template="vertical" class="logo-layer">
-                          <a href="https://mypropertyfact.com/" target="_blank">
-                            <amp-img src="https://mypropertyfact.com/logo.png" width="60" height="60" layout="fixed" alt="Logo"></amp-img>
+                          <a href="https://mypropertyfact.in/" target="_blank">
+                            <amp-img src="https://mypropertyfact.in/logo.png" width="60" height="60" layout="fixed" alt="Logo"></amp-img>
                           </a>
                         </amp-story-grid-layer>
                     
@@ -156,7 +170,7 @@ public class WebStoryServiceImpl implements WebStoryService {
                       <title>%1$s</title>
                       <link rel="canonical" href="self.html" />
                       <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-                      <link rel="icon" href="https://mypropertyfact.com/favicon.ico" type="image/x-icon">
+                      <link rel="icon" href="https://mypropertyfact.in/favicon.ico" type="image/x-icon">
                       <style amp-boilerplate>body{visibility:hidden}</style>
                       <script async src="https://cdn.ampproject.org/v0.js"></script>
                       <script async custom-element="amp-story" src="https://cdn.ampproject.org/v0/amp-story-1.0.js"></script>
@@ -220,8 +234,8 @@ public class WebStoryServiceImpl implements WebStoryService {
                     </head>
                     <body>
                       <amp-story standalone title="%1$s" publisher="You"
-                        publisher-logo-src="https://mypropertyfact.com/logo.png"
-                        poster-portrait-src="https://mypropertyfact.com/logo.png">
+                        publisher-logo-src="https://mypropertyfact.in/logo.png"
+                        poster-portrait-src="https://mypropertyfact.in/logo.png">
                         %2$s
                       </amp-story>
                     </body>

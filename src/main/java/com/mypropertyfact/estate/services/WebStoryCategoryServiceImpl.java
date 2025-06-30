@@ -3,11 +3,13 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.WebStoryCategoryDto;
 import com.mypropertyfact.estate.configs.dtos.WebStoryDto;
+import com.mypropertyfact.estate.entities.WebStory;
 import com.mypropertyfact.estate.entities.WebStoryCategory;
 import com.mypropertyfact.estate.interfaces.WebStoryCategoryService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.WebStoryCategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,9 @@ public class WebStoryCategoryServiceImpl implements WebStoryCategoryService {
 
     @Autowired
     private FileUtils fileUtils;
+
+    @Value("${upload_dir}")
+    private String uploadDir;
 
     @Override
     public Response addUpdate(WebStoryCategoryDto webStoryCategoryDto) {
@@ -99,9 +104,27 @@ public class WebStoryCategoryServiceImpl implements WebStoryCategoryService {
             return webStoryCategoryDto;
         }).toList();
     }
-
+    @Transactional
     @Override
-    public void deleteCategory(int categoryId) {
-        webStoryCategoryRepository.deleteById(categoryId);
+    public Response deleteCategory(int categoryId) {
+        try{
+            Optional<WebStoryCategory> webStoryCategory = webStoryCategoryRepository.findById(categoryId);
+            String storyDestination = uploadDir.concat("/web-story");
+            webStoryCategory.ifPresent(category-> {
+                List<WebStory> webStories = category.getWebStories();
+                if(webStories != null){
+                    webStories.forEach(story-> {
+                        String image = story.getStoryImage();
+                        if(image != null){
+                            fileUtils.deleteFileFromDestination(story.getStoryImage(), storyDestination);
+                        }
+                    });
+                }
+            });
+            webStoryCategoryRepository.deleteById(categoryId);
+            return new Response(1, "Category deleted with it's all stories");
+        }catch (Exception e){
+            return new Response(0, e.getMessage());
+        }
     }
 }

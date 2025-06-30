@@ -9,6 +9,6 @@ import java.util.List;
 public interface WebStoryService {
     List<WebStoryDto> getAllWebStories();
     Response addUpdateWebStory(MultipartFile storyImage, WebStoryDto webStoryDto);
-    void deleteWebStory(int id);
+    Response deleteWebStory(int id);
     String webStory(String slug);
 }

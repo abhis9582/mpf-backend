@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.configs.dtos.WebStoryCategoryDto;
 import com.mypropertyfact.estate.interfaces.WebStoryCategoryService;
+import com.mypropertyfact.estate.models.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class WebStoryCategoryController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteCategory(@PathVariable("id") int id) {
-        webStoryCategoryService.deleteCategory(id);
+    public Response deleteCategory(@PathVariable("id") int id) {
+        return webStoryCategoryService.deleteCategory(id);
     }
 }
