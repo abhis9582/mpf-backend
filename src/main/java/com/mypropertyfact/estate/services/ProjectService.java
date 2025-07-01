@@ -168,27 +168,45 @@ public class ProjectService {
         return projectObj;
     }
 
+    @Transactional
     public Response deleteProject(int id) {
         Response response = new Response();
         try {
             if (id > 0) {
-                Project project = projectRepository.findById(id).orElse(null);
-                if (project != null) {
-                    String dirPath = uploadDir + project.getSlugURL();
-                    // Delete the entire directory after files are removed
-                    deleteDirectory(dirPath);
+                Optional<Project> optionalProject = projectRepository.findById(id);
+                if (optionalProject.isPresent()) {
+                    Project project = optionalProject.get();
+
+                    // 1. Clear project-amenities relationship
+                    project.getAmenities().clear();
+                    projectRepository.save(project); // Persist the relationship removal
+
+                    // 2. Delete the directory (if applicable)
+                    String dirPath = uploadDir.concat("properties/") + project.getSlugURL();
+                    deleteDirectory(dirPath); // Make sure this handles exceptions safely
+
+                    // 3. Delete the project
                     projectRepository.delete(project);
+
+                    // 4. Set success response
                     response.setMessage("Project deleted successfully...");
                     response.setIsSuccess(1);
                 } else {
-                    response.setMessage("no project found !");
+                    response.setMessage("No project found with the given ID!");
+                    response.setIsSuccess(0);
                 }
+            } else {
+                response.setMessage("Invalid project ID!");
+                response.setIsSuccess(0);
             }
         } catch (Exception e) {
-            response.setMessage(e.getMessage());
+            response.setMessage("Error deleting project: " + e.getMessage());
+            response.setIsSuccess(0);
+            e.printStackTrace();
         }
         return response;
     }
+
 
     private void deleteDirectory(String dirPath) {
         File directory = new File(dirPath);
@@ -335,17 +353,17 @@ public class ProjectService {
         }
         List<Project> projects = projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
                 start, end);
-        return projects.stream().map(project-> {
+        return projects.stream().map(project -> {
             Map<String, Object> projectObj = new HashMap<>();
             projectObj.put("id", project.getId());
             projectObj.put("slugURL", project.getSlugURL());
             projectObj.put("projectThumbnail", project.getProjectThumbnail());
             projectObj.put("projectName", project.getProjectName());
             projectObj.put("projectPrice", project.getProjectPrice());
-            if(project.getCity() != null) {
+            if (project.getCity() != null) {
                 projectObj.put("projectAddress", project.getProjectLocality().concat(" , ").concat(project.getCity().getName()));
             }
-            if(project.getProjectTypes() != null) {
+            if (project.getProjectTypes() != null) {
                 projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
             }
             return projectObj;

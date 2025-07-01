@@ -193,7 +193,8 @@ public class ProjectBannerService {
             projectBanner.setProjectName(projectBannerDto.getProjectName());
             projectBanner.setSlugURL(projectBannerDto.getSlugURL());
             projectBanner.setAltTag(projectBannerDto.getAltTag());
-
+            Optional<Project> project = projectRepository.findById(projectBannerDto.getProjectId());
+            project.ifPresent(projectBanner::setProject);
             this.projectBannerRepository.save(projectBanner);
         }
         return new Response(1, "File Uploaded successfully...");

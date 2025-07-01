@@ -1,0 +1,45 @@
+package com.mypropertyfact.estate.entities;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Data
+@Table(name = "localities", indexes = {
+        @Index(name = "idx_slug", columnList = "slug"),
+        @Index(name = "idx_is_active", columnList = "isActive")
+})
+@Entity
+public class Locality {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(nullable = false, length = 255)
+    private String localityName;
+
+    @Column(unique = true, nullable = false)
+    private String slug;
+    private Double latitude;
+    private Double longitude;
+    private Integer pinCode;
+    @Lob
+    private String description;
+    private Double averagePricePerSqFt;
+    private boolean isActive;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "city_id", nullable = false)
+    private City city;
+}

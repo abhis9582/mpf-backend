@@ -8,6 +8,7 @@ import com.mypropertyfact.estate.repositories.FloorPlanRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -18,30 +19,31 @@ public class FloorPlanService {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Transactional
     public List<Map<String, Object>> getAllPlans() {
-        List<FloorPlan> allFloorPlans = this.floorPlanRepository.findAll();
+        List<Project> allProjects = projectRepository.findAll();
 
         Map<Integer, Map<String, Object>> groupedByProject = new HashMap<>();
 
-        for (FloorPlan floorPlan : allFloorPlans) {
-            int projectId = floorPlan.getProject().getId();
+        for (Project project : allProjects) {
+            int projectId = project.getId();
+
+            List<Map<String, Object>> plans = project.getFloorPlans().stream().map(p-> {
+                Map<String, Object> planMap = new HashMap<>();
+                planMap.put("id", p.getId());
+                planMap.put("planType", p.getPlanType());
+                planMap.put("areaSqft", p.getAreaSqft());
+                planMap.put("areaSqMt", p.getAreaSqmt());
+                return planMap;
+            }).toList();
 
             Map<String, Object> projectMap = groupedByProject.computeIfAbsent(projectId, id -> {
                 Map<String, Object> newProjectMap = new HashMap<>();
                 newProjectMap.put("projectId", id);
-                newProjectMap.put("projectName", floorPlan.getProject().getProjectName());
-                newProjectMap.put("plans", new ArrayList<Map<String, Object>>());
+                newProjectMap.put("projectName", project.getProjectName());
+                newProjectMap.put("plans", plans);
                 return newProjectMap;
             });
-
-            List<Map<String, Object>> plans = (List<Map<String, Object>>) projectMap.get("plans");
-
-            Map<String, Object> planMap = new HashMap<>();
-            planMap.put("id", floorPlan.getId());
-            planMap.put("planType", floorPlan.getPlanType());
-            planMap.put("areaSqft", floorPlan.getAreaSqft());
-            planMap.put("areaSqMt", floorPlan.getAreaSqmt());
-            plans.add(planMap);
         }
 
         return new ArrayList<>(groupedByProject.values());

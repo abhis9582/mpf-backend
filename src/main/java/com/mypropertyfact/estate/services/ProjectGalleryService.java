@@ -9,6 +9,7 @@ import com.mypropertyfact.estate.repositories.ProjectGalleryRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,9 +71,13 @@ public class ProjectGalleryService {
             }
             // Rename the image file (using UUID)
             String newFileName = renameFile(projectGalleryDto.getImage());
-            Project project = this.projectRepository.findById(projectGalleryDto.getProjectId()).get();
+            Project projectObj = new Project();
+            Optional<Project> project = projectRepository.findById(projectGalleryDto.getProjectId());
+            if(project.isPresent()){
+                projectObj = project.get();
+            }
             // Save the file to the destination
-            response = saveFile(projectGalleryDto.getImage(), newFileName, project, projectGalleryDto);
+            response = saveFile(projectGalleryDto.getImage(), newFileName, projectObj, projectGalleryDto);
         } catch (Exception e) {
 
         }
@@ -110,6 +115,7 @@ public class ProjectGalleryService {
         projectGallery.setSlugUrl(project.getSlugURL());
         projectGallery.setType("");
         projectGallery.setImage(fileName);
+        projectGallery.setProject(project);
         this.projectGalleryRepository.save(projectGallery);
         return new Response(1, "File Uploaded successfully...");
     }
