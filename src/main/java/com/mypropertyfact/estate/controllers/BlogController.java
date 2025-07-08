@@ -23,8 +23,8 @@ public class BlogController {
     private BlogService blogService;
 
     @PostMapping("/add-update")
-    public ResponseEntity<Response> addUpdate(@RequestParam(required = false) MultipartFile image, @Valid @ModelAttribute Blog blog) {
-        return new ResponseEntity<>(blogService.addUpdateBlog(image, blog), HttpStatus.CREATED);
+    public ResponseEntity<Response> addUpdate(@RequestParam(required = false) MultipartFile image, @Valid @ModelAttribute BlogDto blogDto) {
+        return new ResponseEntity<>(blogService.addUpdateBlog(image, blogDto), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

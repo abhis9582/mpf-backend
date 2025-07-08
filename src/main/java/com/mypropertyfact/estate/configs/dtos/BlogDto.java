@@ -16,5 +16,6 @@ public class BlogDto {
     private String slugUrl;
     private String blogImage;
     private String blogCategory;
+    private int status;
     private int categoryId;
 }

@@ -17,4 +17,6 @@ public class LocalityDto {
     private int cityId;
     private String cityName;
     private String stateName;
+    private int localityCategory;
+    private String localityCategoryName;
 }

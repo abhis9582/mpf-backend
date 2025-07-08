@@ -74,6 +74,7 @@ public class ProjectService {
             projectObj.put("slugURL", project.getSlugURL());
             if (project.getCity() != null) {
                 projectObj.put("cityId", project.getCity().getId());
+                projectObj.put("cityName", project.getCity().getName());
                 projectObj.put("projectAddress", project.getProjectLocality().concat(", ") + project.getCity().getName());
                 if (project.getCity().getState() != null) {
                     projectObj.put("stateId", project.getCity().getState().getId());
@@ -353,6 +354,7 @@ public class ProjectService {
         }
         List<Project> projects = projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
                 start, end);
+        System.out.println(projects);
         return projects.stream().map(project -> {
             Map<String, Object> projectObj = new HashMap<>();
             projectObj.put("id", project.getId());

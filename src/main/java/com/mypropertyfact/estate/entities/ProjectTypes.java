@@ -28,4 +28,8 @@ public class ProjectTypes {
     @OneToMany(mappedBy = "projectTypes", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Project> project;
+
+    @OneToMany(mappedBy = "projectTypes", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Locality> localities;
 }

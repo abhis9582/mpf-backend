@@ -42,4 +42,8 @@ public class Locality {
     @ManyToOne
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
+
+    @ManyToOne
+    @JoinColumn(name = "locality_category_id", nullable = false)
+    private ProjectTypes projectTypes;
 }
