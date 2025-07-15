@@ -48,7 +48,8 @@ public class BlogServiceImpl implements BlogService {
         blogDto.setSlugUrl(generatedSlug);
         Optional<BlogCategory> blogCategory = blogCategoryRepository.findById(Integer.parseInt(blogDto.getBlogCategory()));
         String blogImageName = null;
-        Blog existing = new Blog();
+        Blog existing = blogDto.getId() > 0 ? blogRepository.findById(blogDto.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found")) : new Blog();;
         if (blogImage != null && !blogImage.isEmpty()) {
             // Validate file
             if (!fileUtils.isFileSizeValid(blogImage, 5 * 1024 * 1024)) {
@@ -82,7 +83,9 @@ public class BlogServiceImpl implements BlogService {
             // Update fields
             existing.setBlogTitle(blogDto.getBlogTitle());
             existing.setBlogDescription(blogDto.getBlogDescription());
-            existing.setSlugUrl(blogDto.getSlugUrl());
+            if(!existing.getSlugUrl().equals(blogDto.getSlugUrl())){
+                existing.setSlugUrl(blogDto.getSlugUrl());
+            }
             existing.setStatus(blogDto.getStatus());
             existing.setBlogKeywords(blogDto.getBlogKeywords());
             blogCategory.ifPresent(existing::setBlogCategory);
