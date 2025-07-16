@@ -4,14 +4,17 @@ import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.BlogDto;
 import com.mypropertyfact.estate.entities.Blog;
 import com.mypropertyfact.estate.entities.BlogCategory;
+import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.interfaces.BlogService;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BlogCategoryRepository;
 import com.mypropertyfact.estate.repositories.BlogRepository;
+import com.mypropertyfact.estate.repositories.CityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -35,6 +38,9 @@ public class BlogServiceImpl implements BlogService {
     @Autowired
     private BlogCategoryRepository blogCategoryRepository;
 
+    @Autowired
+    private CityRepository cityRepository;
+
     @Value("${upload_dir}")
     private String upload_dir;
     @Autowired
@@ -47,9 +53,10 @@ public class BlogServiceImpl implements BlogService {
         String generatedSlug = fileUtils.generateSlug(blogDto.getSlugUrl());
         blogDto.setSlugUrl(generatedSlug);
         Optional<BlogCategory> blogCategory = blogCategoryRepository.findById(Integer.parseInt(blogDto.getBlogCategory()));
+        Optional<City> city = cityRepository.findById(blogDto.getCityId());
         String blogImageName = null;
         Blog existing = blogDto.getId() > 0 ? blogRepository.findById(blogDto.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found")) : new Blog();;
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found")) : new Blog();
         if (blogImage != null && !blogImage.isEmpty()) {
             // Validate file
             if (!fileUtils.isFileSizeValid(blogImage, 5 * 1024 * 1024)) {
@@ -89,6 +96,7 @@ public class BlogServiceImpl implements BlogService {
             existing.setStatus(blogDto.getStatus());
             existing.setBlogKeywords(blogDto.getBlogKeywords());
             blogCategory.ifPresent(existing::setBlogCategory);
+            city.ifPresent(existing::setCity);
             existing.setBlogMetaDescription(blogDto.getBlogMetaDescription());
             if (blogImageName != null) {
                 existing.setBlogImage(blogImageName);
@@ -103,6 +111,7 @@ public class BlogServiceImpl implements BlogService {
         }
         Blog blog = new Blog();
         blogCategory.ifPresent(blog::setBlogCategory);
+        city.ifPresent(existing::setCity);
         blog.setBlogTitle(blogDto.getBlogTitle());
         blog.setBlogDescription(blogDto.getBlogDescription());
         blog.setSlugUrl(blogDto.getSlugUrl());
@@ -133,9 +142,12 @@ public class BlogServiceImpl implements BlogService {
                         blog.getBlogDescription(),
                         blog.getSlugUrl(),
                         blog.getBlogImage(),
-                        blog.getBlogCategory().getCategoryName(),
+                        blog.getBlogCategory() != null ? blog.getBlogCategory().getCategoryName(): null,
                         blog.getStatus(),
-                        blog.getBlogCategory().getId()
+                        blog.getBlogCategory() != null ?blog.getBlogCategory().getId() : 0,
+                        blog.getCity() != null ? blog.getCity().getId(): 0,
+                        blog.getCity() != null ? blog.getCity().getName(): null,
+                        blog.getCreatedAt()
                 )
         ).collect(Collectors.toList());
     }
@@ -149,19 +161,57 @@ public class BlogServiceImpl implements BlogService {
                 bySlugUrl.getBlogDescription(),
                 bySlugUrl.getSlugUrl(),
                 bySlugUrl.getBlogImage(),
-                bySlugUrl.getBlogCategory().getCategoryName(),
+                bySlugUrl.getBlogCategory() != null ? bySlugUrl.getBlogCategory().getCategoryName(): null,
                 bySlugUrl.getStatus(),
-                bySlugUrl.getBlogCategory().getId()
+                bySlugUrl.getBlogCategory() != null ? bySlugUrl.getBlogCategory().getId(): 0,
+                bySlugUrl.getCity() != null ? bySlugUrl.getCity().getId(): 0,
+                bySlugUrl.getCity() != null ? bySlugUrl.getCity().getName(): null,
+                bySlugUrl.getCreatedAt()
         );
     }
 
     @Override
-    public Page<Blog> getWithPagination(int page, int size) {
-        int p = page;
-        int s = size;
-        Page<Blog> all = blogRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-        return all;
+    public Page<BlogDto> getWithPagination(int page, int size, String from) {
+        // Step 1: Fetch all blogs (no pagination)
+        List<Blog> allBlogs = blogRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // Step 2: Map to DTOs
+        List<BlogDto> dtoList = allBlogs.stream().map(blog -> {
+            BlogDto blogDto = new BlogDto();
+            blogDto.setBlogImage(blog.getBlogImage());
+            blogDto.setCityName(blog.getCity() != null ? blog.getCity().getName() : null);
+            blogDto.setCityId(blog.getCity() != null ? blog.getCity().getId() : 0);
+            blogDto.setBlogCategory(blog.getBlogCategory() != null ? blog.getBlogCategory().getCategoryName() : null);
+            blogDto.setCategoryId(blog.getBlogCategory() != null ? blog.getBlogCategory().getId() : 0);
+            blogDto.setSlugUrl(blog.getSlugUrl());
+            blogDto.setCreatedAt(blog.getCreatedAt());
+            blogDto.setBlogTitle(blog.getBlogTitle());
+            blogDto.setBlogMetaDescription(blog.getBlogMetaDescription());
+            return blogDto;
+        }).toList();
+
+        // Step 3: Filter based on "from"
+        List<BlogDto> filteredList;
+        if ("blog".equalsIgnoreCase(from)) {
+            filteredList = dtoList.stream()
+                    .filter(blog -> blog.getCategoryId() != 5)
+                    .toList();
+        } else {
+            filteredList = dtoList.stream()
+                    .filter(blog -> blog.getCategoryId() == 5)
+                    .toList();
+        }
+
+        // Step 4: Manual pagination on the filtered list
+        int start = Math.min(page * size, filteredList.size());
+        int end = Math.min(start + size, filteredList.size());
+        List<BlogDto> pagedList = filteredList.subList(start, end);
+
+        // Step 5: Return as Page<BlogDto>
+        return new PageImpl<>(pagedList, PageRequest.of(page, size), filteredList.size());
     }
+
+
 
     @Override
     public Response deleteBlog(int id) {

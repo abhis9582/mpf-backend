@@ -1,6 +1,4 @@
 package com.mypropertyfact.estate.entities;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -35,12 +33,14 @@ public class City {
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     private List<Project> projects;
 
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    private List<Blog> blogs;
+
     @PrePersist
     public void onCreate(){
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-
     @PreUpdate
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();

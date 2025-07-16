@@ -1,12 +1,9 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
-import com.mypropertyfact.estate.projections.ProjectView;
 import com.mypropertyfact.estate.services.ProjectService;
-import jdk.jfr.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,22 +19,27 @@ import java.util.Map;
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
-    @GetMapping("/get-all")
-    public ResponseEntity<List<ProjectView>> getAllProjects(){
-        return new ResponseEntity<>(this.projectService.getAllProjects(), HttpStatus.OK);
+
+    @GetMapping
+    public ResponseEntity<?> getAllProjects(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int limit
+    ) {
+        return new ResponseEntity<>(this.projectService.getAllProjects(page, limit), HttpStatus.OK);
     }
+
     @Transactional
     @GetMapping("/get-all-projects-list")
-    public ResponseEntity<List<Map<String, Object>>> getAllProjectsList(){
+    public ResponseEntity<List<Map<String, Object>>> getAllProjectsList() {
         return ResponseEntity.ok(projectService.getAllProjectsList());
     }
 
     @PostMapping("/add-new")
     public ResponseEntity<Response> saveProject(
             @RequestParam(required = false) MultipartFile projectLogo,
-            @RequestParam(required = false)MultipartFile locationMap,
-            @RequestParam(required = false)MultipartFile projectThumbnail,
-            @ModelAttribute ProjectDto projectDto){
+            @RequestParam(required = false) MultipartFile locationMap,
+            @RequestParam(required = false) MultipartFile projectThumbnail,
+            @ModelAttribute ProjectDto projectDto) {
         return new ResponseEntity<>(this.projectService.saveProject(
                 projectLogo,
                 locationMap,
@@ -47,26 +49,30 @@ public class ProjectController {
     }
 
     @GetMapping("/get/{url}")
-    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url")String url){
+    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url") String url) {
         return new ResponseEntity<>(this.projectService.getBySlugUrl(url), HttpStatus.OK);
     }
-//    @GetMapping("/builder/{id}")
+
+    //    @GetMapping("/builder/{id}")
 //    public ResponseEntity<List<Project>> getAllBuilderProjects(@PathVariable("id")int id){
 //        return new ResponseEntity<>(this.projectService.getAllBuilderProjects(id), HttpStatus.OK);
 //    }
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Response> deleteProject(@PathVariable("id")int id){
+    public ResponseEntity<Response> deleteProject(@PathVariable("id") int id) {
         return new ResponseEntity<>(this.projectService.deleteProject(id), HttpStatus.OK);
     }
+
     @GetMapping("/search-by-type-city-budget")
-    public ResponseEntity<?> searchByPropertyTypeLocationBudget(@RequestParam("propertyType")String propertyType,
-                                                                @RequestParam("propertyLocation")String propertyLocation,
-                                                                @RequestParam("budget")String budget){
+    public ResponseEntity<?> searchByPropertyTypeLocationBudget(@RequestParam("propertyType") String propertyType,
+                                                                @RequestParam("propertyLocation") String propertyLocation,
+                                                                @RequestParam("budget") String budget,
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "9") int limit) {
         return new ResponseEntity<>(projectService.searchByPropertyTypeLocationBudget(propertyType, propertyLocation, budget), HttpStatus.OK);
     }
 
     @PostMapping("/add-update-amenity")
-    public ResponseEntity<Response> addUpdateAmenity(@RequestBody ProjectAmenityDto projectAmenityDto){
+    public ResponseEntity<Response> addUpdateAmenity(@RequestBody ProjectAmenityDto projectAmenityDto) {
         return new ResponseEntity<>(projectService.addUpdateAmenity(projectAmenityDto), HttpStatus.OK);
     }
 }

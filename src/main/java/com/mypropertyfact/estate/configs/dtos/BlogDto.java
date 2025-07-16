@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -18,4 +20,7 @@ public class BlogDto {
     private String blogCategory;
     private int status;
     private int categoryId;
+    private int cityId;
+    private String cityName;
+    private LocalDateTime createdAt;
 }

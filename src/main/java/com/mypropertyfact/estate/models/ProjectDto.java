@@ -2,7 +2,6 @@ package com.mypropertyfact.estate.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,11 +33,6 @@ public class ProjectDto {
     private String floorPlanDesc;
     private String locationDesc;
     private boolean status;
+    private String projectThumbnail;
     private List<AmenityDto> amenities;
-
-    public ProjectDto(int id, String name, List<AmenityDto> amenities){
-        this.id= id;
-        this.projectName= name;
-        this.amenities= amenities;
-    }
 }

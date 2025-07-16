@@ -63,6 +63,11 @@ public class Blog {
         this.updatedAt = LocalDateTime.now();
     }
 
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    @JsonIgnore
+    private City city;
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();

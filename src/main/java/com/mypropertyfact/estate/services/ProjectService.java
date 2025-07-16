@@ -7,10 +7,12 @@ import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
-import com.mypropertyfact.estate.projections.ProjectView;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class ProjectService {
@@ -46,12 +46,34 @@ public class ProjectService {
     @Autowired
     private FileUtils fileUtils;
 
+    @Autowired
+    private ProjectStatusRepository projectStatusRepository;
+
     @Value("${upload_dir}")
     private String uploadDir;
 
-    public List<ProjectView> getAllProjects() {
-        return projectRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "projectName"));
+    public Page<ProjectDto> getAllProjects(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "projectName"));
+        Page<Project> projects = projectRepository.findAll(pageable);
+        return projects.map(project-> {
+            ProjectDto projectDto = new ProjectDto();
+            projectDto.setProjectPrice(project.getProjectPrice());
+            projectDto.setProjectBy(project.getBuilder() != null ? project.getBuilder().getBuilderName(): null);
+            projectDto.setProjectName(project.getProjectName());
+            projectDto.setSlugURL(project.getSlugURL());
+            projectDto.setProjectPrice(project.getProjectPrice());
+            projectDto.setProjectConfiguration(project.getProjectConfiguration());
+            projectDto.setProjectLocality(project.getProjectLocality());
+            projectDto.setCity(project.getCity() != null ? project.getCity().getName() : null);
+            projectDto.setPropertyType(project.getProjectTypes() != null ? project.getProjectTypes().getProjectTypeName(): null);
+            projectDto.setProjectThumbnail(project.getProjectThumbnail());
+            return projectDto;
+        });
     }
+//    public List<ProjectView> getAllProjects() {
+//        projectRepository.findAll();
+//        return projectRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "projectName"));
+//    }
 
     @Transactional
     public Map<String, Object> getBySlugUrl(String url) {
@@ -314,6 +336,7 @@ public class ProjectService {
         Optional<City> cityObj = cityRepository.findById(Integer.parseInt(dto.getCity()));
         Optional<Builder> builderObj = builderRepository.findById(Integer.parseInt(dto.getProjectBy()));
         Optional<ProjectTypes> projectTypeObj = projectTypeRepository.findById(Integer.parseInt(dto.getPropertyType()));
+        Optional<ProjectStatus> projectStatus = projectStatusRepository.findById(Integer.parseInt(dto.getProjectStatus()));
         project.setMetaTitle(dto.getMetaTitle());
         project.setMetaDescription(dto.getMetaDescription());
         project.setMetaKeyword(dto.getMetaKeyword());
@@ -327,7 +350,7 @@ public class ProjectService {
         project.setIvrNo(dto.getIvrNo());
         project.setReraNo(dto.getReraNo());
         project.setReraWebsite(dto.getReraWebsite());
-        project.setProjectStatus(dto.getProjectStatus());
+        projectStatus.ifPresent(project::setProjectStatus);
         project.setSlugURL(dto.getSlugURL());
         project.setShowFeaturedProperties(true);
         project.setAmenityDesc(dto.getAmenityDesc());
@@ -335,7 +358,7 @@ public class ProjectService {
         project.setFloorPlanDesc(dto.getFloorPlanDesc());
         project.setStatus(true);
     }
-
+    @Transactional
     public List<Map<String, Object>> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
         int start = 0;
         int end = 0;
@@ -354,7 +377,7 @@ public class ProjectService {
         }
         List<Project> projects = projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
                 start, end);
-        System.out.println(projects);
+        System.out.println(projects.size());
         return projects.stream().map(project -> {
             Map<String, Object> projectObj = new HashMap<>();
             projectObj.put("id", project.getId());
@@ -427,6 +450,8 @@ public class ProjectService {
             projectResponse.put("locationDesc", project.getLocationDesc());
             projectResponse.put("floorPlanDesc", project.getFloorPlanDesc());
             projectResponse.put("projectLogo", project.getProjectLogo());
+            projectResponse.put("projectStatus", project.getProjectStatus() != null ? project.getProjectStatus().getId(): "0");
+            projectResponse.put("projectStatusName", project.getProjectStatus() != null ? project.getProjectStatus().getStatusName(): null);
             List<Map<String, Object>> amenityList = new ArrayList<>();
             amenityList = project.getAmenities().stream().filter(Objects::nonNull).map(amenity -> {
                 Map<String, Object> amenityObj = new HashMap<>();

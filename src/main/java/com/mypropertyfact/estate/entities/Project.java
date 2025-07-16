@@ -28,7 +28,6 @@ public class Project {
     private String reraNo;
     private String reraQr;
     private String reraWebsite;
-    private String projectStatus;
     private String projectLogo;
     private String projectThumbnail;
     private String slugURL;
@@ -86,5 +85,9 @@ public class Project {
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<ProjectFaqs> projectFaqs;
+
+    @ManyToOne
+    @JoinColumn(name = "project_status_id")
+    private ProjectStatus projectStatus;
 
 }

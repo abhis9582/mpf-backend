@@ -17,5 +17,5 @@ public interface BlogService {
 
     BlogDto getBySlug(String slug);
 
-    Page<Blog> getWithPagination(int page, int size);
+    Page<BlogDto> getWithPagination(int page, int size, String from);
 }

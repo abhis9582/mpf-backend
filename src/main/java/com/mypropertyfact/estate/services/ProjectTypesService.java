@@ -82,6 +82,7 @@ public class ProjectTypesService {
     public Map<String, Object> getBySlug(String url) {
         Optional<ProjectTypes> projectTypeData = this.projectTypeRepository.findBySlugUrl(url);
         Map<String, Object> responseObj = new HashMap<>();
+        List<Project> projects = projectRepository.findAll();
         projectTypeData.ifPresent(projectType -> {
             responseObj.put("id", projectType.getId());
             responseObj.put("projectTypeName", projectType.getProjectTypeName());
@@ -90,21 +91,43 @@ public class ProjectTypesService {
             responseObj.put("metaKeyword", projectType.getMetaKeyword());
             responseObj.put("metaDesc", projectType.getMetaDesc());
             List<Map<String, Object>> projectList = new ArrayList<>();
-            projectList = projectType.getProject().stream().map(project-> {
-                Map<String, Object> projectObj = new HashMap<>();
-                projectObj.put("projectId", project.getId());
-                projectObj.put("projectName", project.getProjectName());
-                if(project.getCity() != null) {
-                    projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
-                }
-                projectObj.put("projectThumbnail", project.getProjectThumbnail());
-                projectObj.put("projectPrice", project.getProjectPrice());
-                projectObj.put("slugURL", project.getSlugURL());
-                if(project.getProjectTypes() != null) {
-                    projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
-                }
-                return projectObj;
-            }).toList();
+            if(url.equals("new-launches")) {
+                projectList = projects.stream().filter(project -> project.getProjectStatus() != null && project.getProjectStatus().getId() == 3).map(project-> {
+                    Map<String, Object> projectObj = new HashMap<>();
+                    projectObj.put("projectId", project.getId());
+                    projectObj.put("projectName", project.getProjectName());
+                    if(project.getCity() != null) {
+                        projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
+                    }
+                    projectObj.put("projectThumbnail", project.getProjectThumbnail());
+                    projectObj.put("projectPrice", project.getProjectPrice());
+                    projectObj.put("slugURL", project.getSlugURL());
+                    projectObj.put("projectStatus", project.getProjectStatus() != null ? project.getProjectStatus().getId(): "0");
+                    projectObj.put("projectStatusName", project.getProjectStatus() != null ? project.getProjectStatus().getStatusName(): null);
+                    if(project.getProjectTypes() != null) {
+                        projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+                    }
+                    return projectObj;
+                }).toList();
+            }else{
+                projectList = projectType.getProject().stream().map(project-> {
+                    Map<String, Object> projectObj = new HashMap<>();
+                    projectObj.put("projectId", project.getId());
+                    projectObj.put("projectName", project.getProjectName());
+                    if(project.getCity() != null) {
+                        projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
+                    }
+                    projectObj.put("projectThumbnail", project.getProjectThumbnail());
+                    projectObj.put("projectPrice", project.getProjectPrice());
+                    projectObj.put("slugURL", project.getSlugURL());
+                    projectObj.put("projectStatus", project.getProjectStatus() != null ? project.getProjectStatus().getId(): "0");
+                    projectObj.put("projectStatusName", project.getProjectStatus() != null ? project.getProjectStatus().getStatusName(): null);
+                    if(project.getProjectTypes() != null) {
+                        projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+                    }
+                    return projectObj;
+                }).toList();
+            }
             responseObj.put("projects", projectList);
         });
         return responseObj;

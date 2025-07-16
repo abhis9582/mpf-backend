@@ -56,11 +56,12 @@ public class BlogController {
     }
 
     @GetMapping("/get")
-    public Page<Blog> getWithPagination(
+    public Page<BlogDto> getWithPagination(
             @RequestParam(defaultValue = "0")int page,
-            @RequestParam(defaultValue = "9")int size
+            @RequestParam(defaultValue = "9")int size,
+            @RequestParam(defaultValue = "blog")String from
     ){
-        return blogService.getWithPagination(page, size);
+        return blogService.getWithPagination(page, size, from);
     }
 }
 
