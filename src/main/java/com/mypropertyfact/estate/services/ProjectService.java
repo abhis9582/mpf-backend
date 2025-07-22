@@ -380,9 +380,9 @@ public class ProjectService {
             }
             case "Above 5 Cr*" -> {
                 start = 5;
-                end = 10;
+                end = 20;
             }
-            default -> end = 10;
+            default -> end = 20;
         }
         final int s = start;
         final int e = end;
@@ -405,7 +405,6 @@ public class ProjectService {
         }catch (Exception ex){
             System.out.println(ex.getMessage());
         }
-        System.out.println(filteredList.size());
         return filteredList.stream().map(project -> {
             Map<String, Object> projectObj = new HashMap<>();
             projectObj.put("id", project.getId());
@@ -418,6 +417,9 @@ public class ProjectService {
             }
             if (project.getProjectTypes() != null) {
                 projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+            }
+            if(project.getProjectStatus() != null) {
+                projectObj.put("projectStatusName", project.getProjectStatus().getStatusName());
             }
             return projectObj;
         }).toList();
