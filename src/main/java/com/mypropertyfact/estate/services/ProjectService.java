@@ -53,7 +53,7 @@ public class ProjectService {
     private String uploadDir;
 
     public Page<ProjectDto> getAllProjects(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "projectName"));
+        Pageable pageable = PageRequest.of(page-1, size, Sort.by(Sort.Direction.ASC, "projectName"));
         Page<Project> projects = projectRepository.findAll(pageable);
         return projects.map(project-> {
             ProjectDto projectDto = new ProjectDto();
@@ -66,7 +66,10 @@ public class ProjectService {
             projectDto.setProjectLocality(project.getProjectLocality());
             projectDto.setCity(project.getCity() != null ? project.getCity().getName() : null);
             projectDto.setPropertyType(project.getProjectTypes() != null ? project.getProjectTypes().getProjectTypeName(): null);
-            projectDto.setProjectThumbnail(project.getProjectThumbnail());
+            projectDto.setProjectThumbnailImage(project.getProjectThumbnail());
+            projectDto.setProjectAddress(project.getProjectLocality().concat(", ").concat(projectDto.getCity()));
+            projectDto.setTypeName(project.getProjectTypes() != null ? project.getProjectTypes().getProjectTypeName(): null);
+            projectDto.setProjectStatusName(project.getProjectStatus() != null ? project.getProjectStatus().getStatusName(): null);
             return projectDto;
         });
     }
@@ -360,25 +363,50 @@ public class ProjectService {
     }
     @Transactional
     public List<Map<String, Object>> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
+        List<Project> filteredList = projects;
         int start = 0;
         int end = 0;
-        if (budget.equals("Up to 1Cr*")) {
-            start = 0;
-            end = 1;
-        } else if (budget.equals("1-3 Cr*")) {
-            start = 1;
-            end = 3;
-        } else if (budget.equals("3-5 Cr*")) {
-            start = 3;
-            end = 5;
-        } else if (budget.equals("Above 5 Cr*")) {
-            start = 5;
-            end = 10;
+        switch (budget) {
+            case "Up to 1Cr*" -> {
+                end = 1;
+            } case "1-3 Cr*" -> {
+                start = 1;
+                end = 3;
+            }
+            case "3-5 Cr*" -> {
+                start = 3;
+                end = 5;
+            }
+            case "Above 5 Cr*" -> {
+                start = 5;
+                end = 10;
+            }
+            default -> end = 10;
         }
-        List<Project> projects = projectRepository.searchByPropertyTypeLocationBudget(propertyType, propertyLocation,
-                start, end);
-        System.out.println(projects.size());
-        return projects.stream().map(project -> {
+        final int s = start;
+        final int e = end;
+        try{
+        if (propertyType != null && !propertyType.isEmpty() && propertyLocation.isEmpty()) {
+            filteredList = projects.stream()
+                    .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
+                    .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                    .toList();
+        }else if(propertyLocation != null && !propertyLocation.isEmpty()){
+            filteredList = projects.stream()
+                    .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                    .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                    .toList();
+        }else {
+            filteredList = projects.stream()
+                    .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                    .toList();
+        }
+        }catch (Exception ex){
+            System.out.println(ex.getMessage());
+        }
+        System.out.println(filteredList.size());
+        return filteredList.stream().map(project -> {
             Map<String, Object> projectObj = new HashMap<>();
             projectObj.put("id", project.getId());
             projectObj.put("slugURL", project.getSlugURL());
@@ -396,7 +424,7 @@ public class ProjectService {
     }
 
     public List<Map<String, Object>> getAllProjectsList() {
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
         return projects.stream().map(project -> {
             Map<String, Object> projectResponse = new HashMap<>();
             Optional<City> cityObj = cityRepository.findById(project.getCity().getId());
@@ -483,5 +511,9 @@ public class ProjectService {
         projectRepository.save(project);
 
         return new Response(1, "Amenities saved successfully");
+    }
+    @Transactional
+    public List<Project> getAllProjectWithAssociatedMappings() {
+        return projectRepository.findAll();
     }
 }

@@ -33,6 +33,9 @@ public class ProjectDto {
     private String floorPlanDesc;
     private String locationDesc;
     private boolean status;
-    private String projectThumbnail;
+    private String projectThumbnailImage;
     private List<AmenityDto> amenities;
+    private String projectAddress;
+    private String typeName;
+    private String projectStatusName;
 }
