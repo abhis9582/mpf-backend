@@ -1,4 +1,5 @@
 package com.mypropertyfact.estate.entities;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,14 +27,17 @@ public class City {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "state_id")
+    @JsonIgnore
     private State state;
 
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Project> projects;
 
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Blog> blogs;
 
     @PrePersist

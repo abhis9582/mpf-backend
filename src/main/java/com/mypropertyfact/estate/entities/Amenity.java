@@ -1,9 +1,12 @@
 package com.mypropertyfact.estate.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -20,6 +23,12 @@ public class Amenity {
     private String altTag;
     private String amenityImageUrl;
     private boolean status;
+    @CreationTimestamp
     private LocalDateTime createdAt;
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @ManyToMany(mappedBy = "amenities")
+    @JsonIgnore
+    private List<Project> projects;
 }

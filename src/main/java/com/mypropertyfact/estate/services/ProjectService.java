@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService {
@@ -387,14 +388,29 @@ public class ProjectService {
         final int s = start;
         final int e = end;
         try{
-        if (propertyType != null && !propertyType.isEmpty() && propertyLocation.isEmpty()) {
+        if (!propertyType.isEmpty() && propertyLocation.isEmpty()) {
             filteredList = projects.stream()
                     .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
                     .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                     .toList();
-        }else if(propertyLocation != null && !propertyLocation.isEmpty()){
+        }else if(!propertyLocation.isEmpty() &&
+                propertyType.trim().isEmpty()){
             filteredList = projects.stream()
                     .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                    .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                    .toList();
+        }else if(!propertyLocation.trim().isEmpty() &&
+                !propertyType.trim().isEmpty() && budget.isEmpty()){
+            filteredList = projects.stream()
+                    .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                    .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
+                    .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                    .toList();
+        }else if(!propertyLocation.trim().isEmpty() &&
+                !propertyType.trim().isEmpty() && !budget.isEmpty()){
+            filteredList = projects.stream()
+                    .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                    .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
                     .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                     .toList();
         }else {
@@ -503,9 +519,12 @@ public class ProjectService {
         }
 
         Project project = dbProject.get();
-
-        List<Amenity> dtoAmenities = dto.getAmenityList();
-        if (dtoAmenities == null || dtoAmenities.isEmpty()) {
+        List<Amenity> dtoAmenities = new ArrayList<>();
+        if(dto.getAmenityList() != null){
+            List<Amenity> list = dto.getAmenityList().stream().map(amenity -> amenityRepository.findById(amenity.getId()).orElse(null)).toList();
+            dtoAmenities.addAll(list);
+        }
+        if (dtoAmenities.isEmpty()) {
             return new Response(0, "No amenities provided");
         }
         project.setAmenities(dtoAmenities);

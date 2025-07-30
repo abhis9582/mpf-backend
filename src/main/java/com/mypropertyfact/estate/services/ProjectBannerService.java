@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.ProjectBannerDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectBanner;
@@ -26,6 +27,9 @@ public class ProjectBannerService {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private FileUtils fileUtils;
 
     @Value("${uploads_path}")
     private String uploadDir;
@@ -210,6 +214,10 @@ public class ProjectBannerService {
         try{
             Optional<ProjectBanner> byId = projectBannerRepository.findById(id);
             byId.ifPresent(p->{
+                if(p.getProject() != null) {
+                    fileUtils.deleteFileFromDestination(p.getMobileBanner(), uploadDir + p.getProject().getSlugURL());
+                    fileUtils.deleteFileFromDestination(p.getDesktopBanner(), uploadDir + p.getProject().getSlugURL());
+                }
                 projectBannerRepository.deleteById(id);
             });
             return new Response(1, "Banner deleted successfully...");

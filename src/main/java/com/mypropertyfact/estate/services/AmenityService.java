@@ -1,13 +1,16 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.Constants;
+import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.AmenityDto;
 import com.mypropertyfact.estate.entities.Amenity;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.AmenityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -18,7 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,9 +36,12 @@ public class AmenityService {
     @Value("${upload_amenity_path}")
     private String uploadDir;
 
+    @Autowired
+    private FileUtils fileUtils;
+
     @Transactional
     public List<Amenity> getAllAmenities() {
-        return this.amenityRepository.findAll();
+        return this.amenityRepository.findAll(Sort.by(Sort.Direction.ASC, "title"));
     }
 
     public Response postAmenity(MultipartFile file, AmenityDto amenityDto) {
@@ -44,79 +52,67 @@ public class AmenityService {
             return response;
         }
         // Validate file type
-        if(file != null) {
-            if (!file.getContentType().startsWith("image/")) {
-                response.setMessage(Constants.IMAGE_ALLOWED);
-                return response;
-            }
+        if (file != null && !fileUtils.isTypeImage(file)) {
+            response.setMessage(Constants.IMAGE_ALLOWED);
+            return response;
         }
-
-        try {
-            // Create directory if it doesn't exist
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            // Generate a unique file name (UUID)
-            String newFileName = "";
-            if (file != null) {
-                newFileName = UUID.randomUUID() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
-                // Save the file to the server
-                Path path = Paths.get(dir.getPath() + "/" + newFileName);
-                Files.write(path, file.getBytes());
-            }
-            if (amenityDto.getId() > 0) {
-                Amenity dbAmenity = this.amenityRepository.findById(amenityDto.getId()).get();
-                if (dbAmenity != null) {
-                    dbAmenity.setTitle(amenityDto.getTitle());
-                    dbAmenity.setAltTag(amenityDto.getAltTag());
-                    dbAmenity.setStatus(true);
-                    dbAmenity.setUpdatedAt(LocalDateTime.now());
-                    if (!newFileName.isEmpty()) {
-                        Path imagePath = Paths.get(uploadDir, dbAmenity.getAmenityImageUrl());
-                        // Check if the image exists and delete it
-                        if (Files.exists(imagePath)) {
-                            Files.delete(imagePath);
-                        }
-                        dbAmenity.setAmenityImageUrl(newFileName);
+        String savedFileName = fileUtils.saveOriginalImage(file, uploadDir);
+        if (amenityDto.getId() > 0) {
+            Optional<Amenity> dbAmenity = this.amenityRepository.findById(amenityDto.getId());
+            if (dbAmenity.isPresent()) {
+                dbAmenity.get().setTitle(amenityDto.getTitle());
+                dbAmenity.get().setAltTag(amenityDto.getAltTag());
+                dbAmenity.get().setStatus(true);
+                if (savedFileName != null && !savedFileName.isEmpty()) {
+                    if(dbAmenity.get().getAmenityImageUrl() != null && !dbAmenity.get().getAmenityImageUrl().isBlank()) {
+                        fileUtils.deleteFileFromDestination(dbAmenity.get().getAmenityImageUrl(), uploadDir);
                     }
-                    this.amenityRepository.save(dbAmenity);
+                    dbAmenity.get().setAmenityImageUrl(savedFileName);
                 }
-            } else {
-                Amenity amenity = new Amenity();
-                amenity.setTitle(amenityDto.getTitle());
-                amenity.setAltTag(amenityDto.getAltTag());
-                amenity.setAmenityImageUrl(newFileName);
-                amenity.setStatus(true);
-                amenity.setCreatedAt(LocalDateTime.now());
-                amenity.setUpdatedAt(LocalDateTime.now());
-                this.amenityRepository.save(amenity);
+                amenityRepository.save(dbAmenity.get());
             }
+            response.setMessage("Amenity Updated Successfully...");
+            response.setIsSuccess(1);
+        } else {
+            Amenity amenity = new Amenity();
+            amenity.setTitle(amenityDto.getTitle());
+            amenity.setAltTag(amenityDto.getAltTag());
+            amenity.setAmenityImageUrl(savedFileName);
+            amenity.setStatus(true);
+            amenity.setCreatedAt(LocalDateTime.now());
+            amenity.setUpdatedAt(LocalDateTime.now());
+            this.amenityRepository.save(amenity);
             response.setMessage(Constants.AMENITY_SAVED);
             response.setIsSuccess(1);
-        } catch (Exception e) {
-            response.setMessage(Constants.SOMETHING_WENT_WRONG);
         }
         return response;
     }
 
+    @Transactional
     public Response deleteAmenity(int id) {
-        Response response = new Response();
-        try {
-            Amenity amenity = this.amenityRepository.findById(id).get();
-            if(!amenity.getAmenityImageUrl().isEmpty()){
-                Path imagePath = Paths.get(uploadDir, amenity.getAmenityImageUrl());
-                // Check if the image exists and delete it
-                if (Files.exists(imagePath)) {
-                    Files.delete(imagePath);
-                }
-            }
-            this.amenityRepository.deleteById(id);
-            response.setMessage("Data deleted successfully...");
-            response.setIsSuccess(1);
-        }catch (Exception e){
-            response.setMessage(e.getMessage());
+        Optional<Amenity> dbAmenity = amenityRepository.findByIdWithProjects(id); // custom method with fetch join
+
+        if (dbAmenity.isEmpty()) {
+            return new Response(0, "Amenity not found.");
         }
-        return response;
+
+        Amenity amenity = dbAmenity.get();
+
+        // ⚠️ Correct way: Remove this amenity from each project's amenity list
+        for (Project project : new ArrayList<>(amenity.getProjects())) {
+            project.getAmenities().remove(amenity); // owning side
+            projectRepository.save(project);        // persist the update
+        }
+
+        // Delete image if present
+        if (amenity.getAmenityImageUrl() != null) {
+            fileUtils.deleteFileFromDestination(amenity.getAmenityImageUrl(), uploadDir);
+        }
+
+        // Now safe to delete
+        amenityRepository.delete(amenity);
+
+        return new Response(1, "Amenity deleted successfully...");
     }
+
 }

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 
 @Component
@@ -174,5 +175,29 @@ public class FileUtils {
         }
     }
 
+    public String saveOriginalImage(MultipartFile file, String uploadDir) {
+        String imageName = null;
+        try {
+            if (file != null && isTypeImage(file)) {
+                Path uploadPath = Paths.get(uploadDir);
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+                // Generate a unique image name (or use file.getOriginalFilename())
+                String originalFilename = file.getOriginalFilename();
+                String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                imageName = System.currentTimeMillis() + extension;
+
+                // Target path for the saved file
+                Path filePath = uploadPath.resolve(imageName);
+
+                // Save the file
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return imageName;
+    }
 
 }
