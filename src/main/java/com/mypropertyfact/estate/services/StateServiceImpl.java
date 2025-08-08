@@ -35,14 +35,14 @@ public class StateServiceImpl implements StateService {
                 countryById.ifPresent(state::setCountry);
                 stateRepository.save(state);
             });
-            return new Response(1, "State updated successfully...");
+            return new Response(1, "State updated successfully...", 0);
         }
         State state= new State();
         state.setStateName(stateDto.getStateName());
         state.setDescription(stateDto.getDescription());
         countryById.ifPresent(state::setCountry);
         stateRepository.save(state);
-        return new Response(1, "State saved successfully...");
+        return new Response(1, "State saved successfully...", 0);
     }
 
     @Override

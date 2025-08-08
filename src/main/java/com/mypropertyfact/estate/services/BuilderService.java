@@ -19,14 +19,14 @@ public class BuilderService {
     //Getting all builders
     public BuilderResponse getAllBuilders() {
         return new BuilderResponse(builderRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "builderName")),
-                new Response(1, "All builders fetched successfully..."));
+                new Response(1, "All builders fetched successfully...", 0));
     }
 
     public Response addUpdateBuilder(Builder builder) {
         Response response = new Response();
         try {
             if (builder == null || builder.getBuilderName().isEmpty()) {
-                return new Response(0, "Builder name is required !");
+                return new Response(0, "Builder name is required !", 0);
             }
             Builder existsBuilder = this.builderRepository.findByBuilderName(builder.getBuilderName());
             if (existsBuilder != null && existsBuilder.getId() != builder.getId()) {
@@ -109,6 +109,9 @@ public class BuilderService {
                 projectObj.put("slugURL", project.getSlugURL());
                 if(project.getProjectTypes() != null) {
                     projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
+                }
+                if(project.getProjectStatus() != null){
+                    projectObj.put("projectStatusName", project.getProjectStatus().getStatusName());
                 }
                 return projectObj;
             }).toList();

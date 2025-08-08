@@ -117,7 +117,7 @@ public class ProjectGalleryService {
         projectGallery.setImage(fileName);
         projectGallery.setProject(project);
         this.projectGalleryRepository.save(projectGallery);
-        return new Response(1, "File Uploaded successfully...");
+        return new Response(1, "File Uploaded successfully...", 0);
     }
     public List<ProjectGallery> getBySlugUrl(String url){
         return this.projectGalleryRepository.findBySlugUrl(url);

@@ -82,7 +82,7 @@ public class ProjectTypesService {
     public Map<String, Object> getBySlug(String url) {
         Optional<ProjectTypes> projectTypeData = this.projectTypeRepository.findBySlugUrl(url);
         Map<String, Object> responseObj = new HashMap<>();
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findByStatusTrue(Sort.by(Sort.Direction.ASC, "projectName"));
         projectTypeData.ifPresent(projectType -> {
             responseObj.put("id", projectType.getId());
             responseObj.put("projectTypeName", projectType.getProjectTypeName());
@@ -141,7 +141,7 @@ public class ProjectTypesService {
 
     public Response deleteProjectType(int id) {
         this.projectTypeRepository.deleteById(id);
-        return new Response(1, "Project type deleted successfully...");
+        return new Response(1, "Project type deleted successfully...", 0);
     }
 
     public List<ProjectTypes> getAllProjectTypesList() {

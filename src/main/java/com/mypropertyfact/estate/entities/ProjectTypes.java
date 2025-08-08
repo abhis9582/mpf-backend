@@ -3,12 +3,14 @@ package com.mypropertyfact.estate.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Data
+@ToString(exclude = {"project", "localities"})
 public class ProjectTypes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

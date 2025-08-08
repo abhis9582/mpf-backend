@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
@@ -21,11 +22,8 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping
-    public ResponseEntity<?> getAllProjects(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "9") int limit
-    ) {
-        return new ResponseEntity<>(this.projectService.getAllProjects(page, limit), HttpStatus.OK);
+    public ResponseEntity<List<ProjectDetailDto>> fetchAllProjects(){
+        return ResponseEntity.ok(projectService.fetchAllProjects());
     }
 
     @Transactional

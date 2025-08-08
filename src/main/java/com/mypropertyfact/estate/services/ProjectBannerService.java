@@ -201,7 +201,7 @@ public class ProjectBannerService {
             project.ifPresent(projectBanner::setProject);
             this.projectBannerRepository.save(projectBanner);
         }
-        return new Response(1, "File Uploaded successfully...");
+        return new Response(1, "File Uploaded successfully...", 0);
     }
 
 
@@ -220,7 +220,7 @@ public class ProjectBannerService {
                 }
                 projectBannerRepository.deleteById(id);
             });
-            return new Response(1, "Banner deleted successfully...");
+            return new Response(1, "Banner deleted successfully...", 0);
         }catch (Exception e){
             response.setMessage(e.getMessage());
         }

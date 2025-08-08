@@ -102,7 +102,7 @@ public class BlogServiceImpl implements BlogService {
                 existing.setBlogImage(blogImageName);
             }
             blogRepository.save(existing);
-            return new Response(1, "Blog updated successfully...");
+            return new Response(1, "Blog updated successfully...", 0);
         }
 
         // Add new blogDto
@@ -120,7 +120,7 @@ public class BlogServiceImpl implements BlogService {
         blog.setBlogMetaDescription(blogDto.getBlogMetaDescription());
         blog.setBlogImage(blogImageName);
         blogRepository.save(blog);
-        return new Response(1, "Blog saved successfully...");
+        return new Response(1, "Blog saved successfully...", 0);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public List<BlogDto> getAllBlogs() {
-        List<Blog> blogs = blogRepository.findAll();
+        List<Blog> blogs = blogRepository.findAllWithBlogCategory();
         return blogs.stream().map(blog ->
                 new BlogDto(blog.getId(),
                         blog.getBlogTitle(),
@@ -218,6 +218,6 @@ public class BlogServiceImpl implements BlogService {
         Blog blog = blogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Blog already deleted or not found"));
         fileUtils.deleteFileFromDestination(blog.getBlogImage(), upload_dir + "blog/");
         blogRepository.delete(blog);
-        return new Response(1, "Blog deleted successful...");
+        return new Response(1, "Blog deleted successful...", 0);
     }
 }

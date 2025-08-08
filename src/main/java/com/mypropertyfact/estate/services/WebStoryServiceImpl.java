@@ -107,9 +107,9 @@ public class WebStoryServiceImpl implements WebStoryService {
                 }
             }
             webStoryRepository.deleteById(id);
-            return new Response(1, "Story deleted successfully...");
+            return new Response(1, "Story deleted successfully...", 0);
         }catch (Exception e){
-            return new Response(0, e.getMessage());
+            return new Response(0, e.getMessage(), 0);
         }
     }
 

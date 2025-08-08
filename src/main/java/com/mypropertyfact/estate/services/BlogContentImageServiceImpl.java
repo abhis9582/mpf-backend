@@ -70,11 +70,11 @@ public class BlogContentImageServiceImpl implements BlogContentImageService {
             existingImage.setImageHeight(blogContentImage.getImageHeight());
 
             blogContentImageRepository.save(existingImage);
-            return new Response(1, "Image updated successfully.");
+            return new Response(1, "Image updated successfully.", 0);
         } else {
             blogContentImage.setImage(savedImagePath);
             blogContentImageRepository.save(blogContentImage);
-            return new Response(1, "Image saved successfully.");
+            return new Response(1, "Image saved successfully.", 0);
         }
     }
 

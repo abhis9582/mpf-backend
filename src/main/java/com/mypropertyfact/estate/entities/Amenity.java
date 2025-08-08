@@ -15,6 +15,7 @@ import java.util.Set;
 
 @Data
 @Entity
+@ToString(exclude = "projects")
 public class Amenity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

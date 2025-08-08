@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.repositories;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.projections.ProjectView;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project ,Integer> {
+public interface ProjectRepository extends JpaRepository<Project, Integer> {
     List<ProjectView> findAllProjectedBy(Sort sort);
 
     Optional<Project> findBySlugURL(String url);
@@ -26,15 +27,28 @@ public interface ProjectRepository extends JpaRepository<Project ,Integer> {
             "GROUP BY pa.project_id, p.project_name",
             nativeQuery = true)
     List<Object[]> getAllProjectAmenity();
+
     @Query(value = """
-                    select * from projects where property_type= :propertyType
-                    and city_id = :propertyLocation
-                    and project_price between :startBudget
-                    and :endBudget
-                    """, nativeQuery = true)
+            select * from projects where property_type= :propertyType
+            and city_id = :propertyLocation
+            and project_price between :startBudget
+            and :endBudget
+            """, nativeQuery = true)
     List<Project> searchByPropertyTypeLocationBudget(@Param("propertyType") String propertyType, @Param("propertyLocation") String propertyLocation,
                                                      @Param("startBudget") int startBudget,
                                                      @Param("endBudget") int endBudget);
 
-//    List<Project> fin
+    //    List<Project> fin
+    List<Project> findByStatusTrue(Sort sort);
+
+    @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT p FROM Project p WHERE p.status = true ORDER BY p.projectName")
+    List<Project> findAllWithAllRelations();
+
+    @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT p FROM Project p WHERE p.slugURL = :url AND p.status= true")
+    Optional<Project> findBySlugURLWithAllRelations(@Param("url") String url);
+
+    List<Project> findByStatusTrueOrderByProjectNameAsc();
+
 }

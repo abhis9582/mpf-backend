@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "builders")
+@ToString(exclude = "projects")
 public class Builder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

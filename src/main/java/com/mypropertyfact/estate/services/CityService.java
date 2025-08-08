@@ -177,6 +177,9 @@ public class CityService {
                 if(project.getProjectTypes() != null) {
                     projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
                 }
+                if(project.getProjectStatus() != null){
+                    projectObj.put("projectStatusName", project.getProjectStatus().getStatusName());
+                }
                 return projectObj;
             }).toList();
             resObj.put("projects", projects);

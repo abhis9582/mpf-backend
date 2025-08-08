@@ -63,6 +63,6 @@ public class ProjectAmenityService {
     }
     public Response deleteProjectAmenity(int projectId){
         this.projectAmenityRepository.deleteByProjectId(projectId);
-        return new Response(1, "Project amenity deleted successfully...");
+        return new Response(1, "Project amenity deleted successfully...", 0);
     }
 }

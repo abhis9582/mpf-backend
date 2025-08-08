@@ -77,7 +77,7 @@ public class ProjectAboutService {
     public Response deleteProjectsAbout(int id){
         
         this.projectAboutRepository.deleteById(id);
-        return new Response(1,"Data deleted successfully...");
+        return new Response(1,"Data deleted successfully...", 0);
     }
 //    public ProjectsAbout getBySlug(String url){
 //        Project projectBySlugURL = projectRepository.findBySlugURL(url);

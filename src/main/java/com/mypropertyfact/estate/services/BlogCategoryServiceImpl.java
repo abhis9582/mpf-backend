@@ -19,12 +19,12 @@ import java.util.stream.Stream;
 @Service
 public class BlogCategoryServiceImpl implements BlogCategoryService {
 
-    private BlogCategoryRepository blogCategoryRepository;
+    private final BlogCategoryRepository blogCategoryRepository;
 
     @Value("${upload_dir}")
     private String uploadDir;
 
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     BlogCategoryServiceImpl(BlogCategoryRepository blogCategoryRepository,
                             FileUtils fileUtils) {
@@ -42,10 +42,10 @@ public class BlogCategoryServiceImpl implements BlogCategoryService {
             dbBlogCategory.setCategoryName(blogCategory.getCategoryName());
             dbBlogCategory.setCategoryDescription(blogCategory.getCategoryDescription());
             blogCategoryRepository.save(dbBlogCategory);
-            return new Response(1, "Blog category updated successfully...");
+            return new Response(1, "Blog category updated successfully...", 0);
         }
         blogCategoryRepository.save(blogCategory);
-        return new Response(1, "Blog category saved successfully...");
+        return new Response(1, "Blog category saved successfully...", 0);
     }
 
     @Override
@@ -62,16 +62,20 @@ public class BlogCategoryServiceImpl implements BlogCategoryService {
             });
         }
         blogCategoryRepository.delete(blogCategory);
-        return new Response(1, "Blog category deleted successfully");
+        return new Response(1, "Blog category deleted successfully", 0);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BlogCategoryDto> getAllCategories() {
-        return blogCategoryRepository.findAll().stream().map(
+        List<BlogCategory> categories = blogCategoryRepository.findAllWithBlogs();
+
+        return categories.stream().map(
                 blogCategory -> new BlogCategoryDto(
                         blogCategory.getId(),
                         blogCategory.getCategoryName(),
-                        blogCategory.getCategoryDescription()
+                        blogCategory.getCategoryDescription(),
+                        blogCategory.getBlogs().size()
                 )
         ).collect(Collectors.toList());
     }

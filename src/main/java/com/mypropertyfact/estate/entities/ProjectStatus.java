@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "project_status")
 @Data
+@ToString(exclude = "projects")
 public class ProjectStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

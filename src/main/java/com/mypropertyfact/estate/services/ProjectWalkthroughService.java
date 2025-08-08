@@ -65,6 +65,6 @@ public class ProjectWalkthroughService {
 
     public Response deleteWalkthrough(int id) {
         this.projectWalkthroughRepository.deleteById(id);
-        return new Response(1, "Deleted");
+        return new Response(1, "Deleted", 0);
     }
 }

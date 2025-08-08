@@ -93,7 +93,7 @@ public class AmenityService {
         Optional<Amenity> dbAmenity = amenityRepository.findByIdWithProjects(id); // custom method with fetch join
 
         if (dbAmenity.isEmpty()) {
-            return new Response(0, "Amenity not found.");
+            return new Response(0, "Amenity not found.", 0);
         }
 
         Amenity amenity = dbAmenity.get();
@@ -112,7 +112,7 @@ public class AmenityService {
         // Now safe to delete
         amenityRepository.delete(amenity);
 
-        return new Response(1, "Amenity deleted successfully...");
+        return new Response(1, "Amenity deleted successfully...", 0);
     }
 
 }

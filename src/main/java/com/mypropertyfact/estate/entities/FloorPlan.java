@@ -2,12 +2,14 @@ package com.mypropertyfact.estate.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "floor_plans")
 @Data
+@ToString(exclude = "project")
 public class FloorPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

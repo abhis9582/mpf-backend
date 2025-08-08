@@ -122,9 +122,9 @@ public class WebStoryCategoryServiceImpl implements WebStoryCategoryService {
                 }
             });
             webStoryCategoryRepository.deleteById(categoryId);
-            return new Response(1, "Category deleted with it's all stories");
+            return new Response(1, "Category deleted with it's all stories", 0);
         }catch (Exception e){
-            return new Response(0, e.getMessage());
+            return new Response(0, e.getMessage(), 0);
         }
     }
 }

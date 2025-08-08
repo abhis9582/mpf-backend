@@ -91,7 +91,7 @@ public class LocalityServiceImpl implements LocalityService {
     @Override
     public Response deleteLocality(long id) {
         localityRepository.deleteById(id);
-        return new Response(1, "Locality deleted successfully...");
+        return new Response(1, "Locality deleted successfully...", 0);
     }
 
      public Locality mapToEntity(Locality locality, LocalityDto localityDto) {

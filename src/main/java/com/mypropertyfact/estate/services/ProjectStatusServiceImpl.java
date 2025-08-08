@@ -28,7 +28,7 @@ public class ProjectStatusServiceImpl implements ProjectStatusService {
                 status.setActive(!projectStatusDto.isActive() ? false: true);
                 projectStatusRepository.save(status);
             });
-            return new Response(1, "Project status updated successfully...");
+            return new Response(1, "Project status updated successfully...", 0);
         }else{
             ProjectStatus projectStatus = new ProjectStatus();
             projectStatus.setStatusName(projectStatusDto.getStatusName());
@@ -36,7 +36,7 @@ public class ProjectStatusServiceImpl implements ProjectStatusService {
             projectStatus.setDescription(projectStatusDto.getDescription());
             projectStatus.setActive(true);
             projectStatusRepository.save(projectStatus);
-            return new Response(1, "Project status saved successfully...");
+            return new Response(1, "Project status saved successfully...", 0);
         }
     }
 

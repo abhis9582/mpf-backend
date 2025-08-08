@@ -3,14 +3,40 @@ package com.mypropertyfact.estate.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
+@NamedEntityGraph(
+        name = "Project.withAllRelations",
+        attributeNodes = {
+                @NamedAttributeNode("city"),
+                @NamedAttributeNode("builder"),
+                @NamedAttributeNode("projectTypes"),
+                @NamedAttributeNode("projectStatus"),
+                @NamedAttributeNode("projectBanners"),
+                @NamedAttributeNode("floorPlans"),
+                @NamedAttributeNode("amenities"),
+                @NamedAttributeNode("projectsAbout"),
+                @NamedAttributeNode("projectWalkthrough"),
+                @NamedAttributeNode("locationBenefits"),
+                @NamedAttributeNode("projectGalleries"),
+                @NamedAttributeNode("projectFaqs")
+        }
+)
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "projects")
+@ToString(exclude = {
+        "city", "builder", "projectTypes", "projectStatus",
+        "projectBanners", "floorPlans", "amenities", "projectsAbout",
+        "projectWalkthrough", "locationBenefits", "projectGalleries", "projectFaqs"
+})
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +61,9 @@ public class Project {
     private boolean showFeaturedProperties;
     private boolean status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_Id")
+    @JsonIgnore
     private City city;
 
     @Lob
@@ -55,41 +82,49 @@ public class Project {
             inverseJoinColumns = @JoinColumn(name = "amenity_id")
     )
     @JsonIgnore
-    private List<Amenity> amenities;
+    private Set<Amenity> amenities;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<ProjectBanner> projectBanners;
+    private Set<ProjectBanner> projectBanners;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<FloorPlan> floorPlans;
+    private Set<FloorPlan> floorPlans;
 
-    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private ProjectsAbout projectsAbout;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "builder_id")
+    @JsonIgnore
     private Builder builder;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_type")
+    @JsonIgnore
     private ProjectTypes projectTypes;
 
-    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private ProjectWalkthrough projectWalkthrough;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<LocationBenefit> locationBenefits;
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<LocationBenefit> locationBenefits;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<ProjectGallery> projectGalleries;
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<ProjectGallery> projectGalleries;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<ProjectFaqs> projectFaqs;
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<ProjectFaqs> projectFaqs;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_status_id")
+    @JsonIgnore
     private ProjectStatus projectStatus;
 
 }

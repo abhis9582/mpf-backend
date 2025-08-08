@@ -53,12 +53,12 @@ public class EnquiryService {
             Enquery dbEnquery = enqueryRepository.findById(id).orElse(null);
             if(dbEnquery != null){
                 enqueryRepository.deleteById(id);
-                return new Response(1, "Enquiry deleted successfully...");
+                return new Response(1, "Enquiry deleted successfully...", 0);
             }else{
                 throw new Exception("data already deleted or not found !!");
             }
         }catch (Exception e){
-            return new Response(0, e.getMessage());
+            return new Response(0, e.getMessage(), 0);
         }
     }
 }

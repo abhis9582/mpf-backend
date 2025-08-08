@@ -90,9 +90,9 @@ public class FloorPlanService {
     public Response deleteFloorPlan(int id) {
         try {
             this.floorPlanRepository.deleteById(id);
-            return new Response(1, "Deleted successfully...");
+            return new Response(1, "Deleted successfully...", 0);
         } catch (Exception e) {
-            return new Response(0, e.getMessage());
+            return new Response(0, e.getMessage(), 0);
         }
     }
 }
