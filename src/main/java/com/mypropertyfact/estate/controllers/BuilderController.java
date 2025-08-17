@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.configs.dtos.BuilderResponse;
+import com.mypropertyfact.estate.dtos.BuilderDto;
 import com.mypropertyfact.estate.entities.Builder;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.BuilderService;
@@ -38,7 +39,7 @@ public class BuilderController {
         return new ResponseEntity<>(this.builderService.deleteBuilder(id), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")
-    public ResponseEntity<Map<String, Object>> deleteBuilder(@PathVariable("url") String url){
+    public ResponseEntity<BuilderDto> deleteBuilder(@PathVariable("url") String url){
         return new ResponseEntity<>(this.builderService.getBySlug(url), HttpStatus.OK);
     }
 }

@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.common;
 
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,10 +14,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Iterator;
 
 @Component
@@ -200,4 +203,111 @@ public class FileUtils {
         return imageName;
     }
 
+    public String saveDesktopImageWithResize(MultipartFile file, String destination,
+                                             int width, int height, Float quality) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return null;
+            }
+
+            if (quality == null || quality <= 0 || quality > 1) {
+                quality = 0.85f;
+            }
+
+            if (!destination.endsWith(File.separator)) {
+                destination += File.separator;
+            }
+
+            File dir = new File(destination);
+            if (!dir.exists() && !dir.mkdirs()) {
+                return null;
+            }
+
+            String originalName = file.getOriginalFilename();
+            if (originalName == null || originalName.trim().isEmpty()) {
+                originalName = "image";
+            }
+            originalName = originalName.replaceAll("\\s+", "_");
+
+            // Get extension from the original file
+            String extension = "png"; // default
+            int dotIndex = originalName.lastIndexOf('.');
+            if (dotIndex > 0) {
+                extension = originalName.substring(dotIndex + 1).toLowerCase();
+                originalName = originalName.substring(0, dotIndex);
+            }
+
+            // Allowed formats
+            if (!extension.equals("png") && !extension.equals("jpg") && !extension.equals("jpeg")) {
+                extension = "png"; // fallback to png
+            }
+
+            String fileName = System.currentTimeMillis() + "_" + originalName + "." + extension;
+            String filePath = destination + fileName;
+
+            BufferedImage originalImage = ImageIO.read(file.getInputStream());
+
+            // Resize and keep original format
+            Thumbnails.of(originalImage)
+                    .size(width, height)
+                    .keepAspectRatio(true)
+                    .outputFormat(extension) // same as original
+                    .outputQuality(quality)
+                    .toFile(new File(filePath));
+
+            return fileName;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+
+
+    public boolean isValidAspectRatio(InputStream imageStream, float imageWidth, float imageHeight) {
+        try {
+            BufferedImage image = ImageIO.read(imageStream);
+            if (image == null) {
+                return false;
+            }
+
+            double width = image.getWidth();
+            double height = image.getHeight();
+            double aspectRatio = width / height;
+
+            double targetRatio = imageWidth / imageHeight; // ≈ 2.08
+            double tolerance = 0.15; // 15% tolerance
+
+            return Math.abs(aspectRatio - targetRatio) <= tolerance;
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    public String generateImageAltTag(MultipartFile file) {
+        String generateAltTag = "";
+        if(file != null) {
+            String originalName = file.getOriginalFilename();
+            if (originalName != null) {
+                // Remove file extension
+                String nameWithoutExt = originalName.replaceFirst("[.][^.]+$", "");
+
+                // Replace underscores/dashes with spaces
+                nameWithoutExt = nameWithoutExt.replaceAll("[-_]+", " ");
+
+                // Capitalize first letter of each word
+                generateAltTag = Arrays.stream(nameWithoutExt.split("\\s+"))
+                        .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
+                        .reduce((w1, w2) -> w1 + " " + w2)
+                        .orElse("");
+
+                // Optional: Trim any extra spaces
+                generateAltTag = generateAltTag.trim();
+            }
+        }
+        return generateAltTag;
+    }
 }

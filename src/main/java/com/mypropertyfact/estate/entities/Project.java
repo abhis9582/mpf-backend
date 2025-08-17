@@ -59,6 +59,9 @@ public class Project {
     private String projectThumbnail;
     private String slugURL;
     private boolean showFeaturedProperties;
+    private String projectThumbnailAltTag;
+    private String projectLogoAltTag;
+    private String locationMapAltTag;
     private boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -126,5 +129,15 @@ public class Project {
     @JoinColumn(name = "project_status_id")
     @JsonIgnore
     private ProjectStatus projectStatus;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ProjectMobileBanner> projectMobileBanners;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ProjectDesktopBanner> projectDesktopBanners;
+
+
 
 }

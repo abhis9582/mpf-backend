@@ -1,7 +1,11 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.configs.dtos.BuilderResponse;
+import com.mypropertyfact.estate.dtos.BuilderDto;
+import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.Builder;
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BuilderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,8 @@ public class BuilderService {
     @Autowired
     private BuilderRepository builderRepository;
 
+    @Autowired
+    private CommonMapper commonMapper;
     //Getting all builders
     public BuilderResponse getAllBuilders() {
         return new BuilderResponse(builderRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "builderName")),
@@ -86,38 +92,30 @@ public class BuilderService {
     }
 
     @Transactional
-    public Map<String, Object> getBySlug(String url){
+    public BuilderDto getBySlug(String url){
         Optional<Builder> dbBuilder = this.builderRepository.findBySlugUrl(url);
-        Map<String, Object> builderObj = new HashMap<>();
+        BuilderDto builderDto = new BuilderDto();
         dbBuilder.ifPresent(builder-> {
-            builderObj.put("id", builder.getId());
-            builderObj.put("builderName", builder.getBuilderName());
-            builderObj.put("builderDesc", builder.getBuilderDesc());
-            builderObj.put("metaTitle", builder.getMetaTitle());
-            builderObj.put("metaKeyword", builder.getMetaKeyword());
-            builderObj.put("metaDesc", builder.getMetaDesc());
-            List<Map<String, Object>> projectList = new ArrayList<>();
-            projectList = builder.getProjects().stream().map(project-> {
-                Map<String, Object> projectObj = new HashMap<>();
-                projectObj.put("projectId", project.getId());
-                projectObj.put("projectName", project.getProjectName());
-                if(project.getCity() != null) {
-                    projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
-                }
-                projectObj.put("projectThumbnail", project.getProjectThumbnail());
-                projectObj.put("projectPrice", project.getProjectPrice());
-                projectObj.put("slugURL", project.getSlugURL());
-                if(project.getProjectTypes() != null) {
-                    projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
-                }
-                if(project.getProjectStatus() != null){
-                    projectObj.put("projectStatusName", project.getProjectStatus().getStatusName());
-                }
-                return projectObj;
-            }).toList();
-            builderObj.put("projects", projectList);
+            builderDto.setId(builder.getId());
+            builderDto.setBuilderName( builder.getBuilderName()); ;
+            builderDto.setBuilderDescription(builder.getBuilderDesc());
+            builderDto.setMetaTitle(builder.getMetaTitle());
+            builderDto.setMetaKeywords(builder.getMetaKeyword());
+            builderDto.setMetaDescription(builder.getMetaDesc());
+            List<ProjectDetailDto> projectDetailDtoList = new ArrayList<>();
+            if(builder.getProjects() != null) {
+                List<Project> projects = builder.getProjects();
+                projectDetailDtoList = projects.stream()
+                        .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
+                        .map(project -> {
+                    ProjectDetailDto projectDetailDto = new ProjectDetailDto();
+                    commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                    return projectDetailDto;
+                }).toList();
+            }
+            builderDto.setProjectList(projectDetailDtoList);
         });
-        return builderObj;
+        return builderDto;
     }
 
     public List<Builder> getAllBuildersList() {

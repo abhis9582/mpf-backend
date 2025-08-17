@@ -1,6 +1,9 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.StateDto;
+import com.mypropertyfact.estate.common.CommonMapper;
+import com.mypropertyfact.estate.dtos.CityDto;
+import com.mypropertyfact.estate.dtos.StateDto;
+import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Country;
 import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.StateService;
@@ -8,12 +11,11 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CountryRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class StateServiceImpl implements StateService {
@@ -24,6 +26,9 @@ public class StateServiceImpl implements StateService {
     @Autowired
     private CountryRepository countryRepository;
 
+    @Autowired
+    private CommonMapper commonMapper;
+
     @Override
     public Response addUpdate(StateDto stateDto) {
         Optional<Country> countryById = countryRepository.findById(stateDto.getCountryId());
@@ -31,7 +36,7 @@ public class StateServiceImpl implements StateService {
             Optional<State> savedState = stateRepository.findById(stateDto.getId());
             savedState.ifPresent(state-> {
                 state.setStateName(stateDto.getStateName());
-                state.setDescription(stateDto.getDescription());
+                state.setDescription(stateDto.getStateDescription());
                 countryById.ifPresent(state::setCountry);
                 stateRepository.save(state);
             });
@@ -39,7 +44,7 @@ public class StateServiceImpl implements StateService {
         }
         State state= new State();
         state.setStateName(stateDto.getStateName());
-        state.setDescription(stateDto.getDescription());
+        state.setDescription(stateDto.getStateDescription());
         countryById.ifPresent(state::setCountry);
         stateRepository.save(state);
         return new Response(1, "State saved successfully...", 0);
@@ -54,20 +59,32 @@ public class StateServiceImpl implements StateService {
     @Transactional
     public List<StateDto> getAll() {
         List<State> stateList = stateRepository.findAll();
-        return stateList.stream()
+        List<StateDto> stateDtoList;
+        stateDtoList = stateList.stream()
                 .filter(Objects::nonNull).map(state-> {
             StateDto stateDto = new StateDto();
             stateDto.setId(state.getId());
             stateDto.setStateName(state.getStateName());
-            stateDto.setDescription(state.getDescription());
+            stateDto.setStateDescription(state.getDescription());
+            List<CityDto> cityDtoList;
             if(state.getCities() != null){
-                stateDto.setNoOfCities(state.getCities().size());
+                List<City> cities = state.getCities();
+                cityDtoList = cities.stream()
+                        .sorted(Comparator.comparing(City::getName, String::compareToIgnoreCase))
+                        .map(city-> {
+                            CityDto cityDto = new CityDto();
+                            commonMapper.mapCityDtoToCity(cityDto, city);
+                            return cityDto;
+                        }).toList();
+                stateDto.setCityList(cityDtoList);
             }
             if(state.getCountry() != null) {
-                stateDto.setCountryId(state.getCountry().getId());
-                stateDto.setCountryName(state.getCountry().getCountryName());
+                Country country = state.getCountry();
+                stateDto.setCountryId(country.getId());
+                stateDto.setCountryName(country.getCountryName());
             }
             return stateDto;
         }).toList();
+        return stateDtoList;
     }
 }

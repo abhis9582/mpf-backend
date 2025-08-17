@@ -1,16 +1,17 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.ConstantMessages;
+import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.CityDto;
+import com.mypropertyfact.estate.dtos.CityDto;
+import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.City;
+import com.mypropertyfact.estate.entities.Country;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.State;
-import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.CityView;
 import com.mypropertyfact.estate.repositories.CityRepository;
-import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -24,17 +25,28 @@ public class CityService {
 
     private final CityRepository cityRepository;
     private final StateRepository stateRepository;
-
+    private final CommonMapper commonMapper;
     private final FileUtils fileUtils;
+
     public CityService(CityRepository cityRepository, StateRepository stateRepository,
-                       FileUtils fileUtils) {
+                       FileUtils fileUtils, CommonMapper commonMapper) {
         this.cityRepository = cityRepository;
         this.stateRepository = stateRepository;
         this.fileUtils = fileUtils;
+        this.commonMapper = commonMapper;
     }
 
-    public List<CityView> getAllCities() {
-        return cityRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "name"));
+//    public List<CityView> getAllCities() {
+//        return cityRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "name"));
+//    }
+
+    public List<CityDto> getAllCities(){
+        List<City> cities = cityRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+        return cities.stream().map(city -> {
+            CityDto cityDto = new CityDto();
+            commonMapper.mapCityDtoToCity(cityDto, city);
+            return cityDto;
+        }).toList();
     }
 
     public List<Map<String, Object>> getAllCityList() {
@@ -60,47 +72,27 @@ public class CityService {
     }
 
     public Response postNewCity(CityDto cityDto) {
-        Response response = new Response();
-        try {
-            City existingCity = this.cityRepository.findByName(cityDto.getName());
+            City existingCity = this.cityRepository.findByName(cityDto.getCityName());
             if (existingCity != null && existingCity.getId() != cityDto.getId()) {
-                response.setMessage(ConstantMessages.CITY_EXISTS);
-                return response;
+                return new Response(0, ConstantMessages.CITY_EXISTS, 0);
             }
-            cityDto.setSlugUrl(fileUtils.generateSlug(cityDto.getName()));
+            cityDto.setSlugURL(fileUtils.generateSlug(cityDto.getCityName()));
             Optional<State> state = stateRepository.findById(cityDto.getStateId());
             if (cityDto.getId() != 0) {
                 Optional<City> savedCity = cityRepository.findById(cityDto.getId());
                 savedCity.ifPresent(city-> {
                     state.ifPresent(city::setState);
-                    city.setName(cityDto.getName());
-                    city.setSlugUrl(cityDto.getSlugUrl());
-                    city.setMetaTitle(cityDto.getMetaTitle());
-                    city.setMetaKeyWords(cityDto.getMetaKeyWords());
-                    city.setMetaDescription(cityDto.getMetaDescription());
-                    city.setCityDisc(cityDto.getCityDisc());
+                    commonMapper.mapCityToCityDto(city, cityDto);
                     cityRepository.save(city);
-                    response.setIsSuccess(1);
-                    response.setMessage(ConstantMessages.CITY_UPDATED);
                 });
+                return new Response(1, ConstantMessages.CITY_UPDATED, 0);
             } else {
                 City city = new City();
                 state.ifPresent(city::setState);
-                city.setName(cityDto.getName());
-                city.setSlugUrl(cityDto.getSlugUrl());
-                city.setMetaTitle(cityDto.getMetaTitle());
-                city.setMetaKeyWords(cityDto.getMetaKeyWords());
-                city.setMetaDescription(cityDto.getMetaDescription());
-                city.setCityDisc(cityDto.getCityDisc());
+                commonMapper.mapCityToCityDto(city, cityDto);
                 cityRepository.save(city);
-                response.setIsSuccess(1);
-                response.setMessage(ConstantMessages.CITY_ADDED);
+                return new Response(1, ConstantMessages.CITY_ADDED, 0);
             }
-        } catch (Exception e) {
-            response.setMessage(e.getMessage());
-            response.setIsSuccess(0);
-        }
-        return response;
     }
 
     public Response updateCity(int id, City city) {
@@ -148,50 +140,43 @@ public class CityService {
     }
 
     @Transactional
-    public Map<String, Object> getBySlug(String url) {
+    public CityDto getBySlug(String url) {
         Optional<City> dbCity = this.cityRepository.findBySlugUrl(url);
         Map<String, Object> resObj = new HashMap<>();
+        CityDto cityDetailDto = new CityDto();
         dbCity.ifPresent(city -> {
-            resObj.put("id", city.getId());
-            resObj.put("name", city.getName());
-            resObj.put("metaTitle", city.getMetaTitle());
-            resObj.put("metaKeywords", city.getMetaKeyWords());
-            resObj.put("metaDescription", city.getMetaDescription());
+            cityDetailDto.setId(city.getId());
+            cityDetailDto.setCityName(city.getName());
+            cityDetailDto.setMetaTitle(city.getMetaTitle());
+            cityDetailDto.setMetaKeywords(city.getMetaKeyWords());
+            cityDetailDto.setMetaDescription(city.getMetaDescription());
             if(city.getState() != null) {
-                resObj.put("stateId", city.getState().getId());
-                resObj.put("stateName", city.getState().getStateName());
-                if(city.getState().getCountry() != null) {
-                    resObj.put("countryId", city.getState().getCountry().getId());
-                    resObj.put("countryName", city.getState().getCountry().getCountryName());
+                State state = city.getState();
+                cityDetailDto.setStateId(state.getId());
+                cityDetailDto.setStateName(state.getStateName());
+                if(state.getCountry() != null) {
+                    Country country = state.getCountry();
+                    cityDetailDto.setCountryId(country.getId());
+                    cityDetailDto.setCountryName(country.getCountryName());
                 }
             }
-            List<Map<String, Object>> projects = new ArrayList<>();
-            projects = city.getProjects().stream().map(project -> {
-                Map<String, Object> projectObj = new HashMap<>();
-                projectObj.put("projectId", project.getId());
-                projectObj.put("projectName", project.getProjectName());
-                projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(city.getName()));
-                projectObj.put("projectThumbnail", project.getProjectThumbnail());
-                projectObj.put("projectPrice", project.getProjectPrice());
-                projectObj.put("slugURL", project.getSlugURL());
-                if(project.getProjectTypes() != null) {
-                    projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
-                }
-                if(project.getProjectStatus() != null){
-                    projectObj.put("projectStatusName", project.getProjectStatus().getStatusName());
-                }
-                return projectObj;
-            }).toList();
-            resObj.put("projects", projects);
-            resObj.put("cityDesc", city.getCityDisc());
-            resObj.put("cityImage", city.getCityImage());
+            List<ProjectDetailDto> projectDetailDtoList = new ArrayList<>();
+            if(city.getProjects() != null) {
+                List<Project> projects = city.getProjects();
+                projectDetailDtoList = projects.stream()
+                        .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
+                        .map(project-> {
+                    ProjectDetailDto projectDetailDto = new ProjectDetailDto();
+                    commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                    return projectDetailDto;
+                }).toList();
+            }
+            cityDetailDto.setProjectList(projectDetailDtoList);
+            cityDetailDto.setCityDescription(city.getCityDisc());
+            cityDetailDto.setCityImage(city.getCityImage());
         });
-        return resObj;
+        return cityDetailDto;
     }
-
-//    public List<Project> getByCityName(String cityName) {
-//        return this.projectRepository.getAllByCity(cityName);
-//    }
 
     public Response addUpdateCity(MultipartFile cityImage, City city) {
         Response response = new Response();

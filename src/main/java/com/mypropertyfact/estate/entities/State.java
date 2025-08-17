@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "state")
+@ToString(exclude = {"country", "cities"})
 public class State {
 
     @Id
@@ -24,9 +26,11 @@ public class State {
 
     @ManyToOne
     @JoinColumn(name = "country_id")
+    @JsonIgnore
     private Country country;
 
     @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<City> cities;
 
     @PrePersist

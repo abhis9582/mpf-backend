@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.dtos.ProjectTypeDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
@@ -32,7 +33,7 @@ public class ProjectTypesController {
         return new ResponseEntity<>(this.projectTypesService.addUpdateProjectType(projectTypes), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")
-    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url")String url){
+    public ResponseEntity<ProjectTypeDto> getBySlug(@PathVariable("url")String url){
         return new ResponseEntity<>(this.projectTypesService.getBySlug(url), HttpStatus.OK);
     }
 //    @GetMapping("/{url}")

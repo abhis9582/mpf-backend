@@ -1,5 +1,8 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.common.CommonMapper;
+import com.mypropertyfact.estate.dtos.ProjectDetailDto;
+import com.mypropertyfact.estate.dtos.ProjectTypeDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
@@ -20,6 +23,9 @@ public class ProjectTypesService {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private CommonMapper commonMapper;
 
     public List<ProjectTypeView> getAllProjectTypes() {
         return this.projectTypeRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "projectTypeName"));
@@ -79,58 +85,45 @@ public class ProjectTypesService {
     }
 
     @Transactional
-    public Map<String, Object> getBySlug(String url) {
+    public ProjectTypeDto getBySlug(String url) {
         Optional<ProjectTypes> projectTypeData = this.projectTypeRepository.findBySlugUrl(url);
-        Map<String, Object> responseObj = new HashMap<>();
-        List<Project> projects = projectRepository.findByStatusTrue(Sort.by(Sort.Direction.ASC, "projectName"));
-        projectTypeData.ifPresent(projectType -> {
-            responseObj.put("id", projectType.getId());
-            responseObj.put("projectTypeName", projectType.getProjectTypeName());
-            responseObj.put("projectTypeDesc", projectType.getProjectTypeDesc());
-            responseObj.put("metaTitle", projectType.getMetaTitle());
-            responseObj.put("metaKeyword", projectType.getMetaKeyword());
-            responseObj.put("metaDesc", projectType.getMetaDesc());
-            List<Map<String, Object>> projectList = new ArrayList<>();
-            if(url.equals("new-launches")) {
-                projectList = projects.stream().filter(project -> project.getProjectStatus() != null && project.getProjectStatus().getId() == 3).map(project-> {
-                    Map<String, Object> projectObj = new HashMap<>();
-                    projectObj.put("projectId", project.getId());
-                    projectObj.put("projectName", project.getProjectName());
-                    if(project.getCity() != null) {
-                        projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
-                    }
-                    projectObj.put("projectThumbnail", project.getProjectThumbnail());
-                    projectObj.put("projectPrice", project.getProjectPrice());
-                    projectObj.put("slugURL", project.getSlugURL());
-                    projectObj.put("projectStatus", project.getProjectStatus() != null ? project.getProjectStatus().getId(): "0");
-                    projectObj.put("projectStatusName", project.getProjectStatus() != null ? project.getProjectStatus().getStatusName(): null);
-                    if(project.getProjectTypes() != null) {
-                        projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
-                    }
-                    return projectObj;
-                }).toList();
-            }else{
-                projectList = projectType.getProject().stream().map(project-> {
-                    Map<String, Object> projectObj = new HashMap<>();
-                    projectObj.put("projectId", project.getId());
-                    projectObj.put("projectName", project.getProjectName());
-                    if(project.getCity() != null) {
-                        projectObj.put("projectAddress", project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
-                    }
-                    projectObj.put("projectThumbnail", project.getProjectThumbnail());
-                    projectObj.put("projectPrice", project.getProjectPrice());
-                    projectObj.put("slugURL", project.getSlugURL());
-                    projectObj.put("projectStatus", project.getProjectStatus() != null ? project.getProjectStatus().getId(): "0");
-                    projectObj.put("projectStatusName", project.getProjectStatus() != null ? project.getProjectStatus().getStatusName(): null);
-                    if(project.getProjectTypes() != null) {
-                        projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
-                    }
-                    return projectObj;
-                }).toList();
+        ProjectTypeDto projectTypeDetailDto = new ProjectTypeDto();
+        projectTypeData.ifPresent(projectType-> {
+            projectTypeDetailDto.setId(projectType.getId());
+            projectTypeDetailDto.setProjectTypeName(projectType.getProjectTypeName());
+            projectTypeDetailDto.setProjectTypeDescription(projectType.getProjectTypeDesc());
+            projectTypeDetailDto.setMetaTitle(projectType.getMetaTitle());
+            projectTypeDetailDto.setMetaKeywords(projectType.getMetaKeyword());
+            projectTypeDetailDto.setMetaDescription(projectType.getMetaDesc());
+            List<ProjectDetailDto> projectDetailDtoList = new ArrayList<>();
+            if(projectType.getProject() != null){
+                if(url.equals("new-launches")){
+                    List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
+                    projectDetailDtoList = projects.stream()
+                            .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
+                            .filter(project ->
+                                    project.getProjectStatus() != null &&
+                                            "New Launch".equals(project.getProjectStatus().getStatusName()))
+                            .map(project-> {
+                        ProjectDetailDto projectDetailDto = new ProjectDetailDto();
+                        commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                        return projectDetailDto;
+                    }).toList();
+                }else{
+                    List<Project> projects = projectType.getProject();
+                    projectDetailDtoList = projects.stream()
+                            .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
+                            .map(project-> {
+                        ProjectDetailDto projectDetailDto = new ProjectDetailDto();
+                        commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                        return projectDetailDto;
+                    }).toList();
+                }
+                projectTypeDetailDto.setProjectList(projectDetailDtoList);
             }
-            responseObj.put("projects", projectList);
         });
-        return responseObj;
+
+        return projectTypeDetailDto;
     }
 
 //    public List<Project> getPropertiesBySlug(String url) {

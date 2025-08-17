@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.StateDto;
+import com.mypropertyfact.estate.dtos.StateDto;
 import com.mypropertyfact.estate.interfaces.StateService;
 import com.mypropertyfact.estate.models.Response;
 import org.springframework.beans.factory.annotation.Autowired;

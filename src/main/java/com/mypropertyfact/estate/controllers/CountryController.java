@@ -1,8 +1,8 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.dtos.CountryDto;
 import com.mypropertyfact.estate.entities.Country;
 import com.mypropertyfact.estate.interfaces.CountryService;
-import com.mypropertyfact.estate.interfaces.StateService;
 import com.mypropertyfact.estate.models.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,23 +15,18 @@ public class CountryController {
     @Autowired
     private CountryService countryService;
 
-    @GetMapping("/get-all")
-    public ResponseEntity<?> getAllStates() {
-        return ResponseEntity.ok(countryService.getAll());
-    }
-
     @GetMapping("/get-all-countries")
     public ResponseEntity<?> getAllCountries() {
         return ResponseEntity.ok(countryService.getAllCountry());
     }
 
     @PostMapping("/add-update")
-    public ResponseEntity<Response> addUpdate(@RequestBody Country country){
-        return ResponseEntity.ok(countryService.addUpdate(country));
+    public ResponseEntity<Response> addUpdate(@RequestBody CountryDto countryDto){
+        return ResponseEntity.ok(countryService.addUpdate(countryDto));
     }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteCountry(@PathVariable("id") int id){
-        countryService.deleteCountry(id);
+    public ResponseEntity<Response> deleteCountry(@PathVariable("id") int id){
+        return ResponseEntity.ok(countryService.deleteCountry(id));
     }
 }

@@ -1,12 +1,17 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.dtos.CityDto;
+import com.mypropertyfact.estate.dtos.CountryDto;
+import com.mypropertyfact.estate.dtos.StateDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Country;
+import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.CountryService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.CountryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,90 +27,69 @@ public class CountryServiceImpl implements CountryService {
     private CityRepository cityRepository;
 
     @Override
-    public Response addUpdate(Country country) {
-        if (country.getId() > 0) {
-            Optional<Country> savedCountry = countryRepository.findById(country.getId());
+    public Response addUpdate(CountryDto countryDto) {
+        if (countryDto.getId() > 0) {
+            Optional<Country> savedCountry = countryRepository.findById(countryDto.getId());
             savedCountry.ifPresent(dbCountry -> {
-                dbCountry.setCountryName(country.getCountryName());
-                dbCountry.setContinent(country.getContinent());
-                dbCountry.setDescription(country.getDescription());
+                dbCountry.setCountryName(countryDto.getCountryName());
+                dbCountry.setContinent(countryDto.getContinent());
+                dbCountry.setDescription(countryDto.getCountryDescription());
                 countryRepository.save(dbCountry);
-
             });
             return new Response(1, "Country updated successfully...", 0);
         }
+        Country country = new Country();
+        country.setCountryName(countryDto.getCountryName());
+        country.setContinent(countryDto.getContinent());
+        country.setDescription(countryDto.getCountryDescription());
         countryRepository.save(country);
         return new Response(1, "Country saved successfully...", 0);
     }
 
     @Override
-    public void deleteCountry(int id) {
+    public Response deleteCountry(int id) {
         countryRepository.deleteById(id);
+        return new Response(1, "Country deleted successfully...", 0);
     }
 
-    @Override
-    public List<Map<String, Object>> getAll() {
-        List<City> cityList = cityRepository.findAll();
-
-        Map<Integer, Map<String, Object>> response = new HashMap<>();
-
-        for (City city : cityList) {
-            if (city.getState() != null) {
-                int stateId = city.getState().getId();
-                Map<String, Object> countryEntity = new HashMap<>();
-                if (city.getState().getCountry() != null) {
-                    int countryId = city.getState().getCountry().getId();
-                    countryEntity = response.computeIfAbsent(countryId, id -> {
-                        Map<String, Object> country = new HashMap<>();
-                        country.put("countryId", id);
-                        if (city.getState().getCountry() != null) {
-                            country.put("countryName", city.getState().getCountry().getCountryName());
-                            country.put("countryDesc", city.getState().getCountry().getDescription());
-                        }
-                        country.put("states", new HashMap<Integer, Map<String, Object>>());
-                        return country;
-                    });
-                }
-
-                Map<Integer, Map<String, Object>> stateMap = (Map<Integer, Map<String, Object>>) countryEntity.get("states");
-
-                Map<String, Object> stateEntity = stateMap.computeIfAbsent(stateId, id -> {
-                    Map<String, Object> state = new HashMap<>();
-                    state.put("stateId", city.getState().getId());
-                    state.put("stateName", city.getState().getStateName());
-                    state.put("stateDesc", city.getState().getDescription());
-                    state.put("cities", new ArrayList<>());
-                    return state;
-                });
-
-                List<Map<String, Object>> cityListObj = (List<Map<String, Object>>) stateEntity.get("cities");
-
-                Map<String, Object> cityObj = new HashMap<>();
-                cityObj.put("id", city.getId());
-                cityObj.put("cityName", city.getName());
-                cityListObj.add(cityObj);
-            }
-        }
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (Map<String, Object> country : response.values()) {
-            Map<Integer, Map<String, Object>> stateMap = (Map<Integer, Map<String, Object>>) country.remove("states");
-            country.put("states", new ArrayList<>(stateMap.values()));
-            result.add(country);
-        }
-        return result;
-    }
     @Transactional
     @Override
-    public List<Map<String, Object>> getAllCountry() {
-        List<Country> allCountries = countryRepository.findAll();
-        return allCountries.stream().map(country -> {
-            Map<String, Object> countryObj = new HashMap<>();
-            countryObj.put("id", country.getId());
-            countryObj.put("countryName", country.getCountryName());
-            countryObj.put("continent", country.getContinent());
-            countryObj.put("noOfStates", country.getStates().size());
-            countryObj.put("countryDesc", country.getDescription());
-            return countryObj;
+    public List<CountryDto> getAllCountry() {
+        List<Country> countries = countryRepository.findAll(Sort.by(Sort.Direction.ASC, "countryName"));
+        List<CountryDto> countryDtoList = new ArrayList<>();
+        countryDtoList = countries.stream().map(country -> {
+            CountryDto countryDto = new CountryDto();
+            countryDto.setId(country.getId());
+            countryDto.setCountryName(country.getCountryName());
+            countryDto.setContinent(country.getContinent());
+            countryDto.setCountryDescription(country.getDescription());
+            List<StateDto> stateDtoList = new ArrayList<>();
+            if(country.getStates() != null) {
+                List<State> states = country.getStates();
+                stateDtoList = states.stream()
+                        .sorted(Comparator.comparing(State::getStateName, String::compareToIgnoreCase))
+                        .map(state-> {
+                            StateDto stateDto = new StateDto();
+                            stateDto.setId(state.getId());
+                            stateDto.setStateName(state.getStateName());
+                            stateDto.setStateDescription(state.getDescription());
+                            List<CityDto> cityDtoList = new ArrayList<>();
+                            if(state.getCities() != null) {
+                                List<City> cities = state.getCities();
+                                cityDtoList = cities.stream().map(city-> {
+                                    CityDto cityDto = new CityDto();
+                                    cityDto.setId(city.getId());
+                                    cityDto.setCityName(city.getName());
+                                    return cityDto;
+                                }).toList();
+                            }
+                            stateDto.setCityList(cityDtoList);
+                            return stateDto;
+                        }).toList();
+            }
+            countryDto.setStateList(stateDtoList);
+            return countryDto;
         }).toList();
+        return countryDtoList;
     }
 }

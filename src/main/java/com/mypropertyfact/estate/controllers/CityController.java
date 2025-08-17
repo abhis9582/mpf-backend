@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.CityDto;
+import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.CityService;
@@ -47,7 +47,7 @@ public class CityController {
     }
 
     @GetMapping("/get/{url}")
-    public ResponseEntity<Map<String, Object>> getBySlug(@PathVariable("url") String url) {
+    public ResponseEntity<CityDto> getBySlug(@PathVariable("url") String url) {
         return new ResponseEntity<>(this.cityService.getBySlug(url), HttpStatus.OK);
     }
 

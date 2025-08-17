@@ -1,7 +1,7 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.ProjectGalleryDto;
-import com.mypropertyfact.estate.configs.dtos.ProjectGalleryResponse;
+import com.mypropertyfact.estate.common.FileUtils;
+import com.mypropertyfact.estate.dtos.ProjectGalleryDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectGallery;
 import com.mypropertyfact.estate.models.Response;
@@ -9,14 +9,12 @@ import com.mypropertyfact.estate.repositories.ProjectGalleryRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ProjectGalleryService {
@@ -26,6 +24,9 @@ public class ProjectGalleryService {
     private ProjectRepository projectRepository;
     @Value("${uploads_path}")
     private String uploadDir;
+
+    @Autowired
+    private FileUtils fileUtils;
 
     public List<Map<String, Object>> getAllGalleryImages() {
         List<ProjectGallery> galleryImages = this.projectGalleryRepository.findAll();
@@ -56,30 +57,49 @@ public class ProjectGalleryService {
     public Response postGalleryImage(ProjectGalleryDto projectGalleryDto) {
         Response response = new Response();
         try {
-            if (projectGalleryDto == null || projectGalleryDto.getImage().isEmpty()) {
-                response.setMessage("Please select image");
-                return response;
+            Optional<Project> project;
+            if(projectGalleryDto.getProjectId() != 0) {
+             project = projectRepository.findById(projectGalleryDto.getProjectId());
+            } else {
+                project = Optional.empty();
             }
-            if (!checkContentType(projectGalleryDto.getImage())) {
-                response.setMessage("File should be of type image only !");
-                return response;
+            if(projectGalleryDto.getGalleryImageList() != null) {
+                for (MultipartFile galleryImage: projectGalleryDto.getGalleryImageList()) {
+                    if (!fileUtils.isTypeImage(galleryImage)) {
+                        response.setMessage("File should be of type image only !");
+                        return response;
+                    }
+                    // Check file size < 10MB (10 * 1024 * 1024)
+                    if (galleryImage.getSize() > 10 * 1024 * 1024) {
+                        response.setMessage("Gallery image size must be less than 10MB!");
+                        return response;
+                    }
+                    // Rename the image file (using UUID)
+                    String newFileName = renameFile(galleryImage);
+                    Project projectObj = new Project();
+                    if (project.isPresent()) {
+                        projectObj = project.get();
+                    }
+                    // Save the file to the destination
+                    saveFile(galleryImage, newFileName, projectObj, projectGalleryDto);
+                }
             }
-            // Check file size < 10MB (10 * 1024 * 1024)
-            if (projectGalleryDto.getImage().getSize() > 10 * 1024 * 1024) {
-                response.setMessage("Gallery image size must be less than 10MB!");
-                return response;
+            if(projectGalleryDto.getDeletedImageIds() != null) {
+                for(Integer galleryImageId: projectGalleryDto.getDeletedImageIds()) {
+                    Optional<ProjectGallery> galleryData = projectGalleryRepository.findById(galleryImageId);
+                    galleryData.ifPresent(gallery-> {
+                        if(project.isPresent()) {
+                            String destination = uploadDir + project.get().getSlugURL() + "/";
+                            fileUtils.deleteFileFromDestination(gallery.getImage(), destination);
+                        }
+                    });
+                }
+                projectGalleryRepository.deleteAllById(projectGalleryDto.getDeletedImageIds());
             }
-            // Rename the image file (using UUID)
-            String newFileName = renameFile(projectGalleryDto.getImage());
-            Project projectObj = new Project();
-            Optional<Project> project = projectRepository.findById(projectGalleryDto.getProjectId());
-            if(project.isPresent()){
-                projectObj = project.get();
-            }
-            // Save the file to the destination
-            response = saveFile(projectGalleryDto.getImage(), newFileName, projectObj, projectGalleryDto);
+            response.setMessage("Gallery images uploaded successfully...");
+            response.setIsSuccess(1);
         } catch (Exception e) {
-
+            response.setMessage(e.getMessage());
         }
         return response;
     }
@@ -115,6 +135,7 @@ public class ProjectGalleryService {
         projectGallery.setSlugUrl(project.getSlugURL());
         projectGallery.setType("");
         projectGallery.setImage(fileName);
+        projectGallery.setAltTag(fileName);
         projectGallery.setProject(project);
         this.projectGalleryRepository.save(projectGallery);
         return new Response(1, "File Uploaded successfully...", 0);

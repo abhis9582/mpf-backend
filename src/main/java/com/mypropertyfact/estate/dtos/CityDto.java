@@ -1,0 +1,22 @@
+package com.mypropertyfact.estate.dtos;
+
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class CityDto {
+    private int id;
+    private int stateId;
+    private int countryId;
+    private String metaTitle;
+    private String metaKeywords;
+    private String metaDescription;
+    private String cityName;
+    private String stateName;
+    private String countryName;
+    private String cityDescription;
+    private String cityImage;
+    private String slugURL;
+    private List<ProjectDetailDto> projectList;
+}

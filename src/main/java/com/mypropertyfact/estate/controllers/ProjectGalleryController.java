@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.ProjectGalleryDto;
-import com.mypropertyfact.estate.configs.dtos.ProjectGalleryResponse;
+import com.mypropertyfact.estate.dtos.ProjectGalleryDto;
 import com.mypropertyfact.estate.entities.ProjectGallery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectGalleryService;

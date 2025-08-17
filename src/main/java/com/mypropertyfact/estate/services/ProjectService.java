@@ -1,19 +1,17 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.Constants;
+import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.*;
+import com.mypropertyfact.estate.dtos.AddUpdateProjectDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
-import com.mypropertyfact.estate.models.ProjectDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,22 +44,26 @@ public class ProjectService {
     @Autowired
     private ProjectStatusRepository projectStatusRepository;
 
+    @Autowired
+    private CommonMapper commonMapper;
+
     @Value("${upload_dir}")
     private String uploadDir; //D:/my-property-fact/public/
 
     @Transactional
     public List<ProjectDetailDto> fetchAllProjects() {
-        List<Project> projects = projectRepository.findByStatusTrueOrderByProjectNameAsc();
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
         return projects.stream().map(project -> {
             ProjectDetailDto detailDto = new ProjectDetailDto();
-            mapEntityToDto(project, detailDto);
+            commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
             return detailDto;
         }).toList();
     }
 
     @Transactional
-    public List<Map<String, Object>> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
-        List<Project> projects = projectRepository.findAllWithAllRelations();
+    public List<ProjectDetailDto> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
+//        List<Project> projects = projectRepository.findAllWithAllRelations();
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName")).stream().filter(Project::isStatus).toList();
         List<Project> filteredList = projects;
         int start = 0;
         int end = 0;
@@ -145,24 +147,12 @@ public class ProjectService {
             System.out.println(ex.getMessage());
         }
         return filteredList.stream().map(project -> {
-            Map<String, Object> projectObj = new HashMap<>();
-            projectObj.put("id", project.getId());
-            projectObj.put("slugURL", project.getSlugURL());
-            projectObj.put("projectThumbnail", project.getProjectThumbnail());
-            projectObj.put("projectName", project.getProjectName());
-            projectObj.put("projectPrice", project.getProjectPrice());
-            if (project.getCity() != null) {
-                projectObj.put("projectAddress", project.getProjectLocality().concat(" , ").concat(project.getCity().getName()));
-            }
-            if (project.getProjectTypes() != null) {
-                projectObj.put("typeName", project.getProjectTypes().getProjectTypeName());
-            }
-            if (project.getProjectStatus() != null) {
-                projectObj.put("projectStatusName", project.getProjectStatus().getStatusName());
-            }
-            return projectObj;
+            ProjectDetailDto detailDto = new ProjectDetailDto();
+            commonMapper.mapProjectToProjectDto(project, detailDto);
+            return detailDto;
         }).toList();
     }
+
     private boolean isNumeric(String str) {
         if (str == null) return false;
         try {
@@ -172,72 +162,14 @@ public class ProjectService {
             return false;
         }
     }
-    public List<Map<String, Object>> getAllProjectsList() {
-//        List<Project> projects = projectRepository.findByStatusTrue(Sort.by(Sort.Direction.ASC, "projectName"));
-        List<Project> projects = projectRepository.findAllWithAllRelations();
+
+    public List<ProjectDetailDto> getAllProjectsList() {
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
         System.out.println("Total projects are "+ projects.size());
         return projects.stream().map(project -> {
-            Map<String, Object> projectResponse = new HashMap<>();
-            Optional<City> cityObj = Optional.empty();
-            if (project.getCity() != null) {
-                cityObj = Optional.of(project.getCity());
-            }
-            projectResponse.put("id", project.getId());
-            projectResponse.put("projectName", project.getProjectName());
-            if (project.getBuilder() != null) {
-                projectResponse.put("projectBy", project.getBuilder().getId());
-                projectResponse.put("builderName", project.getBuilder().getBuilderName());
-            }
-            projectResponse.put("projectLocality", project.getProjectLocality());
-            projectResponse.put("projectConfiguration", project.getProjectConfiguration());
-            if (project.getProjectTypes() != null) {
-                projectResponse.put("typeName", project.getProjectTypes().getProjectTypeName());
-            }
-            projectResponse.put("metaTitle", project.getMetaTitle());
-            projectResponse.put("metaDescription", project.getMetaDescription());
-            projectResponse.put("metaKeyword", project.getMetaKeyword());
-            cityObj.ifPresent(city -> {
-                if (city.getState() != null) {
-                    if (city.getState().getCountry() != null) {
-                        projectResponse.put("country", city.getState().getCountry().getId());
-                        projectResponse.put("countryName", city.getState().getCountry().getCountryName());
-                    }
-                    projectResponse.put("state", city.getState().getId());
-                    projectResponse.put("stateName", city.getState().getStateName());
-                }
-                projectResponse.put("city", city.getId() != null ? city.getId() : null);
-                projectResponse.put("cityName", city.getName());
-                projectResponse.put("projectAddress", project.getProjectLocality().concat(", ").concat(city.getName()));
-            });
-            if (project.getCity() != null) {
-                projectResponse.put("country", project.getCity().getState().getCountry().getId());
-            }
-            projectResponse.put("projectPrice", project.getProjectPrice());
-            projectResponse.put("ivrNo", project.getIvrNo());
-            projectResponse.put("locationMap", project.getLocationMap());
-            projectResponse.put("reraNo", project.getReraNo());
-            projectResponse.put("reraWebsite", project.getReraWebsite());
-            projectResponse.put("status", project.isStatus());
-            if (project.getProjectTypes() != null) {
-                projectResponse.put("propertyType", project.getProjectTypes().getId());
-            }
-            projectResponse.put("projectThumbnail", project.getProjectThumbnail());
-            projectResponse.put("slugURL", project.getSlugURL());
-            projectResponse.put("amenityDesc", project.getAmenityDesc());
-            projectResponse.put("locationDesc", project.getLocationDesc());
-            projectResponse.put("floorPlanDesc", project.getFloorPlanDesc());
-            projectResponse.put("projectLogo", project.getProjectLogo());
-            projectResponse.put("projectStatus", project.getProjectStatus() != null ? project.getProjectStatus().getId() : "0");
-            projectResponse.put("projectStatusName", project.getProjectStatus() != null ? project.getProjectStatus().getStatusName() : null);
-            List<Map<String, Object>> amenityList = new ArrayList<>();
-            amenityList = project.getAmenities().stream().filter(Objects::nonNull).map(amenity -> {
-                Map<String, Object> amenityObj = new HashMap<>();
-                amenityObj.put("id", amenity.getId());
-                amenityObj.put("title", amenity.getTitle());
-                return amenityObj;
-            }).toList();
-            projectResponse.put("amenities", amenityList);
-            return projectResponse;
+            ProjectDetailDto detailDto = new ProjectDetailDto();
+            commonMapper.mapProjectToProjectDto(project, detailDto);
+            return detailDto;
         }).toList();
     }
 
@@ -266,119 +198,13 @@ public class ProjectService {
     }
 
     @Transactional
-    public Map<String, Object> getBySlugUrl(String url) {
+    public ProjectDetailDto getBySlugUrl(String url) {
         Optional<Project> projectData = projectRepository.findBySlugURLWithAllRelations(url);
-        Map<String, Object> projectObj = new HashMap<>();
+        ProjectDetailDto detailDto = new ProjectDetailDto();
         projectData.ifPresent(project -> {
-            projectObj.put("id", project.getId());
-            projectObj.put("projectName", project.getProjectName());
-            projectObj.put("metaTitle", project.getMetaTitle());
-            projectObj.put("metaDescription", project.getMetaDescription());
-            projectObj.put("metaKeyWord", project.getMetaKeyword());
-            projectObj.put("projectPrice", project.getProjectPrice());
-            projectObj.put("reraNo", project.getReraNo());
-            projectObj.put("amenityDesc", project.getAmenityDesc());
-            projectObj.put("floorPlanDesc", project.getFloorPlanDesc());
-            projectObj.put("locationDesc", project.getLocationDesc());
-            projectObj.put("locationMapImage", project.getLocationMap());
-            projectObj.put("projectThumbnail", project.getProjectThumbnail());
-            projectObj.put("projectLogo", project.getProjectLogo());
-            projectObj.put("slugURL", project.getSlugURL());
-            if (project.getCity() != null) {
-                projectObj.put("cityId", project.getCity().getId());
-                projectObj.put("cityName", project.getCity().getName());
-                projectObj.put("projectAddress", project.getProjectLocality().concat(", ") + project.getCity().getName());
-                if (project.getCity().getState() != null) {
-                    projectObj.put("stateId", project.getCity().getState().getId());
-                    projectObj.put("stateName", project.getCity().getState().getStateName());
-                    if (project.getCity().getState().getCountry() != null) {
-                        projectObj.put("countryId", project.getCity().getState().getCountry().getId());
-                        projectObj.put("countryName", project.getCity().getState().getCountry().getCountryName());
-                    }
-                }
-            }
-            if (project.getProjectsAbout() != null) {
-                projectObj.put("aboutId", project.getProjectsAbout().getId());
-                projectObj.put("projectShortDesc", project.getProjectsAbout().getShortDesc());
-                projectObj.put("projectLongDesc", project.getProjectsAbout().getLongDesc());
-            }
-            if (project.getProjectWalkthrough() != null) {
-                projectObj.put("walkthroughDesc", project.getProjectWalkthrough().getWalkthroughDesc());
-            }
-            List<FloorPlanDto> floorPlanList = new ArrayList<>();
-            if (project.getFloorPlans() != null) {
-                floorPlanList = project.getFloorPlans().stream().filter(Objects::nonNull)
-                        .map(floorPlan -> {
-                            FloorPlanDto floorPlanDto = new FloorPlanDto();
-                            floorPlanDto.setFloorId(floorPlan.getId());
-                            floorPlanDto.setPlanType(floorPlan.getPlanType());
-                            floorPlanDto.setAreaSqMt(floorPlan.getAreaSqmt());
-                            floorPlanDto.setAreaSqFt(floorPlan.getAreaSqft());
-                            return floorPlanDto;
-                        }).toList();
-            }
-            projectObj.put("floorPlan", floorPlanList);
-            List<ProjectBannerDto> bannerList = new ArrayList<>();
-            if (project.getProjectBanners() != null) {
-                bannerList = project.getProjectBanners().stream().filter(Objects::nonNull)
-                        .map(projectBanner -> {
-                            ProjectBannerDto projectBannerDto = new ProjectBannerDto();
-                            projectBannerDto.setDesktopImage(projectBanner.getDesktopBanner());
-                            projectBannerDto.setMobileImage(projectBanner.getMobileBanner());
-                            return projectBannerDto;
-                        }).toList();
-            }
-            projectObj.put("banners", bannerList);
-            List<AmenityDto> amenityList = new ArrayList<>();
-            if (project.getAmenities() != null) {
-                amenityList = project.getAmenities().stream().filter(Objects::nonNull)
-                        .map(amenity -> {
-                            AmenityDto amenityDto = new AmenityDto();
-                            amenityDto.setId(amenity.getId());
-                            amenityDto.setTitle(amenity.getTitle());
-                            amenityDto.setImage(amenity.getAmenityImageUrl());
-                            return amenityDto;
-                        }).toList();
-            }
-            projectObj.put("amenities", amenityList);
-
-            List<ProjectGalleryDto> projectGalleryList = new ArrayList<>();
-            if (project.getProjectGalleries() != null) {
-                projectGalleryList = project.getProjectGalleries().stream().filter(Objects::nonNull)
-                        .map(projectGallery -> {
-                            ProjectGalleryDto projectGalleryDto = new ProjectGalleryDto();
-                            projectGalleryDto.setGalleyImage(projectGallery.getImage());
-                            return projectGalleryDto;
-                        }).toList();
-            }
-            projectObj.put("projectGalleryImages", projectGalleryList);
-            List<LocationBenefitDto> locationBenefitList = new ArrayList<>();
-            if (project.getLocationBenefits() != null) {
-                locationBenefitList = project.getLocationBenefits().stream().filter(Objects::nonNull)
-                        .map(locationBenefit -> {
-                            LocationBenefitDto locationBenefitDto = new LocationBenefitDto();
-                            locationBenefitDto.setImage(locationBenefit.getIconImage());
-                            locationBenefitDto.setBenefitName(locationBenefit.getBenefitName());
-                            locationBenefitDto.setDistance(locationBenefit.getDistance());
-                            return locationBenefitDto;
-                        }).toList();
-            }
-            projectObj.put("locationBenefits", locationBenefitList);
-
-            List<ProjectFaqDto> projectFaqList = new ArrayList<>();
-            if (project.getProjectFaqs() != null) {
-                projectFaqList = project.getProjectFaqs().stream().filter(Objects::nonNull)
-                        .map(projectFaq -> {
-                            ProjectFaqDto projectFaqDto = new ProjectFaqDto();
-                            projectFaqDto.setQuestion(projectFaq.getFaqQuestion());
-                            projectFaqDto.setAnswer(projectFaq.getFaqAnswer());
-                            projectFaqDto.setId(projectFaq.getId());
-                            return projectFaqDto;
-                        }).toList();
-            }
-            projectObj.put("projectFaqs", projectFaqList);
+            commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
         });
-        return projectObj;
+        return detailDto;
     }
 
     @Transactional
@@ -434,99 +260,160 @@ public class ProjectService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Response saveProject(MultipartFile projectLogo,
                                 MultipartFile locationMap,
                                 MultipartFile projectThumbnail,
-                                ProjectDto projectDto) {
+                                AddUpdateProjectDto addUpdateProjectDto) {
         Response response = new Response();
+        List<String> savedFiles = new ArrayList<>();
+        String fileDestination = null;
         try {
             Optional<Project> dbProject = Optional.empty();
-            if (projectDto.getId() > 0) {
-                dbProject = projectRepository.findById(projectDto.getId());
+            if (addUpdateProjectDto.getId() > 0) {
+                dbProject = projectRepository.findById(addUpdateProjectDto.getId());
             }
             // Generate slug URL if empty
-            if (projectDto.getSlugURL().isEmpty() && projectDto.getProjectName() != null
-                    && !projectDto.getProjectName().isBlank()) {
-                projectDto.setSlugURL(fileUtils.generateSlug(projectDto.getProjectName()));
-            }else{
-                projectDto.setSlugURL(fileUtils.generateSlug(projectDto.getSlugURL()));
-            }
+            if ((addUpdateProjectDto.getSlugURL() == null || addUpdateProjectDto.getSlugURL().isBlank())
+                    && addUpdateProjectDto.getProjectName() != null
+                    && !addUpdateProjectDto.getProjectName().isBlank()) {
 
+                // If slug is missing/blank → generate from project name
+                addUpdateProjectDto.setSlugURL(fileUtils.generateSlug(addUpdateProjectDto.getProjectName()));
+            } else if (addUpdateProjectDto.getSlugURL() != null) {
+
+                // If slug is provided → clean/normalize it
+                addUpdateProjectDto.setSlugURL(fileUtils.generateSlug(addUpdateProjectDto.getSlugURL()));
+            }
+            Optional<Project> bySlugURL = Optional.empty();
+            if(addUpdateProjectDto.getSlugURL() != null) {
+                bySlugURL = projectRepository.findBySlugURL(addUpdateProjectDto.getSlugURL());
+            }
             // Generating path for storing image
             String projectDir = null;
-            if (!projectDto.getSlugURL().isBlank()) {
-                projectDir = uploadDir.concat("properties/") + projectDto.getSlugURL();
+            if (!addUpdateProjectDto.getSlugURL().isBlank()) {
+                projectDir = uploadDir.concat("properties/") + addUpdateProjectDto.getSlugURL();
+                fileDestination = projectDir;
             }
             // Process images only if new files are provided
             if (dbProject.isPresent()) {
                 Project project = dbProject.get();
+                if (bySlugURL.isPresent() && bySlugURL.get().getId() != (addUpdateProjectDto.getId())) {
+                    throw new IllegalArgumentException("SlugURL already exists!");
+                }
                 if (projectLogo != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectLogo(), projectDir);
-                    project.setProjectLogo(processFile(projectLogo, projectDir));
+                    if(!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)){
+                        throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
+                    }
+                    String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
+                    project.setProjectLogo(savedProjectLogoImageName); //792 × 203 px Intrinsic aspect ratio:	792∶203
+                    savedFiles.add(savedProjectLogoImageName);
+                    project.setProjectThumbnailAltTag(fileUtils.generateImageAltTag(projectLogo));
                 }
                 if (locationMap != null && projectDir != null && !projectDir.isBlank()) {
-                    fileUtils.deleteFileFromDestination(project.getLocationMap(), projectDir);
-                    project.setLocationMap(processFile(locationMap, projectDir));
+                    fileUtils.deleteFileFromDestination(project.getLocationMap(), projectDir); //300∶193  900 × 579
+                    if(!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)){
+                        throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
+                    }
+                    String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
+                    project.setLocationMap(projectLocationMapImage);
+                    savedFiles.add(projectLocationMapImage);
+                    project.setLocationMapAltTag(fileUtils.generateImageAltTag(locationMap));
                 }
                 if (projectThumbnail != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectThumbnail(), projectDir);
-                    project.setProjectThumbnail(processFile(projectThumbnail, projectDir));
+                    if(!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)){
+                        throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
+                    }
+                    String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
+                    project.setProjectThumbnail(projectThumbnailImage); //600 x 600 1:1
+                    savedFiles.add(projectThumbnailImage);
+                    project.setProjectThumbnailAltTag(fileUtils.generateImageAltTag(projectThumbnail));
                 }
                 //save data to database
-                mapDtoToEntity(project, projectDto);
+                mapDtoToEntity(project, addUpdateProjectDto);
                 projectRepository.save(project);
                 response.setMessage(Constants.PROJECT_UPDATED);
                 response.setIsSuccess(1);
             } else {
                 Project newProject = new Project();
+                if(bySlugURL.isPresent()){
+                    throw new IllegalArgumentException("SlugURL already exists !");
+                }
                 if(projectLogo != null) {
-                    newProject.setProjectLogo(processFile(projectLogo, projectDir));
+                    if(!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)){
+                        throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
+                    }
+                    String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
+                    savedFiles.add(savedProjectLogoImageName);
+                    newProject.setProjectLogo(savedProjectLogoImageName);
                 }
                 if(locationMap != null) {
-                    newProject.setLocationMap(processFile(locationMap, projectDir));
+                    if(!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)){
+                        throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
+                    }
+                    String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
+                    newProject.setLocationMap(projectLocationMapImage);
+                    savedFiles.add(projectLocationMapImage);
                 }
                 if(projectThumbnail != null) {
-                    newProject.setProjectThumbnail(processFile(projectThumbnail, projectDir));
+                    if(!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)){
+                        throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
+                    }
+                    String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
+                    newProject.setProjectThumbnail(projectThumbnailImage); //600 x 600 1:1
+                    savedFiles.add(projectThumbnailImage);
                 }
-                mapDtoToEntity(newProject, projectDto);
+                mapDtoToEntity(newProject, addUpdateProjectDto);
                 Project savedProject = projectRepository.save(newProject);
                 response.setMessage(Constants.PROJECT_SAVED);
                 response.setIsSuccess(1);
                 response.setProjectId(savedProject.getId());
             }
         } catch (Exception e) {
+            // File cleanup if error
+            for (String fileName : savedFiles) {
+                try {
+                    fileUtils.deleteFileFromDestination(fileName, fileDestination); // Pass directory if required
+                } catch (Exception ex) {
+                    System.err.println("Failed to delete file during rollback: " + fileName);
+                }
+            }
             response.setMessage(e.getMessage());
+            // Re-throw to ensure DB rollback
+            throw new RuntimeException(e);
         }
         return response;
     }
 
     // Generating file name and saving it to upload directory
-    private String processFile(MultipartFile file, String uploadDir) {
+    private String processFile(MultipartFile file, String uploadDir, int width, int height) {
         if (!file.isEmpty()) {
             if (fileUtils.isTypeImage(file)) {
-                return fileUtils.saveOriginalImage(file, uploadDir);
+                return fileUtils.saveDesktopImageWithResize(file, uploadDir, width, height, 0.85f);
             }
         }
         return "";
     }
 
     // Map DTO fields to Project entity
-    private void mapDtoToEntity(Project project, ProjectDto dto) {
+    private void mapDtoToEntity(Project project, AddUpdateProjectDto dto) {
         Optional<City> cityObj = Optional.empty();
-        if (dto.getCity() != null && !dto.getCity().isBlank()) {
-            cityObj = cityRepository.findById(Integer.parseInt(dto.getCity()));
+        if (dto.getCityId() > 0) {
+            cityObj = cityRepository.findById(dto.getCityId());
         }
         Optional<Builder> builderObj = Optional.empty();
-        if (dto.getProjectBy() != null && !dto.getProjectBy().isBlank()) {
-            builderObj = builderRepository.findById(Integer.parseInt(dto.getProjectBy()));
+        if (dto.getBuilderId() > 0) {
+            builderObj = builderRepository.findById(dto.getBuilderId());
         }
         Optional<ProjectTypes> projectTypeObj = Optional.empty();
-        if (dto.getPropertyType() != null && !dto.getPropertyType().isBlank()) {
-            projectTypeObj = projectTypeRepository.findById(Integer.parseInt(dto.getPropertyType()));
+        if (dto.getPropertyTypeId() > 0) {
+            projectTypeObj = projectTypeRepository.findById(dto.getPropertyTypeId());
         }
         Optional<ProjectStatus> projectStatus = Optional.empty();
-        if (dto.getProjectStatus() != null && !dto.getProjectStatus().isBlank()) {
-            projectStatus = projectStatusRepository.findById(Integer.parseInt(dto.getProjectStatus()));
+        if (dto.getProjectStatusId() > 0) {
+            projectStatus = projectStatusRepository.findById(dto.getProjectStatusId());
         }
         project.setMetaTitle(dto.getMetaTitle());
         project.setMetaDescription(dto.getMetaDescription());
@@ -537,67 +424,16 @@ public class ProjectService {
         projectTypeObj.ifPresent(project::setProjectTypes);
         project.setProjectLocality(dto.getProjectLocality());
         project.setProjectConfiguration(dto.getProjectConfiguration());
-        project.setProjectPrice(dto.getProjectPrice());
+        project.setProjectPrice(String.valueOf(dto.getProjectPrice()));
         project.setIvrNo(dto.getIvrNo());
         project.setReraNo(dto.getReraNo());
         project.setReraWebsite(dto.getReraWebsite());
         projectStatus.ifPresent(project::setProjectStatus);
         project.setSlugURL(dto.getSlugURL());
         project.setShowFeaturedProperties(true);
-        project.setAmenityDesc(dto.getAmenityDesc());
-        project.setLocationDesc(dto.getLocationDesc());
-        project.setFloorPlanDesc(dto.getFloorPlanDesc());
+        project.setAmenityDesc(dto.getAmenityDescription());
+        project.setLocationDesc(dto.getLocationDescription());
+        project.setFloorPlanDesc(dto.getFloorPlanDescription());
         project.setStatus(dto.isStatus());
     }
-
-    private void mapEntityToDto(Project entity, ProjectDetailDto dto){
-        if(entity != null){
-            dto.setId(entity.getId());
-            dto.setMetaTitle(entity.getMetaTitle());
-            dto.setMetaKeyword(entity.getMetaKeyword());
-            dto.setMetaDescription(entity.getMetaDescription());
-            dto.setProjectName(entity.getProjectName());
-            City city = entity.getCity();
-            if (city != null) {
-                dto.setCity(city.getName());
-                State state = city.getState();
-                if(state != null){
-                    dto.setState(state.getStateName());
-                    Country country = state.getCountry();
-                    if(country != null){
-                        dto.setCountry(country.getCountryName());
-                    }
-                }
-                dto.setProjectAddress(entity.getProjectLocality().concat(", ").concat(city.getName()));
-            }
-            dto.setProjectLocality(entity.getProjectLocality());
-            dto.setProjectConfiguration(entity.getProjectConfiguration());
-            Builder builder = entity.getBuilder();
-            if(builder != null){
-                dto.setProjectBy(builder.getBuilderName());
-            }
-            dto.setProjectPrice(entity.getProjectPrice());
-            dto.setIvrNo(entity.getIvrNo());
-            dto.setReraNo(entity.getReraNo());
-            dto.setReraQr(entity.getReraQr());
-            dto.setReraWebsite(entity.getReraWebsite());
-            ProjectStatus projectStatus = entity.getProjectStatus();
-            if(projectStatus != null){
-                dto.setProjectStatus(projectStatus.getStatusName());
-            }
-            ProjectTypes projectTypes = entity.getProjectTypes();
-            if(projectTypes != null){
-                dto.setPropertyType(projectTypes.getProjectTypeName());
-                dto.setTypeName(projectTypes.getProjectTypeName());
-            }
-            dto.setSlugURL(entity.getSlugURL());
-            dto.setShowFeaturedProperties(entity.isShowFeaturedProperties());
-            dto.setAmenityDesc(entity.getAmenityDesc());
-            dto.setFloorPlanDesc(entity.getFloorPlanDesc());
-            dto.setLocationDesc(entity.getLocationDesc());
-            dto.setStatus(entity.isStatus());
-            dto.setProjectThumbnailImage(entity.getProjectThumbnail());
-        }
-    }
-
 }
