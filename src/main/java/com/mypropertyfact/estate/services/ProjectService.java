@@ -89,15 +89,27 @@ public class ProjectService {
         final int e = end;
         try {
             if (!propertyType.isEmpty() && propertyLocation.isEmpty()) {
-                filteredList = projects.stream()
-                        .filter(project -> {
-                            // Check for null and non-numeric price
-                            String priceStr = project.getProjectPrice();
-                            return isNumeric(priceStr);
-                        })
-                        .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
-                        .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                        .toList();
+                if (propertyType.equals("3")) {
+                    filteredList = projects.stream()
+                            .filter(project -> {
+                                // Check for null and non-numeric price
+                                String priceStr = project.getProjectPrice();
+                                return isNumeric(priceStr);
+                            })
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                            .toList();
+                } else {
+                    filteredList = projects.stream()
+                            .filter(project -> {
+                                // Check for null and non-numeric price
+                                String priceStr = project.getProjectPrice();
+                                return isNumeric(priceStr);
+                            })
+                            .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
+                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                            .toList();
+                }
             } else if (!propertyLocation.isEmpty() &&
                     propertyType.trim().isEmpty()) {
                 filteredList = projects.stream()
@@ -111,28 +123,54 @@ public class ProjectService {
                         .toList();
             } else if (!propertyLocation.trim().isEmpty() &&
                     !propertyType.trim().isEmpty() && budget.isEmpty()) {
-                filteredList = projects.stream()
-                        .filter(project -> {
-                            // Check for null and non-numeric price
-                            String priceStr = project.getProjectPrice();
-                            return isNumeric(priceStr);
-                        })
-                        .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                        .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
-                        .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                        .toList();
+                if (propertyType.equals("3")) {
+                    filteredList = projects.stream()
+                            .filter(project -> {
+                                // Check for null and non-numeric price
+                                String priceStr = project.getProjectPrice();
+                                return isNumeric(priceStr);
+                            })
+                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                            .toList();
+                } else {
+                    filteredList = projects.stream()
+                            .filter(project -> {
+                                // Check for null and non-numeric price
+                                String priceStr = project.getProjectPrice();
+                                return isNumeric(priceStr);
+                            })
+                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                            .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
+                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                            .toList();
+                }
             } else if (!propertyLocation.trim().isEmpty() &&
                     !propertyType.trim().isEmpty() && !budget.isEmpty()) {
-                filteredList = projects.stream()
-                        .filter(project -> {
-                            // Check for null and non-numeric price
-                            String priceStr = project.getProjectPrice();
-                            return isNumeric(priceStr);
-                        })
-                        .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                        .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
-                        .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                        .toList();
+                if (propertyType.equals("3")) {
+                    filteredList = projects.stream()
+                            .filter(project -> {
+                                // Check for null and non-numeric price
+                                String priceStr = project.getProjectPrice();
+                                return isNumeric(priceStr);
+                            })
+                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                            .toList();
+                } else {
+                    filteredList = projects.stream()
+                            .filter(project -> {
+                                // Check for null and non-numeric price
+                                String priceStr = project.getProjectPrice();
+                                return isNumeric(priceStr);
+                            })
+                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
+                            .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
+                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
+                            .toList();
+                }
             } else {
                 filteredList = projects.stream()
                         .filter(project -> {
@@ -165,7 +203,7 @@ public class ProjectService {
 
     public List<ProjectDetailDto> getAllProjectsList() {
         List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        System.out.println("Total projects are "+ projects.size());
+        System.out.println("Total projects are " + projects.size());
         return projects.stream().map(project -> {
             ProjectDetailDto detailDto = new ProjectDetailDto();
             commonMapper.mapProjectToProjectDto(project, detailDto);
@@ -286,7 +324,7 @@ public class ProjectService {
                 addUpdateProjectDto.setSlugURL(fileUtils.generateSlug(addUpdateProjectDto.getSlugURL()));
             }
             Optional<Project> bySlugURL = Optional.empty();
-            if(addUpdateProjectDto.getSlugURL() != null) {
+            if (addUpdateProjectDto.getSlugURL() != null) {
                 bySlugURL = projectRepository.findBySlugURL(addUpdateProjectDto.getSlugURL());
             }
             // Generating path for storing image
@@ -303,7 +341,7 @@ public class ProjectService {
                 }
                 if (projectLogo != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectLogo(), projectDir);
-                    if(!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)){
+                    if (!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)) {
                         throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
                     }
                     String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
@@ -313,7 +351,7 @@ public class ProjectService {
                 }
                 if (locationMap != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getLocationMap(), projectDir); //300∶193  900 × 579
-                    if(!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)){
+                    if (!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)) {
                         throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
                     }
                     String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
@@ -323,7 +361,7 @@ public class ProjectService {
                 }
                 if (projectThumbnail != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectThumbnail(), projectDir);
-                    if(!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)){
+                    if (!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)) {
                         throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
                     }
                     String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
@@ -338,27 +376,27 @@ public class ProjectService {
                 response.setIsSuccess(1);
             } else {
                 Project newProject = new Project();
-                if(bySlugURL.isPresent()){
+                if (bySlugURL.isPresent()) {
                     throw new IllegalArgumentException("SlugURL already exists !");
                 }
-                if(projectLogo != null) {
-                    if(!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)){
+                if (projectLogo != null) {
+                    if (!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)) {
                         throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
                     }
                     String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
                     savedFiles.add(savedProjectLogoImageName);
                     newProject.setProjectLogo(savedProjectLogoImageName);
                 }
-                if(locationMap != null) {
-                    if(!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)){
+                if (locationMap != null) {
+                    if (!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)) {
                         throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
                     }
                     String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
                     newProject.setLocationMap(projectLocationMapImage);
                     savedFiles.add(projectLocationMapImage);
                 }
-                if(projectThumbnail != null) {
-                    if(!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)){
+                if (projectThumbnail != null) {
+                    if (!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)) {
                         throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
                     }
                     String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);

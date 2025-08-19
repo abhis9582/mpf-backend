@@ -25,6 +25,8 @@ import java.util.Iterator;
 @Component
 public class FileUtils {
 
+    private final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
     //checking size of file
     public boolean isFileSizeValid(MultipartFile file, long maxSizeInBytes) {
         if (file == null) {
@@ -40,6 +42,26 @@ public class FileUtils {
         }
         String contentType = file.getContentType();
         return contentType != null && contentType.toLowerCase().startsWith("image/");
+    }
+
+    public boolean isPdfFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return false;
+        }
+
+        // Check file content type
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.equalsIgnoreCase("application/pdf")) {
+            return false;
+        }
+
+        // Check file extension
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || !fileName.toLowerCase().endsWith(".pdf")) {
+            return false;
+        }
+
+        return true;
     }
 
     //Renaming the name of file
@@ -181,7 +203,7 @@ public class FileUtils {
     public String saveOriginalImage(MultipartFile file, String uploadDir) {
         String imageName = null;
         try {
-            if (file != null && isTypeImage(file)) {
+            if (file != null && isTypeImage(file) || file != null && isPdfFile(file)) {
                 Path uploadPath = Paths.get(uploadDir);
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
@@ -309,5 +331,10 @@ public class FileUtils {
             }
         }
         return generateAltTag;
+    }
+
+    public boolean checkFileSize(MultipartFile file) {
+        // Check file size (<= 5 MB here)
+        return file.getSize() <= MAX_FILE_SIZE;
     }
 }
