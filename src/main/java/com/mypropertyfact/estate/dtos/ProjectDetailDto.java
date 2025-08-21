@@ -32,6 +32,8 @@ public class ProjectDetailDto {
     private boolean showFeaturedProperties;
     private boolean status;
     private String builderName;
+    private String builderSlugURL;
+    private String builderDescription;
     private String projectStatusName;
     private String propertyTypeName;
     private String cityName;

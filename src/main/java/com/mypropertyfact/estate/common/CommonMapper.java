@@ -92,6 +92,12 @@ public class CommonMapper {
         detailDto.setProjectThumbnailImage(project.getProjectThumbnail());
         detailDto.setProjectLogoImage(project.getProjectLogo());
         detailDto.setSlugURL(project.getSlugURL());
+        if(project.getBuilder() != null) {
+            Builder builder = project.getBuilder();
+            detailDto.setBuilderName(builder.getBuilderName());
+            detailDto.setBuilderDescription(builder.getBuilderDesc());
+            detailDto.setBuilderSlugURL(builder.getSlugUrl());
+        }
         if (project.getCity() != null) {
             City city = project.getCity();
             detailDto.setCityName(city.getName());
@@ -219,6 +225,7 @@ public class CommonMapper {
                 projectDesktopBannerDto.setSlugURL(project.getSlugURL());
                 projectDesktopBannerDto.setProjectName(project.getProjectName());
                 projectDesktopBannerDto.setId(desktopBanner.getId());
+                projectDesktopBannerDto.setDesktopAltTag(desktopBanner.getDesktopAltTag());
                 return projectDesktopBannerDto;
             }).toList();
         }

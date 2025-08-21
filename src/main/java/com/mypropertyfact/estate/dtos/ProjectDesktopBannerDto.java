@@ -9,4 +9,5 @@ public class ProjectDesktopBannerDto {
     private String projectName;
     private String slugURL;
     private String desktopImage;
+    private String desktopAltTag;
 }
