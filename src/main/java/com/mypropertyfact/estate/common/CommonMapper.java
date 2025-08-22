@@ -98,6 +98,11 @@ public class CommonMapper {
             detailDto.setBuilderDescription(builder.getBuilderDesc());
             detailDto.setBuilderSlugURL(builder.getSlugUrl());
         }
+        if(project.getProjectTypes() != null) {
+            ProjectTypes projectTypes = project.getProjectTypes();
+            detailDto.setPropertyTypeId(projectTypes.getId());
+            detailDto.setPropertyTypeName(projectTypes.getProjectTypeName());
+        }
         if (project.getCity() != null) {
             City city = project.getCity();
             detailDto.setCityName(city.getName());
