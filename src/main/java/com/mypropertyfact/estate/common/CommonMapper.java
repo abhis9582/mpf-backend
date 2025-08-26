@@ -92,8 +92,20 @@ public class CommonMapper {
         detailDto.setProjectThumbnailImage(project.getProjectThumbnail());
         detailDto.setProjectLogoImage(project.getProjectLogo());
         detailDto.setSlugURL(project.getSlugURL());
+        detailDto.setProjectLocality(project.getProjectLocality());
+        detailDto.setProjectConfiguration(project.getProjectConfiguration());
+        detailDto.setIvrNo(project.getIvrNo());
+        detailDto.setReraQr(project.getReraQr());
+        detailDto.setReraWebsite(project.getReraWebsite());
+        detailDto.setStatus(project.isStatus());
+        ProjectStatus projectStatus = project.getProjectStatus();
+        if(projectStatus != null){
+            detailDto.setProjectStatusId(projectStatus.getId());
+            detailDto.setProjectStatusName(projectStatus.getStatusName());
+        }
         if(project.getBuilder() != null) {
             Builder builder = project.getBuilder();
+            detailDto.setBuilderId(builder.getId());
             detailDto.setBuilderName(builder.getBuilderName());
             detailDto.setBuilderDescription(builder.getBuilderDesc());
             detailDto.setBuilderSlugURL(builder.getSlugUrl());
@@ -105,13 +117,16 @@ public class CommonMapper {
         }
         if (project.getCity() != null) {
             City city = project.getCity();
+            detailDto.setCityId(city.getId());
             detailDto.setCityName(city.getName());
             detailDto.setProjectAddress(project.getProjectLocality().concat(", ") + city.getName());
             if (city.getState() != null) {
                 State state = city.getState();
                 detailDto.setStateName(state.getStateName());
+                detailDto.setStateId(state.getId());
                 if (state.getCountry() != null) {
                     Country country = state.getCountry();
+                    detailDto.setCountryId(country.getId());
                     detailDto.setCountryName(country.getCountryName());
                 }
             }
@@ -132,6 +147,8 @@ public class CommonMapper {
                     .filter(Objects::nonNull)
                     .map(floorPlan -> {
                         FloorPlanDto floorPlanDto = new FloorPlanDto();
+                        floorPlanDto.setProjectId(project.getId());
+                        floorPlanDto.setPName(project.getProjectName());
                         floorPlanDto.setFloorId(floorPlan.getId());
                         floorPlanDto.setPlanType(floorPlan.getPlanType());
                         floorPlanDto.setAreaSqMt(floorPlan.getAreaSqmt());
@@ -146,9 +163,16 @@ public class CommonMapper {
                     .map(projectBanner -> {
                         ProjectBannerDto projectBannerDto = new ProjectBannerDto();
                         if(projectBanner.getDesktopBanner() != null) {
+                            projectBannerDto.setProjectId(project.getId());
+                            projectBannerDto.setProjectName(project.getProjectName());
+                            projectBannerDto.setSlugURL(project.getSlugURL());
                             projectBannerDto.setAltTag(projectBanner.getAltTag());
                             projectBannerDto.setId(projectBanner.getId());
                             projectBannerDto.setProjectDesktopBanner(projectBanner.getDesktopBanner());
+                            projectBannerDto.setProjectDesktopBannerImageList(new ArrayList<>());
+                            projectBannerDto.setProjectMobileBannerImageList(new ArrayList<>());
+                            projectBannerDto.setDeletedDesktopImageIds(new ArrayList<>());
+                            projectBannerDto.setDeletedMobileImageIds(new ArrayList<>());
                         }
                         if(projectBanner.getMobileBanner() != null) {
                             projectBannerDto.setProjectMobileBanner(projectBanner.getMobileBanner());
@@ -165,6 +189,7 @@ public class CommonMapper {
                         amenityDto.setId(amenity.getId());
                         amenityDto.setTitle(amenity.getTitle());
                         amenityDto.setImage(amenity.getAmenityImageUrl());
+                        amenityDto.setAltTag(amenity.getAltTag());
                         return amenityDto;
                     }).toList();
         }
@@ -175,6 +200,10 @@ public class CommonMapper {
             projectGalleryList = project.getProjectGalleries().stream().filter(Objects::nonNull)
                     .map(projectGallery -> {
                         ProjectGalleryDto projectGalleryDto = new ProjectGalleryDto();
+                        projectGalleryDto.setProjectId(project.getId());
+                        projectGalleryDto.setDeletedImageIds(new ArrayList<>());
+                        projectGalleryDto.setGalleryImageList(new ArrayList<>());
+                        projectGalleryDto.setId(projectGallery.getId());
                         projectGalleryDto.setGalleyImage(projectGallery.getImage());
                         return projectGalleryDto;
                     }).toList();
@@ -185,6 +214,10 @@ public class CommonMapper {
             locationBenefitList = project.getLocationBenefits().stream().filter(Objects::nonNull)
                     .map(locationBenefit -> {
                         LocationBenefitDto locationBenefitDto = new LocationBenefitDto();
+                        locationBenefitDto.setId(locationBenefit.getId());
+                        locationBenefitDto.setProjectName(project.getProjectName());
+                        locationBenefitDto.setProjectId(project.getId());
+                        locationBenefitDto.setSlugUrl(project.getSlugURL());
                         locationBenefitDto.setImage(locationBenefit.getIconImage());
                         locationBenefitDto.setBenefitName(locationBenefit.getBenefitName());
                         locationBenefitDto.setDistance(locationBenefit.getDistance());
@@ -198,6 +231,7 @@ public class CommonMapper {
             projectFaqList = project.getProjectFaqs().stream().filter(Objects::nonNull)
                     .map(projectFaq -> {
                         ProjectFaqDto projectFaqDto = new ProjectFaqDto();
+                        projectFaqDto.setProjectId(project.getId());
                         projectFaqDto.setQuestion(projectFaq.getFaqQuestion());
                         projectFaqDto.setAnswer(projectFaq.getFaqAnswer());
                         projectFaqDto.setId(projectFaq.getId());

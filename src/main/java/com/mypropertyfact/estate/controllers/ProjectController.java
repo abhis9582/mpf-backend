@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +17,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/projects")
+@Slf4j
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
     @GetMapping
     public ResponseEntity<List<ProjectDetailDto>> fetchAllProjects(){
+        log.info("Fetching all projects.");
         return ResponseEntity.ok(projectService.fetchAllProjects());
     }
 
     @Transactional
     @GetMapping("/get-all-projects-list")
     public ResponseEntity<List<ProjectDetailDto>> getAllProjectsList() {
+        log.info("Get-all-projects-list method is called.");
         return ResponseEntity.ok(projectService.getAllProjectsList());
     }
 

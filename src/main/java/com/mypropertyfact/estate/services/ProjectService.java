@@ -206,7 +206,7 @@ public class ProjectService {
         System.out.println("Total projects are " + projects.size());
         return projects.stream().map(project -> {
             ProjectDetailDto detailDto = new ProjectDetailDto();
-            commonMapper.mapProjectToProjectDto(project, detailDto);
+            commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
             return detailDto;
         }).toList();
     }
