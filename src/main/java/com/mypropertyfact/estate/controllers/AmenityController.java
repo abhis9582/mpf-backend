@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.configs.dtos.AmenityDto;
+import com.mypropertyfact.estate.dtos.AmenityDetailedDto;
 import com.mypropertyfact.estate.entities.Amenity;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.AmenityService;
@@ -37,5 +38,10 @@ public class AmenityController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteAmenity(@PathVariable("id") int id){
         return new ResponseEntity<>(this.amenityService.deleteAmenity(id), HttpStatus.OK);
+    }
+
+    @PostMapping("/post-multiple-amenities")
+    public ResponseEntity<Response> postMultipleAmenities(@ModelAttribute AmenityDetailedDto dto){
+        return ResponseEntity.ok(amenityService.postMultipleAmenities(dto));
     }
 }
