@@ -49,9 +49,9 @@ public class LocalityServiceImpl implements LocalityService {
             if(locality.getCity() != null) {
                 localityDto.setCityId(locality.getCity().getId());
                 localityDto.setCityName(locality.getCity().getName());
-                if(locality.getCity().getState() != null) {
-                    localityDto.setStateName(locality.getCity().getState().getStateName());
-                }
+//                if(locality.getCity() != null) {
+//                    localityDto.setStateName(locality.getCity().getDistrict().getState().getStateName());
+//                }
             }
             if(locality.getProjectTypes() != null) {
                 localityDto.setLocalityCategory(locality.getProjectTypes().getId());

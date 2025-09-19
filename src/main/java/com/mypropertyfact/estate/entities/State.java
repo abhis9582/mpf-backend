@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "state")
-@ToString(exclude = {"country", "cities"})
+@ToString(exclude = {"country", "districts"})
 public class State {
 
     @Id
@@ -24,20 +24,20 @@ public class State {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     @JsonIgnore
     private Country country;
-
-    @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<City> cities;
 
     @PrePersist
     public void onCreate(){
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<District> districts;
 
     @PreUpdate
     public void onUpdate() {

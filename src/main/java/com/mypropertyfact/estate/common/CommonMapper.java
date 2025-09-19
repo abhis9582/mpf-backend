@@ -28,17 +28,17 @@ public class CommonMapper {
                 dto.setCityId(city.getId());
                 dto.setCityName(city.getName());
 
-                State state = city.getState();
-                if(state != null){
-                    dto.setStateId(state.getId());
-                    dto.setStateName(state.getStateName());
-
-                    Country country = state.getCountry();
-                    if(country != null){
-                        dto.setCountryId(country.getId());
-                        dto.setCountryName(country.getCountryName());
-                    }
-                }
+//                State state = city.getDistrict().getState();
+//                if(state != null){
+//                    dto.setStateId(state.getId());
+//                    dto.setStateName(state.getStateName());
+//
+//                    Country country = state.getCountry();
+//                    if(country != null){
+//                        dto.setCountryId(country.getId());
+//                        dto.setCountryName(country.getCountryName());
+//                    }
+//                }
                 dto.setProjectAddress(entity.getProjectLocality().concat(", ").concat(city.getName()));
             }
 
@@ -120,16 +120,16 @@ public class CommonMapper {
             detailDto.setCityId(city.getId());
             detailDto.setCityName(city.getName());
             detailDto.setProjectAddress(project.getProjectLocality().concat(", ") + city.getName());
-            if (city.getState() != null) {
-                State state = city.getState();
-                detailDto.setStateName(state.getStateName());
-                detailDto.setStateId(state.getId());
-                if (state.getCountry() != null) {
-                    Country country = state.getCountry();
-                    detailDto.setCountryId(country.getId());
-                    detailDto.setCountryName(country.getCountryName());
-                }
-            }
+//            if (city.getDistrict().getState() != null) {
+//                State state = city.getDistrict().getState();
+//                detailDto.setStateName(state.getStateName());
+//                detailDto.setStateId(state.getId());
+//                if (state.getCountry() != null) {
+//                    Country country = state.getCountry();
+//                    detailDto.setCountryId(country.getId());
+//                    detailDto.setCountryName(country.getCountryName());
+//                }
+//            }
         }
         if (project.getProjectsAbout() != null) {
             ProjectsAbout projectsAbout = project.getProjectsAbout();
@@ -288,15 +288,43 @@ public class CommonMapper {
         cityDto.setMetaKeywords(city.getMetaKeyWords());
         cityDto.setMetaDescription(city.getMetaDescription());
         cityDto.setCityDescription(city.getCityDisc());
-        if(city.getState() != null) {
-            State state = city.getState();
-            cityDto.setStateId(state.getId());
-            cityDto.setStateName(state.getStateName());
-            if(state.getCountry() != null) {
-                Country country = state.getCountry();
-                cityDto.setCountryId(country.getId());
-                cityDto.setCountryName(country.getCountryName());
-            }
+//        if(city.getDistrict() != null) {
+//            District district = city.getDistrict();
+//            if (district.getState() != null) {
+//                State state = city.getDistrict().getState();
+//                cityDto.setStateId(state.getId());
+//                cityDto.setStateName(state.getStateName());
+//                if (state.getCountry() != null) {
+//                    Country country = state.getCountry();
+//                    cityDto.setCountryId(country.getId());
+//                    cityDto.setCountryName(country.getCountryName());
+//                }
+//            }
+//        }
+    }
+
+    public void mapShortProjectDetails(Project project, ProjectShortDetails projectShortDetails) {
+        projectShortDetails.setId(project.getId());
+        projectShortDetails.setProjectPrice(project.getProjectPrice());
+        projectShortDetails.setProjectLocality(project.getProjectLocality());
+        projectShortDetails.setProjectConfiguration(project.getProjectConfiguration());
+        projectShortDetails.setProjectName(project.getProjectName());
+        projectShortDetails.setProjectPrice(project.getProjectPrice());
+        projectShortDetails.setStatus(project.isStatus());
+        projectShortDetails.setSlugURL(project.getSlugURL());
+        projectShortDetails.setProjectThumbnailImage(project.getProjectThumbnail());
+        if(project.getProjectTypes() != null) {
+            ProjectTypes projectTypes = project.getProjectTypes();
+            projectShortDetails.setPropertyTypeName(projectTypes.getProjectTypeName());
+        }
+        if(project.getProjectStatus() != null) {
+            ProjectStatus projectStatus = project.getProjectStatus();
+            projectShortDetails.setProjectStatusName(projectStatus.getStatusName());
+        }
+        if(project.getCity() != null) {
+            City city = project.getCity();
+            projectShortDetails.setCityName(city.getName());
+            projectShortDetails.setProjectAddress(project.getProjectLocality().concat(", ") + city.getName());
         }
     }
 }

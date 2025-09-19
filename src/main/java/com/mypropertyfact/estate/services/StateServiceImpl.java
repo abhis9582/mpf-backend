@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.StateDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Country;
+import com.mypropertyfact.estate.entities.District;
 import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.StateService;
 import com.mypropertyfact.estate.models.Response;
@@ -32,9 +33,9 @@ public class StateServiceImpl implements StateService {
     @Override
     public Response addUpdate(StateDto stateDto) {
         Optional<Country> countryById = countryRepository.findById(stateDto.getCountryId());
-        if(stateDto.getId() > 0){
+        if (stateDto.getId() > 0) {
             Optional<State> savedState = stateRepository.findById(stateDto.getId());
-            savedState.ifPresent(state-> {
+            savedState.ifPresent(state -> {
                 state.setStateName(stateDto.getStateName());
                 state.setDescription(stateDto.getStateDescription());
                 countryById.ifPresent(state::setCountry);
@@ -42,7 +43,7 @@ public class StateServiceImpl implements StateService {
             });
             return new Response(1, "State updated successfully...", 0);
         }
-        State state= new State();
+        State state = new State();
         state.setStateName(stateDto.getStateName());
         state.setDescription(stateDto.getStateDescription());
         countryById.ifPresent(state::setCountry);
@@ -61,30 +62,32 @@ public class StateServiceImpl implements StateService {
         List<State> stateList = stateRepository.findAll();
         List<StateDto> stateDtoList;
         stateDtoList = stateList.stream()
-                .filter(Objects::nonNull).map(state-> {
-            StateDto stateDto = new StateDto();
-            stateDto.setId(state.getId());
-            stateDto.setStateName(state.getStateName());
-            stateDto.setStateDescription(state.getDescription());
-            List<CityDto> cityDtoList;
-            if(state.getCities() != null){
-                List<City> cities = state.getCities();
-                cityDtoList = cities.stream()
-                        .sorted(Comparator.comparing(City::getName, String::compareToIgnoreCase))
-                        .map(city-> {
-                            CityDto cityDto = new CityDto();
-                            commonMapper.mapCityDtoToCity(cityDto, city);
-                            return cityDto;
-                        }).toList();
-                stateDto.setCityList(cityDtoList);
-            }
-            if(state.getCountry() != null) {
-                Country country = state.getCountry();
-                stateDto.setCountryId(country.getId());
-                stateDto.setCountryName(country.getCountryName());
-            }
-            return stateDto;
-        }).toList();
+                .filter(Objects::nonNull).map(state -> {
+                    StateDto stateDto = new StateDto();
+                    stateDto.setId(state.getId());
+                    stateDto.setStateName(state.getStateName());
+                    stateDto.setStateDescription(state.getDescription());
+                    if (state.getDistricts() != null) {
+                        List<CityDto> cityDtoList = state.getDistricts().stream()
+                                .filter(district -> district.getCities() != null) // filter out null cities
+                                .flatMap(district -> district.getCities().stream()) // flatten all cities
+                                .sorted(Comparator.comparing(City::getName, String.CASE_INSENSITIVE_ORDER)) // sort by name
+                                .map(city -> {
+                                    CityDto cityDto = new CityDto();
+                                    commonMapper.mapCityDtoToCity(cityDto, city);
+                                    return cityDto;
+                                })
+                                .toList();
+
+                        stateDto.setCityList(cityDtoList); // finally set the cities
+                    }
+                    if (state.getCountry() != null) {
+                        Country country = state.getCountry();
+                        stateDto.setCountryId(country.getId());
+                        stateDto.setCountryName(country.getCountryName());
+                    }
+                    return stateDto;
+                }).toList();
         return stateDtoList;
     }
 }

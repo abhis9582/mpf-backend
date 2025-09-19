@@ -9,6 +9,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
@@ -45,5 +47,16 @@ public class AuthenticationService {
 
         return userRepository.findByEmail(input.getEmail())
                 .orElseThrow();
+    }
+
+    public User signupWithoutPassword(RegisterUserDto dto) {
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setFullName(dto.getFullName());
+        // Generate a secure random password (never used for login)
+        String randomPassword = UUID.randomUUID().toString();
+        user.setPassword(passwordEncoder.encode(randomPassword));
+        userRepository.save(user);
+        return user;
     }
 }

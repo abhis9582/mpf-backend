@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "city")
 @Data
-@ToString(exclude = {"state", "projects", "blogs"})
+@ToString(exclude = {"district", "projects", "blogs", "localities"})
 public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,19 +21,15 @@ public class City {
     @Lob
     private String metaDescription;
     private String name;
-//    private String state;
     private String slugUrl;
     @Lob
     private String cityDisc;
     private String cityImage;
+    private Double latitude;
+    private Double longitude;
+    private Integer pinCode;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @ManyToOne
-    @JoinColumn(name = "state_id")
-    @JsonIgnore
-    private State state;
-
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Project> projects;
@@ -41,6 +37,15 @@ public class City {
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Blog> blogs;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @JoinColumn(name = "district_id")
+    private District district;
+
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Locality> localities;
 
     @PrePersist
     public void onCreate(){

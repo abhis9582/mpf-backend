@@ -6,6 +6,7 @@ import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.configs.dtos.*;
 import com.mypropertyfact.estate.dtos.AddUpdateProjectDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
+import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
@@ -473,5 +474,25 @@ public class ProjectService {
         project.setLocationDesc(dto.getLocationDescription());
         project.setFloorPlanDesc(dto.getFloorPlanDescription());
         project.setStatus(dto.isStatus());
+    }
+    @Transactional
+    public List<ProjectShortDetails> getShortDetails() {
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
+        System.out.println("Total projects are " + projects.size());
+        return projects.stream().map(project -> {
+            ProjectShortDetails detailDto = new ProjectShortDetails();
+            commonMapper.mapShortProjectDetails(project, detailDto);
+            return detailDto;
+        }).toList();
+    }
+
+    public Set<String> getAllFloorTypes() {
+        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
+        Set<String> uniqueBhk = new HashSet<>();
+        projects.stream().map(project-> {
+            uniqueBhk.addAll(List.of(project.getProjectConfiguration().split(",")));
+            return null;
+        }).toList();
+        return uniqueBhk;
     }
 }

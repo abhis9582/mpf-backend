@@ -31,11 +31,6 @@ public class CityController {
         return new ResponseEntity<>(this.cityService.postNewCity(cityDto), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCity(@PathVariable("id") int id, @RequestBody City city) {
-        return new ResponseEntity<>(this.cityService.updateCity(id, city), HttpStatus.OK);
-    }
-
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteCity(@PathVariable("id") int id) {
         return new ResponseEntity<>(this.cityService.deleteCity(id), HttpStatus.OK);

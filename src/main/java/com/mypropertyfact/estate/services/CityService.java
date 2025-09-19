@@ -5,13 +5,11 @@ import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
-import com.mypropertyfact.estate.entities.City;
-import com.mypropertyfact.estate.entities.Country;
-import com.mypropertyfact.estate.entities.Project;
-import com.mypropertyfact.estate.entities.State;
+import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.CityView;
 import com.mypropertyfact.estate.repositories.CityRepository;
+import com.mypropertyfact.estate.repositories.DistrictRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,15 +23,17 @@ public class CityService {
 
     private final CityRepository cityRepository;
     private final StateRepository stateRepository;
+    private final DistrictRepository districtRepository;
     private final CommonMapper commonMapper;
     private final FileUtils fileUtils;
 
     public CityService(CityRepository cityRepository, StateRepository stateRepository,
-                       FileUtils fileUtils, CommonMapper commonMapper) {
+                       FileUtils fileUtils, CommonMapper commonMapper, DistrictRepository districtRepository) {
         this.cityRepository = cityRepository;
         this.stateRepository = stateRepository;
         this.fileUtils = fileUtils;
         this.commonMapper = commonMapper;
+        this.districtRepository = districtRepository;
     }
 
 //    public List<CityView> getAllCities() {
@@ -55,13 +55,13 @@ public class CityService {
             Map<String, Object> cityObj = new HashMap<>();
             cityObj.put("id", city.getId());
             cityObj.put("name", city.getName());
-            if(city.getState() != null) {
-                if(city.getState().getCountry() != null) {
-                    cityObj.put("countryName", city.getState().getCountry().getCountryName());
-                    cityObj.put("countryId", city.getState().getCountry().getId());
+            if(city.getDistrict().getState() != null) {
+                if(city.getDistrict().getState().getCountry() != null) {
+                    cityObj.put("countryName", city.getDistrict().getState().getCountry().getCountryName());
+                    cityObj.put("countryId", city.getDistrict().getState().getCountry().getId());
                 }
-                cityObj.put("stateName", city.getState().getStateName());
-                cityObj.put("stateId", city.getState().getId());
+                cityObj.put("stateName", city.getDistrict().getState().getStateName());
+                cityObj.put("stateId", city.getDistrict().getState().getId());
             }
             cityObj.put("metaDescription", city.getMetaDescription());
             cityObj.put("metaTitle", city.getMetaTitle());
@@ -77,40 +77,22 @@ public class CityService {
                 return new Response(0, ConstantMessages.CITY_EXISTS, 0);
             }
             cityDto.setSlugURL(fileUtils.generateSlug(cityDto.getCityName()));
-            Optional<State> state = stateRepository.findById(cityDto.getStateId());
+            Optional<District> district = districtRepository.findById(cityDto.getStateId());
             if (cityDto.getId() != 0) {
-                Optional<City> savedCity = cityRepository.findById(cityDto.getId());
+                Optional<City> savedCity = cityRepository.findById(cityDto.getDistrictId());
                 savedCity.ifPresent(city-> {
-                    state.ifPresent(city::setState);
+                    district.ifPresent(city::setDistrict);
                     commonMapper.mapCityToCityDto(city, cityDto);
                     cityRepository.save(city);
                 });
                 return new Response(1, ConstantMessages.CITY_UPDATED, 0);
             } else {
                 City city = new City();
-                state.ifPresent(city::setState);
+                district.ifPresent(city::setDistrict);
                 commonMapper.mapCityToCityDto(city, cityDto);
                 cityRepository.save(city);
                 return new Response(1, ConstantMessages.CITY_ADDED, 0);
             }
-    }
-
-    public Response updateCity(int id, City city) {
-        Response response = new Response();
-        try {
-            City cityById = (City) this.cityRepository.findById(id).get();
-            if (cityById != null) {
-                cityById.setName(city.getName());
-                cityById.setState(city.getState());
-                this.cityRepository.save(cityById);
-                response.setIsSuccess(1);
-                response.setMessage(ConstantMessages.CITY_UPDATED);
-            }
-        } catch (Exception e) {
-            response.setMessage(e.getMessage());
-            response.setIsSuccess(0);
-        }
-        return response;
     }
 
     public Response deleteCity(int id) {
@@ -150,8 +132,8 @@ public class CityService {
             cityDetailDto.setMetaTitle(city.getMetaTitle());
             cityDetailDto.setMetaKeywords(city.getMetaKeyWords());
             cityDetailDto.setMetaDescription(city.getMetaDescription());
-            if(city.getState() != null) {
-                State state = city.getState();
+            if(city.getDistrict().getState() != null) {
+                State state = city.getDistrict().getState();
                 cityDetailDto.setStateId(state.getId());
                 cityDetailDto.setStateName(state.getStateName());
                 if(state.getCountry() != null) {

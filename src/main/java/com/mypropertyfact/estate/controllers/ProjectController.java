@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.dtos.AddUpdateProjectDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
+import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/projects")
@@ -21,12 +23,6 @@ import java.util.List;
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
-
-    @GetMapping
-    public ResponseEntity<List<ProjectDetailDto>> fetchAllProjects(){
-        log.info("Fetching all projects.");
-        return ResponseEntity.ok(projectService.fetchAllProjects());
-    }
 
     @Transactional
     @GetMapping("/get-all-projects-list")
@@ -75,5 +71,15 @@ public class ProjectController {
     @PostMapping("/add-update-amenity")
     public ResponseEntity<Response> addUpdateAmenity(@RequestBody ProjectAmenityDto projectAmenityDto) {
         return new ResponseEntity<>(projectService.addUpdateAmenity(projectAmenityDto), HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProjectShortDetails>> getShortDetails() {
+        return new ResponseEntity<>(projectService.getShortDetails(), HttpStatus.OK);
+    }
+
+    @GetMapping("/all-floor-types")
+    public ResponseEntity<Set<String>> getAllFloorTypes() {
+        return ResponseEntity.ok(projectService.getAllFloorTypes());
     }
 }

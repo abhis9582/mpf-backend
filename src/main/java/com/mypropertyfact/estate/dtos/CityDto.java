@@ -9,6 +9,7 @@ public class CityDto {
     private int id;
     private int stateId;
     private int countryId;
+    private int districtId;
     private String metaTitle;
     private String metaKeywords;
     private String metaDescription;
