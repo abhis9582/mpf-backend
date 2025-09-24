@@ -8,6 +8,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,5 +82,13 @@ public class ProjectController {
     @GetMapping("/all-floor-types")
     public ResponseEntity<Set<String>> getAllFloorTypes() {
         return ResponseEntity.ok(projectService.getAllFloorTypes());
+    }
+
+    @GetMapping("/get-projects-in-parts")
+    public ResponseEntity<List<ProjectShortDetails>> getProjectInParts(
+            @RequestParam("page") Integer page,
+            @RequestParam("size") Integer size
+    ) {
+        return ResponseEntity.ok(projectService.getProjectInParts(page, size));
     }
 }

@@ -67,18 +67,15 @@ public class StateServiceImpl implements StateService {
                     stateDto.setId(state.getId());
                     stateDto.setStateName(state.getStateName());
                     stateDto.setStateDescription(state.getDescription());
-                    if (state.getDistricts() != null) {
-                        List<CityDto> cityDtoList = state.getDistricts().stream()
-                                .filter(district -> district.getCities() != null) // filter out null cities
-                                .flatMap(district -> district.getCities().stream()) // flatten all cities
-                                .sorted(Comparator.comparing(City::getName, String.CASE_INSENSITIVE_ORDER)) // sort by name
-                                .map(city -> {
-                                    CityDto cityDto = new CityDto();
-                                    commonMapper.mapCityDtoToCity(cityDto, city);
-                                    return cityDto;
-                                })
-                                .toList();
-
+                    List<CityDto> cityDtoList = new ArrayList<>();
+                    if (state.getCities() != null) {
+                        List<City> cities = state.getCities();
+                        cityDtoList = cities.stream().map(city-> {
+                            CityDto cityDto = new CityDto();
+                            cityDto.setCityName(city.getName());
+                            cityDto.setCityDescription(city.getCityDisc());
+                            return cityDto;
+                        }).toList();
                         stateDto.setCityList(cityDtoList); // finally set the cities
                     }
                     if (state.getCountry() != null) {

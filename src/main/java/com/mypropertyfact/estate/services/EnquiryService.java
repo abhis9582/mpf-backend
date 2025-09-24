@@ -29,7 +29,10 @@ public class EnquiryService {
                     dbEnquery.setEmail(enquery.getEmail());
                     dbEnquery.setPhone(enquery.getPhone());
                     dbEnquery.setMessage(enquery.getMessage());
+                    dbEnquery.setPageName(enquery.getPageName());
                     dbEnquery.setUpdatedAt(LocalDateTime.now());
+                    dbEnquery.setEnquiryFrom(enquery.getEnquiryFrom());
+                    dbEnquery.setProjectLink(enquery.getProjectLink());
                     enqueryRepository.save(dbEnquery);
                     response.setIsSuccess(1);
                     response.setMessage("Data updated successfully...");

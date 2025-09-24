@@ -13,6 +13,9 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -494,5 +497,16 @@ public class ProjectService {
             return null;
         }).toList();
         return uniqueBhk;
+    }
+
+    @Transactional
+    public List<ProjectShortDetails> getProjectInParts(Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("projectName").ascending());
+        Page<Project> projects = projectRepository.findAll(pageable);
+        return projects.stream().map(project -> {
+            ProjectShortDetails details = new ProjectShortDetails();
+            commonMapper.mapShortProjectDetails(project, details);
+            return details;
+        }).toList();
     }
 }

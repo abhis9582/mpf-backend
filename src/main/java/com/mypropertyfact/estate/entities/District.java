@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "districts")
 @Data
-@ToString(exclude = {"cities", "state"})
+@ToString(exclude = {"state"})
 public class District implements Serializable {
 
     @Id
@@ -22,9 +22,9 @@ public class District implements Serializable {
     @Column(nullable = false, length = 150)
     private String name;
     // Headquarters city/town of the district
-    @OneToMany(mappedBy = "district")
-    @JsonIgnore
-    private List<City> cities;
+//    @OneToMany(mappedBy = "district")
+//    @JsonIgnore
+//    private List<City> cities;
     // State or Union Territory this district belongs to
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "state_id", nullable = false)

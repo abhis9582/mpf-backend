@@ -55,13 +55,13 @@ public class CityService {
             Map<String, Object> cityObj = new HashMap<>();
             cityObj.put("id", city.getId());
             cityObj.put("name", city.getName());
-            if(city.getDistrict().getState() != null) {
-                if(city.getDistrict().getState().getCountry() != null) {
-                    cityObj.put("countryName", city.getDistrict().getState().getCountry().getCountryName());
-                    cityObj.put("countryId", city.getDistrict().getState().getCountry().getId());
+            if(city.getState() != null) {
+                if(city.getState().getCountry() != null) {
+                    cityObj.put("countryName", city.getState().getCountry().getCountryName());
+                    cityObj.put("countryId", city.getState().getCountry().getId());
                 }
-                cityObj.put("stateName", city.getDistrict().getState().getStateName());
-                cityObj.put("stateId", city.getDistrict().getState().getId());
+                cityObj.put("stateName", city.getState().getStateName());
+                cityObj.put("stateId", city.getState().getId());
             }
             cityObj.put("metaDescription", city.getMetaDescription());
             cityObj.put("metaTitle", city.getMetaTitle());
@@ -77,18 +77,18 @@ public class CityService {
                 return new Response(0, ConstantMessages.CITY_EXISTS, 0);
             }
             cityDto.setSlugURL(fileUtils.generateSlug(cityDto.getCityName()));
-            Optional<District> district = districtRepository.findById(cityDto.getStateId());
+            Optional<State> state = stateRepository.findById(cityDto.getStateId());
             if (cityDto.getId() != 0) {
                 Optional<City> savedCity = cityRepository.findById(cityDto.getDistrictId());
                 savedCity.ifPresent(city-> {
-                    district.ifPresent(city::setDistrict);
+                    state.ifPresent(city::setState);
                     commonMapper.mapCityToCityDto(city, cityDto);
                     cityRepository.save(city);
                 });
                 return new Response(1, ConstantMessages.CITY_UPDATED, 0);
             } else {
                 City city = new City();
-                district.ifPresent(city::setDistrict);
+                state.ifPresent(city::setState);
                 commonMapper.mapCityToCityDto(city, cityDto);
                 cityRepository.save(city);
                 return new Response(1, ConstantMessages.CITY_ADDED, 0);
@@ -132,8 +132,8 @@ public class CityService {
             cityDetailDto.setMetaTitle(city.getMetaTitle());
             cityDetailDto.setMetaKeywords(city.getMetaKeyWords());
             cityDetailDto.setMetaDescription(city.getMetaDescription());
-            if(city.getDistrict().getState() != null) {
-                State state = city.getDistrict().getState();
+            if(city.getState() != null) {
+                State state = city.getState();
                 cityDetailDto.setStateId(state.getId());
                 cityDetailDto.setStateName(state.getStateName());
                 if(state.getCountry() != null) {

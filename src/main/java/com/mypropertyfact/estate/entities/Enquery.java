@@ -16,6 +16,9 @@ public class Enquery {
     private String email;
     private String phone;
     private String message;
+    private String enquiryFrom;
+    private String projectLink;
+    private String pageName;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

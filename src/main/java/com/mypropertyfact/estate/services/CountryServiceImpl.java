@@ -65,30 +65,23 @@ public class CountryServiceImpl implements CountryService {
             countryDto.setContinent(country.getContinent());
             countryDto.setCountryDescription(country.getDescription());
             List<StateDto> stateDtoList = new ArrayList<>();
-            if(country.getStates() != null) {
+            if (country.getStates() != null) {
                 List<State> states = country.getStates();
                 stateDtoList = states.stream()
                         .sorted(Comparator.comparing(State::getStateName, String::compareToIgnoreCase))
-                        .map(state-> {
+                        .map(state -> {
                             StateDto stateDto = new StateDto();
                             stateDto.setId(state.getId());
                             stateDto.setStateName(state.getStateName());
                             stateDto.setStateDescription(state.getDescription());
                             List<CityDto> cityDtoList = new ArrayList<>();
-                            if(state.getDistricts() != null) {
-                                List<District> districts = state.getDistricts();
-                                districts.stream().map(district-> {
-                                    List<CityDto> list = new ArrayList<>();
-                                    if(district.getCities() != null) {
-                                        List<City> cities = district.getCities();
-                                         list = cities.stream().map(city -> {
-                                            CityDto cityDto = new CityDto();
-                                            cityDto.setId(city.getId());
-                                            cityDto.setCityName(city.getName());
-                                            return cityDto;
-                                        }).toList();
-                                    }
-                                    return list;
+                            if (state.getCities() != null) {
+                                List<City> cities = state.getCities();
+                                cityDtoList = cities.stream().map(city -> {
+                                    CityDto cityDto = new CityDto();
+                                    cityDto.setId(city.getId());
+                                    cityDto.setCityName(city.getName());
+                                    return cityDto;
                                 }).toList();
                             }
                             stateDto.setCityList(cityDtoList);

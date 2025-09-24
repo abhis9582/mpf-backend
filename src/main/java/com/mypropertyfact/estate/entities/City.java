@@ -10,7 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "city")
 @Data
-@ToString(exclude = {"district", "projects", "blogs", "localities"})
+//@ToString(exclude = {"district", "projects", "blogs", "localities"})
+@ToString(exclude = {"projects", "blogs", "localities"})
 public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,10 +39,14 @@ public class City {
     @JsonIgnore
     private List<Blog> blogs;
 
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JsonIgnore
+//    @JoinColumn(name = "district_id")
+//    private District district;
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
-    @JoinColumn(name = "district_id")
-    private District district;
+    @JoinColumn(name = "state_id")
+    private State state;
 
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     @JsonIgnore

@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "state")
-@ToString(exclude = {"country", "districts"})
+@ToString(exclude = {"country"})
 public class State {
 
     @Id
@@ -35,9 +35,13 @@ public class State {
         this.updatedAt = LocalDateTime.now();
     }
 
+//    @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
+//    @JsonIgnore
+//    private List<District> districts;
+
     @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<District> districts;
+    private List<City> cities;
 
     @PreUpdate
     public void onUpdate() {

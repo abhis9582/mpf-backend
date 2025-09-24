@@ -120,16 +120,16 @@ public class CommonMapper {
             detailDto.setCityId(city.getId());
             detailDto.setCityName(city.getName());
             detailDto.setProjectAddress(project.getProjectLocality().concat(", ") + city.getName());
-//            if (city.getDistrict().getState() != null) {
-//                State state = city.getDistrict().getState();
-//                detailDto.setStateName(state.getStateName());
-//                detailDto.setStateId(state.getId());
-//                if (state.getCountry() != null) {
-//                    Country country = state.getCountry();
-//                    detailDto.setCountryId(country.getId());
-//                    detailDto.setCountryName(country.getCountryName());
-//                }
-//            }
+            if (city.getState() != null) {
+                State state = city.getState();
+                detailDto.setStateName(state.getStateName());
+                detailDto.setStateId(state.getId());
+                if (state.getCountry() != null) {
+                    Country country = state.getCountry();
+                    detailDto.setCountryId(country.getId());
+                    detailDto.setCountryName(country.getCountryName());
+                }
+            }
         }
         if (project.getProjectsAbout() != null) {
             ProjectsAbout projectsAbout = project.getProjectsAbout();
