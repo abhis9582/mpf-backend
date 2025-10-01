@@ -21,7 +21,7 @@ public class ProjectsAbout {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @OneToOne
-    @JoinColumn(name = "project_id")
+    @JoinColumn(name = "project_id", unique = true)
     private Project project;
 
     @PrePersist

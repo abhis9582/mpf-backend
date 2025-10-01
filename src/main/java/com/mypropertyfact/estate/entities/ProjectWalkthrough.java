@@ -20,7 +20,7 @@ public class ProjectWalkthrough {
     private LocalDateTime updatedAt;
 
     @OneToOne
-    @JoinColumn(name = "project_Id")
+    @JoinColumn(name = "project_Id", unique = true)
     private Project project;
 
     @PrePersist

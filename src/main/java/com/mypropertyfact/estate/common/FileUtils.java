@@ -333,6 +333,27 @@ public class FileUtils {
         return generateAltTag;
     }
 
+    public String generateNameFromImage(MultipartFile file) {
+        if (file == null || file.getOriginalFilename() == null) {
+            return "";
+        }
+        String originalName = file.getOriginalFilename();
+        int lastIndex = originalName.lastIndexOf(".");
+        String nameWithoutExtension;
+        if (lastIndex > 0) {
+            nameWithoutExtension = originalName.substring(0, lastIndex);
+        } else {
+            nameWithoutExtension = originalName; // no extension case
+        }
+        nameWithoutExtension = nameWithoutExtension.replaceAll("[^a-zA-Z0-9]", " ");
+        nameWithoutExtension = nameWithoutExtension.trim().replaceAll("\\s+", " ");
+        if (!nameWithoutExtension.isEmpty()) {
+            nameWithoutExtension = nameWithoutExtension.substring(0, 1).toUpperCase()
+                    + nameWithoutExtension.substring(1);
+        }
+        return nameWithoutExtension;
+    }
+
     public boolean checkFileSize(MultipartFile file) {
         // Check file size (<= 5 MB here)
         return file.getSize() <= MAX_FILE_SIZE;

@@ -9,6 +9,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectAboutRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -68,7 +69,11 @@ public class ProjectAboutService {
                 response.setMessage("Project's about details saved successfully...");
                 response.setIsSuccess(1);
             }
-        }catch (Exception e){
+        } catch (DataIntegrityViolationException e) {
+            // This exception occurs when a unique constraint is violated
+            response.setMessage("This project already has 'about' details. Please update the existing entry.");
+            response.setIsSuccess(0);
+        } catch (Exception e){
             response.setMessage(e.getMessage());
         }
         return response;

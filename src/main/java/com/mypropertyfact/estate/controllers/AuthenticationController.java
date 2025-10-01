@@ -13,6 +13,7 @@ import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.repositories.UserRepository;
 import com.mypropertyfact.estate.services.AuthenticationService;
 import com.mypropertyfact.estate.services.JwtService;
+import com.mypropertyfact.estate.services.UserService;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +31,14 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository,
+                                    UserService userService) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/signup")
@@ -125,7 +129,25 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(String token) {
-        return null;
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        try {
+            Claims claims = jwtService.validateToken(refreshToken);
+            String username = claims.getSubject();
+
+            Optional<User> userDetails = userRepository.findByEmail(username);
+            LoginResponse loginResponse = new LoginResponse();
+            userDetails.ifPresent(user -> {
+                // Generate new access + refresh tokens
+                String jwtToken = jwtService.generateToken(user);
+                String refToken = jwtService.generateRefreshToken(user);
+                loginResponse.setToken(jwtToken);
+                loginResponse.setRefreshToken(refToken);
+                loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            });
+            return ResponseEntity.ok(loginResponse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
     }
 }
