@@ -5,20 +5,17 @@ import com.mypropertyfact.estate.dtos.*;
 import com.mypropertyfact.estate.entities.*;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class CommonMapper {
 
-    public void mapProjectToProjectDto(Project entity, ProjectDetailDto dto){
-        if(entity != null){
+    public void mapProjectToProjectDto(Project entity, ProjectDetailDto dto) {
+        if (entity != null) {
             dto.setId(entity.getId());
 
             Builder builder = entity.getBuilder();
-            if(builder != null){
+            if (builder != null) {
                 dto.setBuilderId(builder.getId());
                 dto.setBuilderName(builder.getBuilderName());
             }
@@ -43,13 +40,13 @@ public class CommonMapper {
             }
 
             ProjectTypes projectTypes = entity.getProjectTypes();
-            if(projectTypes != null){
+            if (projectTypes != null) {
                 dto.setPropertyTypeId(projectTypes.getId());
                 dto.setPropertyTypeName(projectTypes.getProjectTypeName());
             }
 
             ProjectStatus projectStatus = entity.getProjectStatus();
-            if(projectStatus != null){
+            if (projectStatus != null) {
                 dto.setProjectStatusId(projectStatus.getId());
                 dto.setProjectStatusName(projectStatus.getStatusName());
             }
@@ -77,7 +74,7 @@ public class CommonMapper {
         }
     }
 
-    public void mapFullProjectDetailToDetailedDto(Project project, ProjectDetailDto detailDto){
+    public void mapFullProjectDetailToDetailedDto(Project project, ProjectDetailDto detailDto) {
         detailDto.setId(project.getId());
         detailDto.setProjectName(project.getProjectName());
         detailDto.setMetaTitle(project.getMetaTitle());
@@ -99,18 +96,18 @@ public class CommonMapper {
         detailDto.setReraWebsite(project.getReraWebsite());
         detailDto.setStatus(project.isStatus());
         ProjectStatus projectStatus = project.getProjectStatus();
-        if(projectStatus != null){
+        if (projectStatus != null) {
             detailDto.setProjectStatusId(projectStatus.getId());
             detailDto.setProjectStatusName(projectStatus.getStatusName());
         }
-        if(project.getBuilder() != null) {
+        if (project.getBuilder() != null) {
             Builder builder = project.getBuilder();
             detailDto.setBuilderId(builder.getId());
             detailDto.setBuilderName(builder.getBuilderName());
             detailDto.setBuilderDescription(builder.getBuilderDesc());
             detailDto.setBuilderSlugURL(builder.getSlugUrl());
         }
-        if(project.getProjectTypes() != null) {
+        if (project.getProjectTypes() != null) {
             ProjectTypes projectTypes = project.getProjectTypes();
             detailDto.setPropertyTypeId(projectTypes.getId());
             detailDto.setPropertyTypeName(projectTypes.getProjectTypeName());
@@ -162,7 +159,7 @@ public class CommonMapper {
             bannerList = project.getProjectBanners().stream().filter(Objects::nonNull)
                     .map(projectBanner -> {
                         ProjectBannerDto projectBannerDto = new ProjectBannerDto();
-                        if(projectBanner.getDesktopBanner() != null) {
+                        if (projectBanner.getDesktopBanner() != null) {
                             projectBannerDto.setProjectId(project.getId());
                             projectBannerDto.setProjectName(project.getProjectName());
                             projectBannerDto.setSlugURL(project.getSlugURL());
@@ -174,7 +171,7 @@ public class CommonMapper {
                             projectBannerDto.setDeletedDesktopImageIds(new ArrayList<>());
                             projectBannerDto.setDeletedMobileImageIds(new ArrayList<>());
                         }
-                        if(projectBanner.getMobileBanner() != null) {
+                        if (projectBanner.getMobileBanner() != null) {
                             projectBannerDto.setProjectMobileBanner(projectBanner.getMobileBanner());
                         }
                         return projectBannerDto;
@@ -240,9 +237,9 @@ public class CommonMapper {
         }
         detailDto.setProjectFaqList(projectFaqList);
         List<ProjectMobileBannerDto> projectMobileBannerDtoList = new ArrayList<>();
-        if(project.getProjectMobileBanners() != null) {
+        if (project.getProjectMobileBanners() != null) {
             List<ProjectMobileBanner> projectMobileBanners = project.getProjectMobileBanners();
-            projectMobileBannerDtoList = projectMobileBanners.stream().map(mobileBanner-> {
+            projectMobileBannerDtoList = projectMobileBanners.stream().map(mobileBanner -> {
                 ProjectMobileBannerDto projectMobileBannerDto = new ProjectMobileBannerDto();
                 projectMobileBannerDto.setProjectId(project.getId());
                 projectMobileBannerDto.setMobileImage(mobileBanner.getMobileImage());
@@ -255,9 +252,9 @@ public class CommonMapper {
         }
         detailDto.setProjectMobileBannerDtoList(projectMobileBannerDtoList);
         List<ProjectDesktopBannerDto> projectDesktopBannerDtoList = new ArrayList<>();
-        if(project.getProjectMobileBanners() != null) {
+        if (project.getProjectMobileBanners() != null) {
             List<ProjectDesktopBanner> projectDesktopBanners = project.getProjectDesktopBanners();
-            projectDesktopBannerDtoList = projectDesktopBanners.stream().map(desktopBanner-> {
+            projectDesktopBannerDtoList = projectDesktopBanners.stream().map(desktopBanner -> {
                 ProjectDesktopBannerDto projectDesktopBannerDto = new ProjectDesktopBannerDto();
                 projectDesktopBannerDto.setProjectId(project.getId());
                 projectDesktopBannerDto.setDesktopImage(desktopBanner.getDesktopImage());
@@ -271,7 +268,7 @@ public class CommonMapper {
         detailDto.setProjectDesktopBannerDtoList(projectDesktopBannerDtoList);
     }
 
-    public void mapCityToCityDto(City city, CityDto cityDto){
+    public void mapCityToCityDto(City city, CityDto cityDto) {
         city.setName(cityDto.getCityName());
         city.setSlugUrl(cityDto.getSlugURL());
         city.setMetaTitle(cityDto.getMetaTitle());
@@ -280,7 +277,7 @@ public class CommonMapper {
         city.setCityDisc(cityDto.getCityDescription());
     }
 
-    public void mapCityDtoToCity(CityDto cityDto, City city){
+    public void mapCityDtoToCity(CityDto cityDto, City city) {
         cityDto.setId(city.getId());
         cityDto.setCityName(city.getName());
         cityDto.setSlugURL(city.getSlugUrl());
@@ -313,18 +310,30 @@ public class CommonMapper {
         projectShortDetails.setStatus(project.isStatus());
         projectShortDetails.setSlugURL(project.getSlugURL());
         projectShortDetails.setProjectThumbnailImage(project.getProjectThumbnail());
-        if(project.getProjectTypes() != null) {
+        projectShortDetails.setProjectLogo(project.getProjectLogo());
+        if (project.getProjectTypes() != null) {
             ProjectTypes projectTypes = project.getProjectTypes();
             projectShortDetails.setPropertyTypeName(projectTypes.getProjectTypeName());
         }
-        if(project.getProjectStatus() != null) {
+        if (project.getProjectStatus() != null) {
             ProjectStatus projectStatus = project.getProjectStatus();
             projectShortDetails.setProjectStatusName(projectStatus.getStatusName());
         }
-        if(project.getCity() != null) {
+        if (project.getCity() != null) {
             City city = project.getCity();
             projectShortDetails.setCityName(city.getName());
             projectShortDetails.setProjectAddress(project.getProjectLocality().concat(", ") + city.getName());
+        }
+        if (project.getBuilder() != null) {
+            Builder builder = project.getBuilder();
+            projectShortDetails.setBuilderName(builder.getBuilderName());
+            projectShortDetails.setBuilderSlug(builder.getSlugUrl());
+        }
+        if (project.getProjectDesktopBanners() != null) {
+            for (ProjectDesktopBanner banner : project.getProjectDesktopBanners()) {
+                projectShortDetails.setProjectBannerImage(banner.getDesktopImage());
+                break; // stop once you find the first valid one
+            }
         }
     }
 }

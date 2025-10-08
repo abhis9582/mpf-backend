@@ -18,4 +18,7 @@ public class ProjectShortDetails {
     private String projectAddress;
     private String projectThumbnailImage;
     private String floorTypes;
+    private String projectLogo;
+    private String projectBannerImage;
+    private String builderSlug;
 }
