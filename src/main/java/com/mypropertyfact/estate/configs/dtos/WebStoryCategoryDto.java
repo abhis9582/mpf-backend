@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.configs.dtos;
 
-import com.mypropertyfact.estate.entities.WebStory;
 import lombok.Data;
 
 import java.util.List;

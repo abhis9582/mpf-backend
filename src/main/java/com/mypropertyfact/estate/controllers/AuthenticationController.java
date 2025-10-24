@@ -7,17 +7,14 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.mypropertyfact.estate.configs.dtos.LoginResponse;
 import com.mypropertyfact.estate.configs.dtos.LoginUserDto;
 import com.mypropertyfact.estate.configs.dtos.RegisterUserDto;
-import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.dtos.TokenRequest;
 import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.repositories.UserRepository;
 import com.mypropertyfact.estate.services.AuthenticationService;
 import com.mypropertyfact.estate.services.JwtService;
-import com.mypropertyfact.estate.services.UserService;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -31,14 +28,11 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
-    private final UserService userService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository,
-                                    UserService userService) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.userRepository = userRepository;
-        this.userService = userService;
     }
 
     @PostMapping("/signup")
@@ -51,14 +45,13 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
-
         String jwtToken = jwtService.generateToken(authenticatedUser);
         String refreshToken = jwtService.generateRefreshToken(authenticatedUser);
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(jwtToken);
         loginResponse.setRefreshToken(refreshToken);
         loginResponse.setExpiresIn(jwtService.getExpirationTime());
-
+        loginResponse.setUser(authenticatedUser);
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -74,10 +67,8 @@ public class AuthenticationController {
         if (idToken != null) {
             GoogleIdToken.Payload payload = idToken.getPayload();
 
-            String userId = payload.getSubject();
             String email = payload.getEmail();
             String name = (String) payload.get("name");
-            String pictureUrl = (String) payload.get("picture");
             User user;
             String userStatus;
             Optional<User> existingUser = userRepository.findByEmail(email);
@@ -144,6 +135,7 @@ public class AuthenticationController {
                 loginResponse.setToken(jwtToken);
                 loginResponse.setRefreshToken(refToken);
                 loginResponse.setExpiresIn(jwtService.getExpirationTime());
+                loginResponse.setUser(user);
             });
             return ResponseEntity.ok(loginResponse);
         } catch (RuntimeException e) {

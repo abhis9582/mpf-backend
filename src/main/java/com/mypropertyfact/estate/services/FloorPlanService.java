@@ -37,7 +37,7 @@ public class FloorPlanService {
                 return planMap;
             }).toList();
 
-            Map<String, Object> projectMap = groupedByProject.computeIfAbsent(projectId, id -> {
+            groupedByProject.computeIfAbsent(projectId, id -> {
                 Map<String, Object> newProjectMap = new HashMap<>();
                 newProjectMap.put("projectId", id);
                 newProjectMap.put("projectName", project.getProjectName());

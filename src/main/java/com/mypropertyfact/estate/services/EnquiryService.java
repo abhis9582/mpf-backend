@@ -1,30 +1,32 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.entities.Enquery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.EnqueryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EnquiryService {
     @Autowired
     private EnqueryRepository enqueryRepository;
-    @Autowired
-    private SendEmailHandler sendEmailHandler;
-    public List<Enquery> getAll(){
+
+    public List<Enquery> getAll() {
         return enqueryRepository.findAll();
     }
 
-    public Response addUpdate(Enquery enquery){
+    public Response addUpdate(Enquery enquery) {
         Response response = new Response();
-        try{
-            if(enquery.getId() > 0){
+        try {
+            if (enquery.getId() > 0) {
                 Enquery dbEnquery = enqueryRepository.findById(enquery.getId()).orElse(null);
-                if(dbEnquery != null){
+                if (dbEnquery != null) {
                     dbEnquery.setName(enquery.getName());
                     dbEnquery.setEmail(enquery.getEmail());
                     dbEnquery.setPhone(enquery.getPhone());
@@ -36,32 +38,48 @@ public class EnquiryService {
                     enqueryRepository.save(dbEnquery);
                     response.setIsSuccess(1);
                     response.setMessage("Data updated successfully...");
-                }else{
+                } else {
                     response.setMessage("No data found !!");
                 }
-            }else{
+            } else {
                 enqueryRepository.save(enquery);
 //                sendEmailHandler.sendEmail(enquery.getEmail(), "Thank you for giving details", "Hi, Thank you out team will get back to you");
                 response.setIsSuccess(1);
                 response.setMessage("Data saved successfully...");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setMessage(e.getMessage());
         }
         return response;
     }
 
-    public Response deleteEnquiry(int id){
-        try{
+    public Response deleteEnquiry(int id) {
+        try {
             Enquery dbEnquery = enqueryRepository.findById(id).orElse(null);
-            if(dbEnquery != null){
+            if (dbEnquery != null) {
                 enqueryRepository.deleteById(id);
                 return new Response(1, "Enquiry deleted successfully...", 0);
-            }else{
+            } else {
                 throw new Exception("data already deleted or not found !!");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new Response(0, e.getMessage(), 0);
         }
+    }
+
+    public SuccessResponse updateStatus(int enquiryId, String status) {
+        SuccessResponse successResponse = new SuccessResponse();
+        Optional<Enquery> enquiryById = enqueryRepository.findById(enquiryId);
+        enquiryById.ifPresent(enquery -> {
+            enquery.setStatus(status);
+            Enquery save = enqueryRepository.save(enquery);
+            successResponse.setIsSuccess(1);
+            successResponse.setMessage("Status updated successfully...");
+        });
+        if (successResponse.getIsSuccess() != 1) {
+            successResponse.setIsSuccess(0);
+            successResponse.setMessage("Something went wrong while updating status !");
+        }
+        return successResponse;
     }
 }

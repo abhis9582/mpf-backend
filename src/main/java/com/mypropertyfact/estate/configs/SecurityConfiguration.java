@@ -1,8 +1,10 @@
 package com.mypropertyfact.estate.configs;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +18,11 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(
+    securedEnabled = true,        // Enables @Secured annotation
+    jsr250Enabled = true,          // Enables @RolesAllowed annotation
+    prePostEnabled = true          // Enables @PreAuthorize, @PostAuthorize annotations
+)
 public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -27,12 +34,36 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())  // Updated syntax for disabling CSRF
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/admin/**")
-                        .authenticated().anyRequest().permitAll())
+        http.csrf(csrf -> csrf.disable())  // Disable CSRF for stateless JWT authentication
+                .authorizeHttpRequests(authorize -> authorize
+                        // Public endpoints - no authentication required
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/get/**").permitAll()
+                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
+                        
+                        // Admin endpoints - requires authentication
+                        // Specific permissions are enforced at method level using @PreAuthorize
+                        .requestMatchers("/admin/**").authenticated()
+                        
+                        // Default - permit all other requests
+                        .anyRequest().permitAll()
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"timestamp\":\"" + java.time.Instant.now() + "\",\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\",\"path\":\"" + request.getRequestURI() + "\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"timestamp\":\"" + java.time.Instant.now() + "\",\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied - insufficient permissions\",\"path\":\"" + request.getRequestURI() + "\"}");
+                        })
+                );
         return http.build();
     }
 

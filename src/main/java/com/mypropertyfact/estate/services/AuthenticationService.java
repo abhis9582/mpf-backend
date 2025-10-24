@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.configs.dtos.LoginUserDto;
 import com.mypropertyfact.estate.configs.dtos.RegisterUserDto;
 import com.mypropertyfact.estate.entities.User;
+import com.mypropertyfact.estate.enums.Role;
 import com.mypropertyfact.estate.repositories.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,9 +32,10 @@ public class AuthenticationService {
 
     public User signup(RegisterUserDto input) {
         User user = new User();
-                user.setFullName(input.getFullName());
-                user.setEmail(input.getEmail());
-                user.setPassword(passwordEncoder.encode(input.getPassword()));
+        user.setFullName(input.getFullName());
+        user.setEmail(input.getEmail());
+        user.setPassword(passwordEncoder.encode(input.getPassword()));
+        user.setRole(Role.USER); // Default role is USER
         return userRepository.save(user);
     }
 
@@ -53,10 +55,10 @@ public class AuthenticationService {
         User user = new User();
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
+        user.setRole(Role.ADMIN); // Default role is USER
         // Generate a secure random password (never used for login)
         String randomPassword = UUID.randomUUID().toString();
         user.setPassword(passwordEncoder.encode(randomPassword));
-        userRepository.save(user);
-        return user;
+        return userRepository.save(user);
     }
 }

@@ -4,7 +4,6 @@ import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.dtos.ProjectBannerDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
-import com.mypropertyfact.estate.dtos.ProjectMobileBannerDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectBanner;
 import com.mypropertyfact.estate.entities.ProjectDesktopBanner;
@@ -21,10 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 @Service

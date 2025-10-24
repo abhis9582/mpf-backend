@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.configs.dtos.LocationBenefitDto;
-import com.mypropertyfact.estate.entities.LocationBenefit;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.LocationBenefitService;
 import org.springframework.beans.factory.annotation.Autowired;

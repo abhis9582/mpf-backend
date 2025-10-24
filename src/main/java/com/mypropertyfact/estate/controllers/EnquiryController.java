@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.entities.Enquery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.EnquiryService;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/enquiry")
@@ -26,5 +28,10 @@ public class EnquiryController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteEnquiry(@PathVariable int id){
         return new ResponseEntity<>(enquiryService.deleteEnquiry(id), HttpStatus.OK);
+    }
+
+    @PutMapping("/update-status/{enquiryId}")
+    public ResponseEntity<SuccessResponse> updateStatus(@PathVariable("enquiryId") int enquiryId, @RequestBody Map<String, String> request) {
+        return ResponseEntity.ok(enquiryService.updateStatus(enquiryId, request.get("status")));
     }
 }

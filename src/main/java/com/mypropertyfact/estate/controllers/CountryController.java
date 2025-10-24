@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.dtos.CountryDto;
-import com.mypropertyfact.estate.entities.Country;
 import com.mypropertyfact.estate.interfaces.CountryService;
 import com.mypropertyfact.estate.models.Response;
 import org.springframework.beans.factory.annotation.Autowired;

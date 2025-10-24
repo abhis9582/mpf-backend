@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.configs.dtos;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 

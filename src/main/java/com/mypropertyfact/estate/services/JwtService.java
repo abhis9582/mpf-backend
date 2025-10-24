@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -45,6 +46,14 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, User user, long expiration) {
+        // Add role and permissions to JWT claims
+        extraClaims.put("role", user.getRole().name());
+        extraClaims.put("permissions", user.getRole().getPermissions().stream()
+                .map(permission -> permission.getPermission())
+                .toList());
+        extraClaims.put("userId", user.getId());
+        extraClaims.put("fullName", user.getFullName());
+        
         return buildToken(extraClaims, user, expiration);
     }
 
@@ -100,5 +109,38 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    /**
+     * Extract role from JWT token
+     */
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("role", String.class);
+    }
+
+    /**
+     * Extract permissions from JWT token
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> extractPermissions(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("permissions", List.class);
+    }
+
+    /**
+     * Extract user ID from JWT token
+     */
+    public Integer extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", Integer.class);
+    }
+
+    /**
+     * Extract full name from JWT token
+     */
+    public String extractFullName(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("fullName", String.class);
     }
 }
