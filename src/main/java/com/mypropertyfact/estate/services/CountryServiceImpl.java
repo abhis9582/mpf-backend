@@ -5,11 +5,9 @@ import com.mypropertyfact.estate.dtos.CountryDto;
 import com.mypropertyfact.estate.dtos.StateDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Country;
-import com.mypropertyfact.estate.entities.District;
 import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.CountryService;
 import com.mypropertyfact.estate.models.Response;
-import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.CountryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -23,9 +21,6 @@ public class CountryServiceImpl implements CountryService {
 
     @Autowired
     private CountryRepository countryRepository;
-
-    @Autowired
-    private CityRepository cityRepository;
 
     @Override
     public Response addUpdate(CountryDto countryDto) {

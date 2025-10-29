@@ -2,7 +2,6 @@ package com.mypropertyfact.estate.repositories;
 
 import com.mypropertyfact.estate.entities.Amenity;
 import com.mypropertyfact.estate.entities.ProjectAmenity;
-import com.mypropertyfact.estate.models.ProjectAmenityResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,11 +1,8 @@
 package com.mypropertyfact.estate.configs.dtos;
 
-import com.mypropertyfact.estate.entities.LocationBenefit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor

@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mypropertyfact.estate.configs.dtos.LocalityDataResponse;
 import com.mypropertyfact.estate.entities.LocalityData;
 import com.mypropertyfact.estate.interfaces.LocalityDataService;
@@ -22,7 +21,7 @@ public class LocalityDataController {
     @PostMapping("/save")
     public ResponseEntity<String> saveLocalityData(@RequestBody Map<String, Object> payload) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             LocalityData data = new LocalityData();
 
             data.setLocalityId((String) payload.get("localityId"));

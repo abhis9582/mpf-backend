@@ -30,7 +30,7 @@ public class TopDevelopersByValueController {
                 HttpStatus.OK);
     }
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Response> addUpdateDeveloperData(@PathVariable("id")int id){
+    public ResponseEntity<Response> deleteDeveloperData(@PathVariable("id")int id){
         return new ResponseEntity<>(topDevelopersByValueService.deleteTopDevelopersByValue(id),
                 HttpStatus.OK);
     }

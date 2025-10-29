@@ -5,7 +5,6 @@ import com.mypropertyfact.estate.entities.BlogCategory;
 import com.mypropertyfact.estate.interfaces.BlogCategoryService;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +14,8 @@ import java.util.List;
 @RequestMapping("/blog-category")
 public class BlogCategoryController {
     private BlogCategoryService blogCategoryService;
-    BlogCategoryController(BlogCategoryService blogCategoryService){
+    
+    public BlogCategoryController(BlogCategoryService blogCategoryService){
         this.blogCategoryService = blogCategoryService;
     }
     @PostMapping("/add-update")

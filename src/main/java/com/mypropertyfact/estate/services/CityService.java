@@ -7,9 +7,7 @@ import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.Response;
-import com.mypropertyfact.estate.projections.CityView;
 import com.mypropertyfact.estate.repositories.CityRepository;
-import com.mypropertyfact.estate.repositories.DistrictRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,17 +21,15 @@ public class CityService {
 
     private final CityRepository cityRepository;
     private final StateRepository stateRepository;
-    private final DistrictRepository districtRepository;
     private final CommonMapper commonMapper;
     private final FileUtils fileUtils;
 
     public CityService(CityRepository cityRepository, StateRepository stateRepository,
-                       FileUtils fileUtils, CommonMapper commonMapper, DistrictRepository districtRepository) {
+                       FileUtils fileUtils, CommonMapper commonMapper) {
         this.cityRepository = cityRepository;
         this.stateRepository = stateRepository;
         this.fileUtils = fileUtils;
         this.commonMapper = commonMapper;
-        this.districtRepository = districtRepository;
     }
 
 //    public List<CityView> getAllCities() {
@@ -124,7 +120,6 @@ public class CityService {
     @Transactional
     public CityDto getBySlug(String url) {
         Optional<City> dbCity = this.cityRepository.findBySlugUrl(url);
-        Map<String, Object> resObj = new HashMap<>();
         CityDto cityDetailDto = new CityDto();
         dbCity.ifPresent(city -> {
             cityDetailDto.setId(city.getId());

@@ -5,7 +5,6 @@ import com.mypropertyfact.estate.entities.Amenity;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectAmenity;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
-import com.mypropertyfact.estate.models.ProjectAmenityResponse;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectAmenityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProjectAmenityService {

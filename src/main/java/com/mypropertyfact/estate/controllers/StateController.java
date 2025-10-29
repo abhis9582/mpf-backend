@@ -24,7 +24,8 @@ public class StateController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteCountry(@PathVariable("id") int id){
+    public ResponseEntity<Void> deleteState(@PathVariable("id") int id){
         stateService.deleteState(id);
+        return ResponseEntity.ok().build();
     }
 }

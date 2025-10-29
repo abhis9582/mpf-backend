@@ -1,6 +1,4 @@
 package com.mypropertyfact.estate.services;
-
-import com.mypropertyfact.estate.configs.dtos.FaqResponse;
 import com.mypropertyfact.estate.configs.dtos.ProjectFaqDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
@@ -9,10 +7,7 @@ import com.mypropertyfact.estate.repositories.ProjectFaqsRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ProjectFaqsService {
@@ -34,6 +29,7 @@ public class ProjectFaqsService {
                 return projectObject;
             });
 
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> faqObject = (List<Map<String, Object>>) projectFaq.get("projectFaq");
 
             Map<String, Object> obj= new HashMap<>();
@@ -51,9 +47,8 @@ public class ProjectFaqsService {
         try {
             if (projectFaqDto == null || projectFaqDto.getQuestion().isEmpty() || projectFaqDto.getAnswer().isEmpty()) {
                 response.setMessage("All fields are required !");
+                return response;
             }
-
-            assert projectFaqDto != null;
             Optional<Project> project = projectRepository.findById(projectFaqDto.getProjectId());
 
             if (projectFaqDto.getId() > 0) {

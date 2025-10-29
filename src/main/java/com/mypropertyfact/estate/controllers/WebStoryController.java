@@ -27,8 +27,8 @@ public class WebStoryController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public Response deleteWebStory(@PathVariable("id") int id) {
-        return webStoryService.deleteWebStory(id);
+    public ResponseEntity<Response> deleteWebStory(@PathVariable("id") int id) {
+        return ResponseEntity.ok(webStoryService.deleteWebStory(id));
     }
 
     @GetMapping(value = "/{slug}", produces = "text/html")

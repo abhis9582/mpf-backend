@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.dtos.ProjectTypeDto;
-import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.ProjectTypeView;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/project-types")

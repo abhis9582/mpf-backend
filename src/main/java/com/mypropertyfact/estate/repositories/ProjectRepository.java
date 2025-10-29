@@ -50,5 +50,22 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     Optional<Project> findBySlugURLWithAllRelations(@Param("url") String url);
 
     List<Project> findByStatusTrueOrderByProjectNameAsc();
+    
+    // ========== New methods for user property submission ==========
+    
+    /**
+     * Find projects submitted by a specific user
+     */
+    List<Project> findBySubmittedById(Integer userId);
+    
+    /**
+     * Find projects by user and approval status
+     */
+    List<Project> findBySubmittedByIdAndApprovalStatus(Integer userId, com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
+    
+    /**
+     * Find projects by approval status (for admin)
+     */
+    List<Project> findByApprovalStatus(com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
 
 }

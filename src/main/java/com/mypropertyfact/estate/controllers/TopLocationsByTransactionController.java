@@ -15,7 +15,7 @@ import java.util.List;
 public class TopLocationsByTransactionController {
     private TopLocationsByTransactionService topLocationsByTransactionService;
 
-    TopLocationsByTransactionController(TopLocationsByTransactionService topLocationsByTransactionService){
+    public TopLocationsByTransactionController(TopLocationsByTransactionService topLocationsByTransactionService){
         this.topLocationsByTransactionService = topLocationsByTransactionService;
     }
 

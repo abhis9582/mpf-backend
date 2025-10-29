@@ -3,7 +3,6 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.Constants;
 import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.*;
 import com.mypropertyfact.estate.dtos.AddUpdateProjectDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.dtos.ProjectShortDetails;

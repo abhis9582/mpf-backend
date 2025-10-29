@@ -1,8 +1,8 @@
 package com.mypropertyfact.estate.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -138,6 +138,64 @@ public class Project {
     @JsonIgnore
     private List<ProjectDesktopBanner> projectDesktopBanners;
 
-
+    // ========== NEW FIELDS FOR USER PORTAL SUBMISSION ==========
+    
+    // Additional Property Details
+    private Integer bedrooms;
+    private Integer bathrooms;
+    private Integer balconies;
+    private Integer floorNumber;
+    private Integer totalFloors;
+    private String facing;
+    private Integer ageOfConstruction;
+    
+    // Area Details
+    private Double carpetAreaSqft;
+    private Double builtUpAreaSqft;
+    private Double superBuiltUpAreaSqft;
+    private Double plotAreaSqft;
+    
+    // Pricing Details
+    private Double pricePerSqft;
+    private Double maintenanceCharges;
+    private Double bookingAmount;
+    private String furnishedStatus;
+    private String parkingDetails;
+    private String transactionType; // Sale or Rent
+    private String listingType; // Residential or Commercial
+    private String propertySubtype; // Apartment, Villa, etc.
+    private String possessionStatus;
+    private String occupancyStatus;
+    private Integer noticePeriod; // In days
+    
+    // Contact Information
+    private String contactName;
+    private String contactPhone;
+    private String contactEmail;
+    private String preferredTime;
+    @Lob
+    private String additionalNotes;
+    
+    // User Submission Tracking Fields
+    @Enumerated(EnumType.STRING)
+    private ProjectApprovalStatus approvalStatus = ProjectApprovalStatus.APPROVED;
+    private Boolean isUserSubmitted = false;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submitted_by_id")
+    @JsonIgnore
+    private User submittedBy;
+    
+    private LocalDateTime submittedAt;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by_id")
+    @JsonIgnore
+    private User approvedBy;
+    
+    private LocalDateTime approvedAt;
+    
+    @Lob
+    private String rejectionReason;
 
 }

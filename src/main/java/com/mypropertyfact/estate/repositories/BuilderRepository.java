@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface BuilderRepository extends JpaRepository<Builder, Integer> {
     Builder findByBuilderName(String builderName);
+    
+    Optional<Builder> findByBuilderNameIgnoreCase(String builderName);
 
     Optional<Builder> findBySlugUrl(String url);
     List<BuilderView> findAllProjectedBy(Sort sort);

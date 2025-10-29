@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class LocationBenefitService {
@@ -44,6 +43,7 @@ public class LocationBenefitService {
                 return projectObj;
             });
 
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> locationBenefitList = (List<Map<String, Object>>) projectLocationBenefitObj.get("locationBenefits");
             Map<String, Object> locationObj = new HashMap<>();
             locationObj.put("benefitName", locationBenefit.getBenefitName());
@@ -60,10 +60,6 @@ public class LocationBenefitService {
         Response response = new Response();
         Optional<Project> project = this.projectRepository.findById(locationBenefitDto.getProjectId());
         try {
-            if (locationBenefitDto == null) {
-                response.setMessage("All fields are required !");
-                return response;
-            }
             String iconImageName = "";
             String dir = "";
             if (project.isPresent()) {

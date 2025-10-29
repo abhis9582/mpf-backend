@@ -25,7 +25,7 @@ public class WebStoryCategoryController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public Response deleteCategory(@PathVariable("id") int id) {
-        return webStoryCategoryService.deleteCategory(id);
+    public ResponseEntity<Response> deleteCategory(@PathVariable("id") int id) {
+        return ResponseEntity.ok(webStoryCategoryService.deleteCategory(id));
     }
 }

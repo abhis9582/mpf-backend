@@ -44,6 +44,7 @@ public class ProjectGalleryService {
                 return obj;
             });
 
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> galleryList = (List<Map<String, Object>>) projectData.get("galleryImage");
 
             Map<String, Object> galleryData = new HashMap<>();

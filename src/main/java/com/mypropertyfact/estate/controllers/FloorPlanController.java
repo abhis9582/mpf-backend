@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.configs.dtos.FloorPlanDto;
-import com.mypropertyfact.estate.entities.FloorPlan;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.FloorPlanService;
 import org.springframework.beans.factory.annotation.Autowired;

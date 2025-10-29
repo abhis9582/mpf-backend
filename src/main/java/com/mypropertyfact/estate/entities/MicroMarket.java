@@ -3,10 +3,8 @@ package com.mypropertyfact.estate.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
-
 //@Entity
-//@Data
+@Data
 //@Table(name = "micro_market")
 public class MicroMarket {
     @Id

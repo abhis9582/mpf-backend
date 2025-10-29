@@ -1,13 +1,11 @@
 package com.mypropertyfact.estate.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mypropertyfact.estate.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Entity
 @Table(name = "districts")

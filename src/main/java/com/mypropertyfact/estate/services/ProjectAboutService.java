@@ -4,20 +4,16 @@ import com.mypropertyfact.estate.Constants;
 import com.mypropertyfact.estate.configs.dtos.ProjectAboutDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectsAbout;
-import com.mypropertyfact.estate.models.ProjectAboutResponse;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectAboutRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProjectAboutService {

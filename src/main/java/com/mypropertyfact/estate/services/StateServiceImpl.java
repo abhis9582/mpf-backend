@@ -1,18 +1,15 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.StateDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Country;
-import com.mypropertyfact.estate.entities.District;
 import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.StateService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CountryRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +23,6 @@ public class StateServiceImpl implements StateService {
 
     @Autowired
     private CountryRepository countryRepository;
-
-    @Autowired
-    private CommonMapper commonMapper;
 
     @Override
     public Response addUpdate(StateDto stateDto) {

@@ -32,7 +32,7 @@ public class MasterBenefitController {
         return ResponseEntity.ok(masterBenefitService.postBulkBenefits(files));
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteBenefit(@PathVariable("id")int id) {
         return ResponseEntity.ok(masterBenefitService.deleteBenefit(id));
     }

@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.configs.dtos;
 
-import jakarta.persistence.Lob;
 import lombok.Data;
 
 @Data

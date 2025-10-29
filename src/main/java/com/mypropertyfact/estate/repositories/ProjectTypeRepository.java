@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.repositories;
 
-import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.projections.ProjectTypeView;
 import org.springframework.data.domain.Sort;
@@ -11,6 +10,8 @@ import java.util.Optional;
 
 public interface ProjectTypeRepository extends JpaRepository<ProjectTypes, Integer> {
     ProjectTypes findByProjectTypeName(String projectTypeName);
+    
+    Optional<ProjectTypes> findByProjectTypeNameIgnoreCase(String projectTypeName);
 
     Optional<ProjectTypes> findBySlugUrl(String url);
 

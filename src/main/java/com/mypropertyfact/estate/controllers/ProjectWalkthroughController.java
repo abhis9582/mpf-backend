@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.configs.dtos.ProjectWalkthroughDto;
-import com.mypropertyfact.estate.entities.ProjectWalkthrough;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectWalkthroughService;
 import org.springframework.beans.factory.annotation.Autowired;

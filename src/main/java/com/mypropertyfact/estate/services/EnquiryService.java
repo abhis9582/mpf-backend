@@ -13,8 +13,6 @@ import java.util.List;
 public class EnquiryService {
     @Autowired
     private EnqueryRepository enqueryRepository;
-    @Autowired
-    private SendEmailHandler sendEmailHandler;
     public List<Enquery> getAll(){
         return enqueryRepository.findAll();
     }

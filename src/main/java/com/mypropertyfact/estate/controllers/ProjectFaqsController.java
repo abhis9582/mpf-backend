@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.FaqResponse;
 import com.mypropertyfact.estate.configs.dtos.ProjectFaqDto;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
 import com.mypropertyfact.estate.models.Response;
