@@ -16,8 +16,7 @@ import java.util.Optional;
 public class EnquiryService {
     @Autowired
     private EnqueryRepository enqueryRepository;
-
-    public List<Enquery> getAll() {
+    public List<Enquery> getAll(){
         return enqueryRepository.findAll();
     }
 

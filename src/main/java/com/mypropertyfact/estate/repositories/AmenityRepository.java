@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface AmenityRepository extends JpaRepository<Amenity, Integer> {
     @Query("SELECT a FROM Amenity a LEFT JOIN FETCH a.projects WHERE a.id = :id")
     Optional<Amenity> findByIdWithProjects(@Param("id") int id);
+    
+    Optional<Amenity> findByTitleIgnoreCase(String title);
 }

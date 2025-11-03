@@ -51,6 +51,7 @@ public class CityController {
 //        return new ResponseEntity<>(this.cityService.getByCityName(city), HttpStatus.OK);
 //    }
 
+    @PostMapping("/add-update")
     public ResponseEntity<Response> addUpdateCity(@RequestParam(required = false) MultipartFile cityImage,
                                                   @RequestBody City city) {
         return new ResponseEntity<>(cityService.addUpdateCity(cityImage, city), HttpStatus.OK);

@@ -35,7 +35,10 @@ public class AuthenticationService {
         user.setFullName(input.getFullName());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
-        user.setRole(Role.USER); // Default role is USER
+        // Set role if provided, otherwise it will default to "ROLE_USER"
+        if (input.getRole() != null && !input.getRole().isEmpty()) {
+            user.setRole(input.getRole());
+        }
         return userRepository.save(user);
     }
 
@@ -59,6 +62,11 @@ public class AuthenticationService {
         // Generate a secure random password (never used for login)
         String randomPassword = UUID.randomUUID().toString();
         user.setPassword(passwordEncoder.encode(randomPassword));
-        return userRepository.save(user);
+        // Set role if provided, otherwise it will default to "ROLE_USER"
+        if (dto.getRole() != null && !dto.getRole().isEmpty()) {
+            user.setRole(dto.getRole());
+        }
+        userRepository.save(user);
+        return user;
     }
 }

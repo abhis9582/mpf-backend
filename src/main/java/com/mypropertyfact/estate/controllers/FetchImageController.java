@@ -137,4 +137,41 @@ public class FetchImageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/project-gallery/{filename}")
+    public ResponseEntity<Resource> getProjectGalleryImage(@PathVariable String filename) {
+        try {
+            // User-submitted images are stored in project-gallery folder
+            Path imagePath = Paths.get(uploadDir, "project-gallery", filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/location-benefit/{filename}")
+    public ResponseEntity<Resource> getLocationBenefitImage(@PathVariable String filename) {
+        try {
+            Path imagePath = Paths.get(iconPath, filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

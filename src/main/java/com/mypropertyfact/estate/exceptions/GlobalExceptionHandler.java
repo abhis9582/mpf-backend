@@ -2,6 +2,8 @@ package com.mypropertyfact.estate.exceptions;
 
 import com.mypropertyfact.estate.models.ErrorResponse;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -39,6 +41,34 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, ex.getStatusCode());
     }
 
+    // Handles ConstraintViolationException (entity-level validation during persistence)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        Map<String, String> fieldErrors = new HashMap<>();
+        
+        // Extract all constraint violations
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String fieldName = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            fieldErrors.put(fieldName, message);
+        }
+        
+        errorResponse.put("timestamp", LocalDateTime.now());
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+        errorResponse.put("error", "Validation Failed");
+        errorResponse.put("message", "Validation errors occurred");
+        errorResponse.put("errors", fieldErrors);
+        
+        // If there's only one error, also include it at the top level for easy access
+        if (fieldErrors.size() == 1) {
+            String firstError = fieldErrors.values().iterator().next();
+            errorResponse.put("message", firstError);
+        }
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     //Handles IllegalArgumentException in whole project
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -52,10 +82,14 @@ public class GlobalExceptionHandler {
 
     // Optional: Handles other unexpected exceptions
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        System.out.println(ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        error.put("error", "Internal Server Error");
+        error.put("message", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
+        // Log the full exception for debugging
+        ex.printStackTrace();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

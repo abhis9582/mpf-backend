@@ -25,7 +25,7 @@ public class CityPriceDetailController {
         return new ResponseEntity<>(cityPriceDetailService.addUpdateCityPriceDetail(cityPriceDetail), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteCityPriceDetail(@PathVariable int id){
         return new ResponseEntity<>(cityPriceDetailService.deleteCityPriceDetail(id), HttpStatus.OK);
     }

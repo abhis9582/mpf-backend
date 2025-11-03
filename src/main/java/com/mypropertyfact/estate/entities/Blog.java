@@ -22,10 +22,10 @@ public class Blog {
     @Size(max = 255, message = "Blog title must not exceed 255 characters")
     @Column(name = "blog_title")
     private String blogTitle;
-    @Column(name = "blog_keywords")
+    @Column(name = "blog_keywords", columnDefinition = "LONGTEXT")
     @NotBlank(message = "Blog keywords is required")
     private String blogKeywords;
-    @Column(name = "blog_meta_description", length = 500)
+    @Column(name = "blog_meta_description", columnDefinition = "LONGTEXT")
     @NotBlank(message = "Blog meta description is required")
     private String blogMetaDescription;
     @NotBlank(message = "Blog description is required")

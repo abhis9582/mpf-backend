@@ -29,7 +29,7 @@ public class BuilderController {
     }
 
     @PostMapping("/add-update")
-    public ResponseEntity<Response> AddUpdateBuilder(@RequestBody Builder builder) {
+    public ResponseEntity<Response> addUpdateBuilder(@RequestBody Builder builder) {
         Response response = this.builderService.addUpdateBuilder(builder);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -38,7 +38,7 @@ public class BuilderController {
         return new ResponseEntity<>(this.builderService.deleteBuilder(id), HttpStatus.OK);
     }
     @GetMapping("/get/{url}")
-    public ResponseEntity<BuilderDto> deleteBuilder(@PathVariable("url") String url){
+    public ResponseEntity<BuilderDto> getBuilderBySlug(@PathVariable("url") String url){
         return new ResponseEntity<>(this.builderService.getBySlug(url), HttpStatus.OK);
     }
 }

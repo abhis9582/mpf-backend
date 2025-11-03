@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.configs.dtos;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
+
 @Data
 public class PropertyDto {
     private String prop_name;

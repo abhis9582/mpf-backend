@@ -10,7 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class DistrictServiceController {
 
     private final DistrictService districtService;
-    DistrictServiceController(DistrictService districtService){
+    
+    public DistrictServiceController(DistrictService districtService){
         this.districtService = districtService;
     }
 

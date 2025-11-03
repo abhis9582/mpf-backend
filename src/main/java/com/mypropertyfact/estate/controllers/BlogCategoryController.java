@@ -14,7 +14,8 @@ import java.util.List;
 @RequestMapping("/blog-category")
 public class BlogCategoryController {
     private BlogCategoryService blogCategoryService;
-    BlogCategoryController(BlogCategoryService blogCategoryService){
+    
+    public BlogCategoryController(BlogCategoryService blogCategoryService){
         this.blogCategoryService = blogCategoryService;
     }
     @PostMapping("/add-update")

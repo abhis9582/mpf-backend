@@ -1,5 +1,4 @@
 package com.mypropertyfact.estate.services;
-
 import com.mypropertyfact.estate.configs.dtos.ProjectFaqDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
@@ -8,7 +7,6 @@ import com.mypropertyfact.estate.repositories.ProjectFaqsRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 
 @Service
@@ -51,7 +49,6 @@ public class ProjectFaqsService {
                 response.setMessage("All fields are required !");
                 return response;
             }
-
             Optional<Project> project = projectRepository.findById(projectFaqDto.getProjectId());
 
             if (projectFaqDto.getId() > 0) {

@@ -19,11 +19,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ProjectService {
     @Autowired
@@ -240,11 +242,47 @@ public class ProjectService {
 
     @Transactional
     public ProjectDetailDto getBySlugUrl(String url) {
+        log.info("Fetching project by slug: {}", url);
         Optional<Project> projectData = projectRepository.findBySlugURLWithAllRelations(url);
+        
+        // If not found by the main query, try finding by slug directly to check if project exists
+        if (projectData.isEmpty()) {
+            log.warn("Project not found with approved/published status, checking if project exists with slug: {}", url);
+            // Try without status filter first to see if project exists
+            Optional<Project> projectBySlugNoFilter = projectRepository.findBySlugURLWithAllRelationsNoFilter(url);
+            if (projectBySlugNoFilter.isPresent()) {
+                Project project = projectBySlugNoFilter.get();
+                log.warn("Project EXISTS but status check failed - ID: {}, Name: {}, status: {}, isUserSubmitted: {}, approvalStatus: {}", 
+                    project.getId(), project.getProjectName(), project.isStatus(), project.getIsUserSubmitted(), project.getApprovalStatus());
+                
+                // If it's a user-submitted project that's not approved, we can still return it for now
+                // (Remove this if you want strict approval checking)
+                if (project.getIsUserSubmitted() != null && project.getIsUserSubmitted()) {
+                    log.info("Allowing user-submitted project even if not approved - approvalStatus: {}", project.getApprovalStatus());
+                    projectData = projectBySlugNoFilter;
+                }
+            } else {
+                // Try with simple findBySlugURL to verify slug exists at all
+                Optional<Project> projectBySlug = projectRepository.findBySlugURL(url);
+                if (projectBySlug.isPresent()) {
+                    Project project = projectBySlug.get();
+                    log.error("Project found with simple query but not with EntityGraph - ID: {}, Name: {}", 
+                        project.getId(), project.getProjectName());
+                } else {
+                    log.error("No project found with slug: {} - Slug does not exist in database", url);
+                }
+            }
+        }
+        
         ProjectDetailDto detailDto = new ProjectDetailDto();
-        projectData.ifPresent(project -> {
+        if (projectData.isPresent()) {
+            Project project = projectData.get();
+            log.info("Project found and mapping to DTO - ID: {}, Name: {}, Status: {}, ApprovalStatus: {}", 
+                project.getId(), project.getProjectName(), project.isStatus(), project.getApprovalStatus());
             commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
-        });
+        } else {
+            log.error("Returning empty DTO - no project found matching criteria");
+        }
         return detailDto;
     }
 

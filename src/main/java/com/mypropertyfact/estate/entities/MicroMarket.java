@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 //@Entity
+@Data
 //@Table(name = "micro_market")
 @Data
 public class MicroMarket {

@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface ProjectTypeRepository extends JpaRepository<ProjectTypes, Integer> {
     ProjectTypes findByProjectTypeName(String projectTypeName);
+    
+    Optional<ProjectTypes> findByProjectTypeNameIgnoreCase(String projectTypeName);
 
     Optional<ProjectTypes> findBySlugUrl(String url);
 

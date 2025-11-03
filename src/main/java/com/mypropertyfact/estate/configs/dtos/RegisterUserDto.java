@@ -13,4 +13,6 @@ public class RegisterUserDto {
     private String password;
 
     private String fullName;
+
+    private String role; // Optional: will default to "ROLE_USER" if not provided
 }
