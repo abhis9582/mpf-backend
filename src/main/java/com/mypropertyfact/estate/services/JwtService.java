@@ -47,10 +47,17 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, User user, long expiration) {
         // Add role and permissions to JWT claims
-        extraClaims.put("role", user.getRole().name());
-        extraClaims.put("permissions", user.getRole().getPermissions().stream()
-                .map(permission -> permission.getPermission())
-                .toList());
+        String userRole = (user.getRole() != null && !user.getRole().isEmpty()) 
+            ? user.getRole() 
+            : "ROLE_USER";
+        extraClaims.put("role", userRole);
+        
+        // Extract permissions from user's authorities (roles)
+        List<String> permissions = user.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .toList();
+        extraClaims.put("permissions", permissions);
+        
         extraClaims.put("userId", user.getId());
         extraClaims.put("fullName", user.getFullName());
         

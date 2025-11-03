@@ -5,7 +5,6 @@ import com.mypropertyfact.estate.entities.Enquery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.EnqueryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -71,7 +70,7 @@ public class EnquiryService {
         Optional<Enquery> enquiryById = enqueryRepository.findById(enquiryId);
         enquiryById.ifPresent(enquery -> {
             enquery.setStatus(status);
-            Enquery save = enqueryRepository.save(enquery);
+            enqueryRepository.save(enquery);
             successResponse.setIsSuccess(1);
             successResponse.setMessage("Status updated successfully...");
         });
