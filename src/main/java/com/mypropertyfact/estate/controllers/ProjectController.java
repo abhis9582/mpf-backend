@@ -50,10 +50,6 @@ public class ProjectController {
         return new ResponseEntity<>(this.projectService.getBySlugUrl(url), HttpStatus.OK);
     }
 
-    //    @GetMapping("/builder/{id}")
-//    public ResponseEntity<List<Project>> getAllBuilderProjects(@PathVariable("id")int id){
-//        return new ResponseEntity<>(this.projectService.getAllBuilderProjects(id), HttpStatus.OK);
-//    }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response> deleteProject(@PathVariable("id") int id) {
         return new ResponseEntity<>(this.projectService.deleteProject(id), HttpStatus.OK);

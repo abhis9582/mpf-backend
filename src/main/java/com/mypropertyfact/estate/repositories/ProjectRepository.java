@@ -46,8 +46,12 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     List<Project> findAllWithAllRelations();
 
     @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
-    @Query("SELECT p FROM Project p WHERE p.slugURL = :url AND p.status= true")
+    @Query("SELECT p FROM Project p WHERE p.slugURL = :url AND (p.status = true OR (p.isUserSubmitted IS NOT NULL AND p.isUserSubmitted = true AND (p.approvalStatus IS NULL OR p.approvalStatus = 'APPROVED')))")
     Optional<Project> findBySlugURLWithAllRelations(@Param("url") String url);
+    
+    @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT p FROM Project p WHERE p.slugURL = :url")
+    Optional<Project> findBySlugURLWithAllRelationsNoFilter(@Param("url") String url);
 
     List<Project> findByStatusTrueOrderByProjectNameAsc();
     

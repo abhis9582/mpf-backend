@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mypropertyfact.estate.dtos.UserPropertySubmissionDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.User;
@@ -23,21 +24,26 @@ import java.util.Map;
 public class UserPropertyController {
     
     private final UserPropertyService userPropertyService;
+    private final ObjectMapper objectMapper;
     
-    public UserPropertyController(UserPropertyService userPropertyService) {
+    public UserPropertyController(UserPropertyService userPropertyService, ObjectMapper objectMapper) {
         this.userPropertyService = userPropertyService;
+        this.objectMapper = objectMapper;
     }
     
     /**
      * Submit a new property (saves as DRAFT)
      */
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> submitProperty(
             @RequestPart(value = "images", required = false) MultipartFile[] images,
-            @RequestPart("property") UserPropertySubmissionDto propertyDto) {
+            @RequestPart("property") String propertyJson) {
         
         try {
             log.info("Received property submission request");
+            
+            // Parse JSON string to DTO
+            UserPropertySubmissionDto propertyDto = objectMapper.readValue(propertyJson, UserPropertySubmissionDto.class);
             
             // Get current authenticated user
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();

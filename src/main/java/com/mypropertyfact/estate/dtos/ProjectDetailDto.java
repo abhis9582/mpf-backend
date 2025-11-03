@@ -54,4 +54,34 @@ public class ProjectDetailDto {
     private List<ProjectFaqDto> projectFaqList;
     private List<ProjectMobileBannerDto> projectMobileBannerDtoList;
     private List<ProjectDesktopBannerDto> projectDesktopBannerDtoList;
+    
+    // User-submitted property fields
+    private Integer bedrooms;
+    private Integer bathrooms;
+    private Integer balconies;
+    private Integer floorNumber;
+    private Integer totalFloors;
+    private String facing;
+    private Integer ageOfConstruction;
+    private Double carpetAreaSqft;
+    private Double builtUpAreaSqft;
+    private Double superBuiltUpAreaSqft;
+    private Double plotAreaSqft;
+    private Double pricePerSqft;
+    private Double maintenanceCharges;
+    private Double bookingAmount;
+    private String furnishedStatus;
+    private String parkingDetails;
+    private String transactionType;
+    private String listingType;
+    private String propertySubtype;
+    private String possessionStatus;
+    private String occupancyStatus;
+    private Integer noticePeriod;
+    private String contactName;
+    private String contactPhone;
+    private String contactEmail;
+    private String preferredTime;
+    private String additionalNotes;
+    private Double totalPrice; // Total price as number (in addition to projectPrice string)
 }

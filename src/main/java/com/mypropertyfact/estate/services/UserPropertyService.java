@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -35,9 +37,6 @@ public class UserPropertyService {
     @Autowired
     private AmenityRepository amenityRepository;
     
-    @Autowired
-    private FileUtils fileUtils;
-    
     @Value("${upload_dir}")
     private String uploadDir;
     
@@ -58,13 +57,13 @@ public class UserPropertyService {
             project.setProjectConfiguration(dto.getBedrooms() + " BHK");
         }
         
-        // Set price
+        // Set price - format without scientific notation
         if (dto.getTotalPrice() != null) {
-            project.setProjectPrice(dto.getTotalPrice().toString());
+            project.setProjectPrice(formatPriceToString(dto.getTotalPrice()));
         }
         
         // Generate slug URL
-        project.setSlugURL(generateSlug(dto.getTitle() != null ? dto.getTitle() : 
+        project.setSlugURL(generateSlug(dto.getProjectName() != null ? dto.getProjectName() : 
             generateTitle(dto.getBedrooms(), dto.getSubType(), dto.getLocality())));
         
         // Initially inactive until approved
@@ -116,43 +115,85 @@ public class UserPropertyService {
             project.setProjectTypes(projectType);
         }
         
-        // Save uploaded images
+        // Save uploaded images - save to properties/{slug}/ folder like regular gallery images
         Set<ProjectGallery> galleries = new HashSet<>();
         if (images != null && images.length > 0) {
             log.info("Processing {} images", images.length);
             
-            String galleryDir = uploadDir + "project-gallery" + File.separator;
+            // Generate slug if not already set
+            if (project.getSlugURL() == null || project.getSlugURL().isEmpty()) {
+                String slug = generateSlug(project.getProjectName());
+                project.setSlugURL(slug);
+            }
+            
+            // Save to properties/{slug}/ folder (same as regular gallery images)
+            String galleryDir = uploadDir + project.getSlugURL() + File.separator;
+            File destinationDir = new File(galleryDir);
+            if (!destinationDir.exists()) {
+                destinationDir.mkdirs();
+            }
             
             for (int i = 0; i < images.length; i++) {
                 try {
-                    MultipartFile image = images[i];
+                    MultipartFile imageFile = images[i];
+                    
+                    // Generate unique filename
+                    String originalFilename = imageFile.getOriginalFilename();
+                    String fileExtension = "";
+                    if (originalFilename != null && originalFilename.contains(".")) {
+                        fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    }
+                    String fileName = System.currentTimeMillis() + (i > 0 ? "_" + i : "") + fileExtension;
                     
                     // Save image
-                    String imagePath = fileUtils.saveOriginalImage(image, galleryDir);
+                    File destinationFile = new File(destinationDir, fileName);
+                    imageFile.transferTo(destinationFile);
                     
+                    // Store only filename (not full path) in database - same as ProjectGalleryService
                     ProjectGallery gallery = new ProjectGallery();
-                    gallery.setImage(imagePath);
-                    gallery.setSlugUrl(imagePath);
+                    gallery.setImage(fileName);  // Just the filename
+                    gallery.setSlugUrl(project.getSlugURL());  // Store slug URL
                     gallery.setProject(project);
                     
-                    // First image is thumbnail
+                    // First image is thumbnail (store just filename)
                     if (i == 0) {
-                        project.setProjectThumbnail(imagePath);
+                        project.setProjectThumbnail(fileName);
                     }
                     
                     galleries.add(gallery);
+                    log.info("Saved image {} to {}", fileName, galleryDir);
                 } catch (Exception e) {
-                    log.error("Error uploading image: {}", e.getMessage());
+                    log.error("Error uploading image: {}", e.getMessage(), e);
                 }
             }
             project.setProjectGalleries(galleries);
         }
         
-        // Set amenities if provided
+        // Set amenities if provided - handle both IDs and names
         if (dto.getAmenities() != null && !dto.getAmenities().isEmpty()) {
             Set<Amenity> amenitySet = new HashSet<>();
-            for (Integer amenityId : dto.getAmenities()) {
-                amenityRepository.findById(amenityId).ifPresent(amenitySet::add);
+            for (Object amenityValue : dto.getAmenities()) {
+                if (amenityValue instanceof Integer) {
+                    // It's an ID
+                    amenityRepository.findById((Integer) amenityValue).ifPresent(amenitySet::add);
+                } else if (amenityValue instanceof String) {
+                    // It's a name - find or create amenity by name
+                    String amenityName = (String) amenityValue;
+                    Optional<Amenity> existingAmenity = amenityRepository.findByTitleIgnoreCase(amenityName);
+                    
+                    if (existingAmenity.isPresent()) {
+                        amenitySet.add(existingAmenity.get());
+                    } else {
+                        // Create new amenity if it doesn't exist
+                        log.info("Creating new amenity: {}", amenityName);
+                        Amenity newAmenity = new Amenity();
+                        newAmenity.setTitle(amenityName);
+                        newAmenity.setAltTag(amenityName.toLowerCase().replace(" ", "-"));
+                        newAmenity.setStatus(true);
+                        Amenity savedAmenity = amenityRepository.save(newAmenity);
+                        amenitySet.add(savedAmenity);
+                    }
+                }
             }
             project.setAmenities(amenitySet);
         }
@@ -251,6 +292,21 @@ public class UserPropertyService {
             .replaceAll("[^a-z0-9]+", "-")
             .replaceAll("^-|-$", "")
             + "-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+    
+    /**
+     * Format price as string without scientific notation
+     * Converts 1.5E7 to "15000000"
+     */
+    private String formatPriceToString(Double price) {
+        if (price == null) {
+            return null;
+        }
+        // Use BigDecimal to avoid scientific notation
+        BigDecimal bd = BigDecimal.valueOf(price);
+        // Remove trailing zeros and decimal point if not needed
+        bd = bd.setScale(0, RoundingMode.HALF_UP);
+        return bd.toPlainString();
     }
 }
 

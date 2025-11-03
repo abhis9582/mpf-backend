@@ -51,7 +51,7 @@ public class UserPropertySubmissionDto {
     private Integer balconies;
     private String parking;
     private String furnished;
-    private List<Integer> amenities;    // List of amenity IDs
+    private List<Object> amenities;    // List of amenity IDs (Integer) or names (String) - will be converted
     private List<String> features;
     
     // Contact Information
