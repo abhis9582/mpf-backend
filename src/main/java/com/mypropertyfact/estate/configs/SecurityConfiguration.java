@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -46,7 +48,11 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000");
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "https://mypropertyfact.in",
+                "https://admin.mypropertyfact.in"
+        ));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         
