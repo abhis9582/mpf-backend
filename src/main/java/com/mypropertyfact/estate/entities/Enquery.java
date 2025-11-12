@@ -19,6 +19,7 @@ public class Enquery {
     private String enquiryFrom;
     private String projectLink;
     private String pageName;
+    private String status;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

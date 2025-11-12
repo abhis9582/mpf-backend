@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.entities.Enquery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.EnqueryRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EnquiryService {
@@ -61,5 +63,21 @@ public class EnquiryService {
         }catch (Exception e){
             return new Response(0, e.getMessage(), 0);
         }
+    }
+
+    public SuccessResponse updateStatus(int enquiryId, String status) {
+        SuccessResponse successResponse = new SuccessResponse();
+        Optional<Enquery> enquiryById = enqueryRepository.findById(enquiryId);
+        enquiryById.ifPresent(enquery -> {
+            enquery.setStatus(status);
+            enqueryRepository.save(enquery);
+            successResponse.setIsSuccess(1);
+            successResponse.setMessage("Status updated successfully...");
+        });
+        if (successResponse.getIsSuccess() != 1) {
+            successResponse.setIsSuccess(0);
+            successResponse.setMessage("Something went wrong while updating status !");
+        }
+        return successResponse;
     }
 }
