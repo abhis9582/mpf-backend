@@ -72,5 +72,12 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
      */
     List<Project> findByApprovalStatus(com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
 
-    List<Project> findByProjectStatus_StatusNameOrderByProjectNameAsc(String statusName);
+    @Query(value = """
+    SELECT p.*
+    FROM projects p
+    JOIN project_status s ON p.project_status_id = s.id
+    WHERE s.id = 3
+    ORDER BY p.project_name ASC
+    """, nativeQuery = true)
+    List<Project> findProjectsByStatusNameOrderByProjectNameAsc();
 }

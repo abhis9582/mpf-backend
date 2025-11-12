@@ -98,12 +98,9 @@ public class ProjectTypesService {
         });
         if(url.equals("new-launches")){
             List<ProjectDetailDto> dtoList;
-            List<Project> projects = projectRepository.findByProjectStatus_StatusNameOrderByProjectNameAsc("New Launch");
+            List<Project> projects = projectRepository.findProjectsByStatusNameOrderByProjectNameAsc();
             dtoList = projects.stream()
                     .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
-                    .filter(project ->
-                            project.getProjectStatus() != null &&
-                                    "New Launch".equals(project.getProjectStatus().getStatusName()))
                     .map(project-> {
                         ProjectDetailDto projectDetailDto = new ProjectDetailDto();
                         commonMapper.mapProjectToProjectDto(project, projectDetailDto);
