@@ -157,6 +157,25 @@ public class FetchImageController {
         }
     }
 
+    @GetMapping("/property-listings/{listingId}/{filename}")
+    public ResponseEntity<Resource> getPropertyListingImage(@PathVariable String listingId, @PathVariable String filename) {
+        try {
+            // Property listing images are stored in: upload_dir/property-listings/{listingId}/{filename}
+            Path imagePath = Paths.get(filePath + "property-listings" + "/" + listingId, filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/location-benefit/{filename}")
     public ResponseEntity<Resource> getLocationBenefitImage(@PathVariable String filename) {
         try {
