@@ -29,6 +29,7 @@ public class User implements UserDetails {
     @Column(unique = true, length = 100)
     private String email; // Made nullable for mobile-only registration
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -39,7 +40,6 @@ public class User implements UserDetails {
     private String phone;
     
     // Many-to-Many relationship with MasterRole for multiple roles support
-    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -68,6 +68,9 @@ public class User implements UserDetails {
 
     @Column(name = "verified")
     private Boolean verified = false;
+
+    @Column(name = "enabled")
+    private Boolean enabled = true;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -121,6 +124,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled != null && enabled;
     }
 }
