@@ -32,8 +32,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "role", length = 50)
-    private String role = "ROLE_USER"; // Default role - kept for backward compatibility
+    // @Column(name = "role", length = 50)
+    // private String role = "ROLE_USER"; // Default role - kept for backward compatibility
 
     @Column(name = "phone", length = 20)
     private String phone;
@@ -91,10 +91,10 @@ public class User implements UserDetails {
         }
         
         // Fallback to legacy single role field for backward compatibility
-        if (authorities.isEmpty()) {
-            String userRole = (role != null && !role.isEmpty()) ? role : "ROLE_USER";
-            authorities.add(new SimpleGrantedAuthority(userRole));
-        }
+        // if (authorities.isEmpty()) {
+        //     String userRole = (role != null && !role.isEmpty()) ? role : "ROLE_USER";
+        //     authorities.add(new SimpleGrantedAuthority(userRole));
+        // }
         
         return authorities;
     }
