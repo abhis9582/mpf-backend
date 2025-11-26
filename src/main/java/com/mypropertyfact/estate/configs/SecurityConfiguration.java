@@ -69,7 +69,12 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         
         config.setAllowCredentials(true);
+        // Allow localhost for development
         config.addAllowedOrigin("http://localhost:3000");
+        // Allow production frontend domain
+        config.addAllowedOrigin("https://mypropertyfact.in");
+        config.addAllowedOrigin("https://mypropertyfact.com");
+        config.addAllowedOrigin("http://mypropertyfact.in");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         
