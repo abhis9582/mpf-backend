@@ -43,12 +43,14 @@ public class FloorPlanService {
             });
             
             // Build plan map directly
+            if(row[0] != null) {
             int floorPlanId = ((Number) row[0]).intValue();
-            String planType = (String) row[1];
-            double areaSqft = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
-            double areaSqMt = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
-            
-            projectData.addPlan(floorPlanId, planType, areaSqft, areaSqMt);
+                String planType = (String) row[1];
+                double areaSqft = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                double areaSqMt = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+                
+                projectData.addPlan(floorPlanId, planType, areaSqft, areaSqMt);
+            }
         }
         
         // Convert to final result list and sort by project name (more efficient than DB ORDER BY)

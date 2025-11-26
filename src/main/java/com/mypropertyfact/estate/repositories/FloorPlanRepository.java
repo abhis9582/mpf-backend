@@ -16,15 +16,15 @@ public interface FloorPlanRepository extends JpaRepository<FloorPlan, Integer> {
      * Note: Removed ORDER BY to improve query performance - sorting can be done in Java if needed
      */
     @Query(value = """
-            SELECT 
+             SELECT 
                 fp.id,
                 fp.plan_type,
                 fp.area_sqft,
                 fp.area_sqmt,
                 p.id,
                 p.project_name
-            FROM floor_plans fp
-            INNER JOIN projects p ON fp.project_id = p.id
+            FROM projects p
+            LEFT JOIN floor_plans fp ON fp.project_id = p.id
             """, nativeQuery = true)
     List<Object[]> findAllFloorPlansWithProjectInfo();
 }
