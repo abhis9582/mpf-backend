@@ -70,11 +70,12 @@ public class SecurityConfiguration {
         
         config.setAllowCredentials(true);
         // Allow localhost for development
-        config.addAllowedOrigin("http://localhost:3000");
-        // Allow production frontend domain
-        config.addAllowedOrigin("https://mypropertyfact.in");
-        config.addAllowedOrigin("https://mypropertyfact.com");
-        config.addAllowedOrigin("http://mypropertyfact.in");
+        config.addAllowedOriginPattern("http://localhost:*");
+        // Allow production frontend domains
+        config.addAllowedOriginPattern("https://mypropertyfact.in");
+        config.addAllowedOriginPattern("https://mypropertyfact.com");
+        config.addAllowedOriginPattern("http://mypropertyfact.in");
+        config.addAllowedOriginPattern("http://mypropertyfact.com");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         
