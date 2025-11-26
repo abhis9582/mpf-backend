@@ -72,4 +72,10 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
      */
     List<Project> findByApprovalStatus(com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
 
+    /**
+     * Find all projects with their floor plans loaded (avoids N+1 queries)
+     */
+    @Query("SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.floorPlans ORDER BY p.projectName")
+    List<Project> findAllWithFloorPlans();
+
 }

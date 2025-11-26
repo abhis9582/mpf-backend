@@ -19,34 +19,84 @@ public class FloorPlanService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getAllPlans() {
-        // List<Project> allProjects = projectRepository.findAll();
-
-        Map<Integer, Map<String, Object>> groupedByProject = new HashMap<>();
-
-        // for (Project project : allProjects) {
-            // int projectId = project.getId();
-
-            // List<Map<String, Object>> plans = project.getFloorPlans().stream().map(p-> {
-            //     Map<String, Object> planMap = new HashMap<>();
-            //     planMap.put("id", p.getId());
-            //     planMap.put("planType", p.getPlanType());
-            //     planMap.put("areaSqft", p.getAreaSqft());
-            //     planMap.put("areaSqMt", p.getAreaSqmt());
-            //     return planMap;
-            // }).toList();
-
-            // Map<String, Object> projectMap = groupedByProject.computeIfAbsent(projectId, id -> {
-            //     Map<String, Object> newProjectMap = new HashMap<>();
-            //     newProjectMap.put("projectId", id);
-            //     newProjectMap.put("projectName", project.getProjectName());
-            //     newProjectMap.put("plans", plans);
-            //     return newProjectMap;
-            // });
-        // }
-
-        return new ArrayList<>(groupedByProject.values());
+        // Efficient native query that only selects the columns we need
+        // Returns: [floorPlanId, planType, areaSqft, areaSqMt, projectId, projectName]
+        List<Object[]> results = floorPlanRepository.findAllFloorPlansWithProjectInfo();
+        
+        if (results.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // Use LinkedHashMap to preserve insertion order, pre-size based on expected projects
+        Map<Integer, ProjectData> projectDataMap = new LinkedHashMap<>(results.size() / 4); // Rough estimate: 4 plans per project
+        
+        // Single pass grouping - optimized for performance
+        for (Object[] row : results) {
+            int projectId = ((Number) row[4]).intValue();
+            
+            // Get or create project data structure
+            ProjectData projectData = projectDataMap.computeIfAbsent(projectId, id -> {
+                String name = (String) row[5];
+                return new ProjectData(id, name != null ? name : "");
+            });
+            
+            // Build plan map directly
+            int floorPlanId = ((Number) row[0]).intValue();
+            String planType = (String) row[1];
+            double areaSqft = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+            double areaSqMt = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+            
+            projectData.addPlan(floorPlanId, planType, areaSqft, areaSqMt);
+        }
+        
+        // Convert to final result list and sort by project name (more efficient than DB ORDER BY)
+        List<Map<String, Object>> result = new ArrayList<>(projectDataMap.size());
+        for (ProjectData data : projectDataMap.values()) {
+            result.add(data.toMap());
+        }
+        
+        // Sort by project name after grouping (faster than sorting all rows in DB)
+        result.sort((a, b) -> {
+            String nameA = (String) a.get("projectName");
+            String nameB = (String) b.get("projectName");
+            if (nameA == null) nameA = "";
+            if (nameB == null) nameB = "";
+            return nameA.compareToIgnoreCase(nameB);
+        });
+        
+        return result;
+    }
+    
+    // Helper class to reduce object creation overhead
+    private static class ProjectData {
+        private final int projectId;
+        private final String projectName;
+        private final List<Map<String, Object>> plans;
+        
+        ProjectData(int projectId, String projectName) {
+            this.projectId = projectId;
+            this.projectName = projectName;
+            this.plans = new ArrayList<>(); // Will grow as needed
+        }
+        
+        void addPlan(int id, String planType, double areaSqft, double areaSqMt) {
+            Map<String, Object> plan = new HashMap<>(4); // Pre-size for 4 keys
+            plan.put("id", id);
+            plan.put("planType", planType != null ? planType : "");
+            plan.put("areaSqft", areaSqft);
+            plan.put("areaSqMt", areaSqMt);
+            plans.add(plan);
+        }
+        
+        Map<String, Object> toMap() {
+            Map<String, Object> map = new HashMap<>(3); // Pre-size for 3 keys
+            map.put("projectId", projectId);
+            map.put("projectName", projectName);
+            map.put("plans", plans);
+            return map;
+        }
     }
 
     public Response addUpdatePlan(FloorPlanDto floorPlan) {
