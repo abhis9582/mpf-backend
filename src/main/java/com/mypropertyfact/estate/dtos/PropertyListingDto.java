@@ -62,9 +62,11 @@ public class PropertyListingDto {
     private Integer balconies;
     private String parking;
     private String furnished;
-    private List<String> features;
+    private List<Long> featureIds;  // Feature IDs
+    private List<String> featureNames;  // Feature names
     private List<Integer> amenityIds;
     private List<String> amenityNames;
+    private List<NearbyBenefitResponseDto> nearbyBenefits;  // Nearby benefits with distances
     
     // Media & Contact
     private List<String> imageUrls;
@@ -91,6 +93,16 @@ public class PropertyListingDto {
     // User Info
     private Integer userId;
     private String userEmail;
+    private String userName;
+    private String userPhone;
+    private String userLocation;
+    private String userBio;
+    private String userAvatar;
+    private String userExperience;
+    private Double userRating;
+    private Integer userTotalDeals;
+    private Boolean userVerified;
+    private LocalDateTime userCreatedAt;
 }
 
 

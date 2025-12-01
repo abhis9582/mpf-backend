@@ -73,8 +73,10 @@ public class PropertyListingRequestDto {
     private String restrictions;
     private String renovationHistory;    // Additional notes
     
-    // Amenities
+    // Amenities, Features, and Nearby Benefits
     private List<Integer> amenityIds;
+    private List<Long> featureIds;  // Feature IDs from backend
+    private List<NearbyBenefitDto> nearbyBenefits;  // Array of {id, distance} objects
     
     // ========== MEDIA & CONTACT ==========
     private String videoUrl;            // Virtual tour URL

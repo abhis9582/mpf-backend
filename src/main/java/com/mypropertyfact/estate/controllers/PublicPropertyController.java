@@ -1,8 +1,12 @@
 package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.dtos.PropertyListingDto;
+import com.mypropertyfact.estate.entities.Enquery;
+import com.mypropertyfact.estate.models.Response;
+import com.mypropertyfact.estate.services.EnquiryService;
 import com.mypropertyfact.estate.services.PropertyListingService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +25,9 @@ import java.util.Map;
 public class PublicPropertyController {
     
     private final PropertyListingService propertyListingService;
+    
+    @Autowired
+    private EnquiryService enquiryService;
     
     public PublicPropertyController(PropertyListingService propertyListingService) {
         this.propertyListingService = propertyListingService;
@@ -102,6 +109,57 @@ public class PublicPropertyController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Failed to fetch property: " + e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Submit property lead/inquiry (public access)
+     * POST /api/public/properties/lead
+     */
+    @PostMapping("/lead")
+    public ResponseEntity<?> submitPropertyLead(@RequestBody Map<String, Object> leadData) {
+        try {
+            Enquery enquery = new Enquery();
+            enquery.setName((String) leadData.get("name"));
+            enquery.setEmail((String) leadData.get("email"));
+            enquery.setPhone((String) leadData.get("phone"));
+            enquery.setMessage((String) leadData.get("message"));
+            
+            // Set property ID
+            if (leadData.get("propertyId") != null) {
+                Object propertyIdObj = leadData.get("propertyId");
+                if (propertyIdObj instanceof Number) {
+                    enquery.setPropertyId(((Number) propertyIdObj).longValue());
+                } else if (propertyIdObj instanceof String) {
+                    enquery.setPropertyId(Long.parseLong((String) propertyIdObj));
+                }
+            }
+            
+            enquery.setEnquiryFrom("Property Detail Page");
+            enquery.setPageName("Property Listing");
+            enquery.setStatus("New");
+            
+            Response response = enquiryService.addUpdate(enquery);
+            
+            Map<String, Object> apiResponse = new HashMap<>();
+            if (response.getIsSuccess() == 1) {
+                apiResponse.put("success", true);
+                apiResponse.put("message", response.getMessage());
+            } else {
+                apiResponse.put("success", false);
+                apiResponse.put("message", response.getMessage());
+            }
+            
+            return ResponseEntity.ok(apiResponse);
+            
+        } catch (Exception e) {
+            log.error("Error submitting property lead: {}", e.getMessage(), e);
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Failed to submit inquiry: " + e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

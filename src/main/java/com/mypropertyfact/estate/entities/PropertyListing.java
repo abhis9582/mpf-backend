@@ -12,6 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -231,10 +232,18 @@ public class PropertyListing {
     @JsonIgnore
     private Set<Amenity> amenities;
     
-    @ElementCollection
-    @CollectionTable(name = "property_listing_features", joinColumns = @JoinColumn(name = "property_listing_id"))
-    @Column(name = "feature")
-    private List<String> features = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "property_listing_features",
+        joinColumns = @JoinColumn(name = "property_listing_id"),
+        inverseJoinColumns = @JoinColumn(name = "feature_id")
+    )
+    @JsonIgnore
+    private Set<Feature> features = new HashSet<>();
+    
+    @OneToMany(mappedBy = "propertyListing", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<PropertyListingNearbyBenefit> nearbyBenefits = new ArrayList<>();
     
     // ========== APPROVAL & TRACKING ==========
     

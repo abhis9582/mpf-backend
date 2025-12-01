@@ -1,5 +1,7 @@
 package com.mypropertyfact.estate.services;
 
+import com.mypropertyfact.estate.dtos.NearbyBenefitDto;
+import com.mypropertyfact.estate.dtos.NearbyBenefitResponseDto;
 import com.mypropertyfact.estate.dtos.PropertyListingDto;
 import com.mypropertyfact.estate.dtos.PropertyListingRequestDto;
 import com.mypropertyfact.estate.entities.*;
@@ -53,6 +55,15 @@ public class PropertyListingService {
     
     @Autowired
     private AmenityRepository amenityRepository;
+    
+    @Autowired
+    private FeatureRepository featureRepository;
+    
+    @Autowired
+    private MasterBenefitRepository masterBenefitRepository;
+    
+    @Autowired
+    private PropertyListingNearbyBenefitRepository propertyListingNearbyBenefitRepository;
     
     @Value("${upload_dir:uploads/}")
     private String uploadDir;
@@ -112,9 +123,30 @@ public class PropertyListingService {
         listing.setParking(dto.getParkingType());
         listing.setFurnished(dto.getFurnishingLevel());
         
-        // Features - convert from list to list
-        if (dto.getIncludedItems() != null) {
-            listing.setFeatures(new ArrayList<>(dto.getIncludedItems()));
+        // Set Features by IDs
+        if (dto.getFeatureIds() != null && !dto.getFeatureIds().isEmpty()) {
+            Set<Feature> featureSet = dto.getFeatureIds().stream()
+                .map(featureId -> featureRepository.findById(featureId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+            listing.setFeatures(featureSet);
+        } else if (dto.getIncludedItems() != null && !dto.getIncludedItems().isEmpty()) {
+            // Fallback: Handle feature names if IDs not provided (for backward compatibility)
+            Set<Feature> featureSet = new HashSet<>();
+            for (String featureName : dto.getIncludedItems()) {
+                Feature feature = featureRepository.findByTitleIgnoreCase(featureName)
+                    .orElseGet(() -> {
+                        log.info("Creating new feature: {}", featureName);
+                        Feature newFeature = new Feature();
+                        newFeature.setTitle(featureName);
+                        newFeature.setAltTag(featureName.toLowerCase().replace(" ", "-"));
+                        newFeature.setStatus(true);
+                        return featureRepository.save(newFeature);
+                    });
+                featureSet.add(feature);
+            }
+            listing.setFeatures(featureSet);
         }
         
         // ========== MEDIA & CONTACT ==========
@@ -221,6 +253,28 @@ public class PropertyListingService {
         try {
             // Save the listing first to get the ID
             PropertyListing savedListing = propertyListingRepository.save(listing);
+            
+            // ========== HANDLE NEARBY BENEFITS WITH DISTANCES ==========
+            if (dto.getNearbyBenefits() != null && !dto.getNearbyBenefits().isEmpty()) {
+                List<PropertyListingNearbyBenefit> nearbyBenefitList = new ArrayList<>();
+                for (NearbyBenefitDto benefitDto : dto.getNearbyBenefits()) {
+                    if (benefitDto.getId() != null && benefitDto.getDistance() != null && benefitDto.getDistance() > 0) {
+                        MasterBenefit masterBenefit = masterBenefitRepository.findById(benefitDto.getId())
+                            .orElse(null);
+                        if (masterBenefit != null) {
+                            PropertyListingNearbyBenefit nearbyBenefit = new PropertyListingNearbyBenefit();
+                            nearbyBenefit.setPropertyListing(savedListing);
+                            nearbyBenefit.setMasterBenefit(masterBenefit);
+                            nearbyBenefit.setDistance(benefitDto.getDistance());
+                            nearbyBenefitList.add(nearbyBenefit);
+                        }
+                    }
+                }
+                if (!nearbyBenefitList.isEmpty()) {
+                    propertyListingNearbyBenefitRepository.saveAll(nearbyBenefitList);
+                    log.info("Saved {} nearby benefits for property listing {}", nearbyBenefitList.size(), savedListing.getId());
+                }
+            }
             
             // ========== HANDLE IMAGES ==========
             if (images != null && images.length > 0) {
@@ -428,7 +482,40 @@ public class PropertyListingService {
         if (dto.getTitle() != null) listing.setTitle(dto.getTitle());
         if (dto.getDescription() != null) listing.setDescription(dto.getDescription());
         if (dto.getTotalPrice() != null) listing.setTotalPrice(dto.getTotalPrice());
-        // ... update other fields as needed
+        
+        // Update Features if provided
+        if (dto.getFeatureIds() != null) {
+            Set<Feature> featureSet = dto.getFeatureIds().stream()
+                .map(featureId -> featureRepository.findById(featureId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+            listing.setFeatures(featureSet);
+        }
+        
+        // Update Nearby Benefits if provided
+        if (dto.getNearbyBenefits() != null) {
+            // Delete existing nearby benefits
+            propertyListingNearbyBenefitRepository.deleteByPropertyListingId(id);
+            // Create new ones
+            List<PropertyListingNearbyBenefit> nearbyBenefitList = new ArrayList<>();
+            for (NearbyBenefitDto benefitDto : dto.getNearbyBenefits()) {
+                if (benefitDto.getId() != null && benefitDto.getDistance() != null && benefitDto.getDistance() > 0) {
+                    MasterBenefit masterBenefit = masterBenefitRepository.findById(benefitDto.getId())
+                        .orElse(null);
+                    if (masterBenefit != null) {
+                        PropertyListingNearbyBenefit nearbyBenefit = new PropertyListingNearbyBenefit();
+                        nearbyBenefit.setPropertyListing(listing);
+                        nearbyBenefit.setMasterBenefit(masterBenefit);
+                        nearbyBenefit.setDistance(benefitDto.getDistance());
+                        nearbyBenefitList.add(nearbyBenefit);
+                    }
+                }
+            }
+            if (!nearbyBenefitList.isEmpty()) {
+                propertyListingNearbyBenefitRepository.saveAll(nearbyBenefitList);
+            }
+        }
         
         // Update images if provided
         if (images != null && images.length > 0) {
@@ -545,12 +632,19 @@ public class PropertyListingService {
         dto.setBalconies(listing.getBalconies());
         dto.setParking(listing.getParking());
         dto.setFurnished(listing.getFurnished());
+        
         // Initialize lazy-loaded features collection before accessing
         if (listing.getFeatures() != null) {
             Hibernate.initialize(listing.getFeatures());
-            dto.setFeatures(new ArrayList<>(listing.getFeatures()));
+            dto.setFeatureIds(listing.getFeatures().stream()
+                .map(Feature::getId)
+                .collect(Collectors.toList()));
+            dto.setFeatureNames(listing.getFeatures().stream()
+                .map(Feature::getTitle)
+                .collect(Collectors.toList()));
         } else {
-            dto.setFeatures(new ArrayList<>());
+            dto.setFeatureIds(new ArrayList<>());
+            dto.setFeatureNames(new ArrayList<>());
         }
         
         // Initialize lazy-loaded amenities collection before accessing
@@ -562,6 +656,28 @@ public class PropertyListingService {
             dto.setAmenityNames(listing.getAmenities().stream()
                 .map(Amenity::getTitle)
                 .collect(Collectors.toList()));
+        } else {
+            dto.setAmenityIds(new ArrayList<>());
+            dto.setAmenityNames(new ArrayList<>());
+        }
+        
+        // Initialize lazy-loaded nearby benefits collection before accessing
+        if (listing.getNearbyBenefits() != null) {
+            Hibernate.initialize(listing.getNearbyBenefits());
+            List<NearbyBenefitResponseDto> nearbyBenefitDtos = listing.getNearbyBenefits().stream()
+                .map(nb -> {
+                    NearbyBenefitResponseDto nbDto = new NearbyBenefitResponseDto();
+                    nbDto.setId(nb.getMasterBenefit().getId());
+                    nbDto.setBenefitName(nb.getMasterBenefit().getBenefitName());
+                    nbDto.setBenefitIcon(nb.getMasterBenefit().getBenefitIcon());
+                    nbDto.setAltTag(nb.getMasterBenefit().getAltTag());
+                    nbDto.setDistance(nb.getDistance());
+                    return nbDto;
+                })
+                .collect(Collectors.toList());
+            dto.setNearbyBenefits(nearbyBenefitDtos);
+        } else {
+            dto.setNearbyBenefits(new ArrayList<>());
         }
         
         // Get image URLs
@@ -590,8 +706,26 @@ public class PropertyListingService {
         dto.setUpdatedAt(listing.getUpdatedAt());
         dto.setApprovedAt(listing.getApprovedAt());
         
-        dto.setUserId(listing.getUser().getId());
-        dto.setUserEmail(listing.getUser().getEmail());
+        // User Information
+        if (listing.getUser() != null) {
+            User user = listing.getUser();
+            dto.setUserId(user.getId());
+            dto.setUserEmail(user.getEmail());
+            dto.setUserName(user.getFullName());
+            dto.setUserPhone(user.getPhone());
+            dto.setUserLocation(user.getLocation());
+            dto.setUserBio(user.getBio());
+            dto.setUserAvatar(user.getAvatar());
+            dto.setUserExperience(user.getExperience());
+            dto.setUserRating(user.getRating());
+            dto.setUserTotalDeals(user.getTotalDeals());
+            dto.setUserVerified(user.getVerified());
+            if (user.getCreatedAt() != null) {
+                dto.setUserCreatedAt(user.getCreatedAt().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime());
+            }
+        }
         
         return dto;
     }

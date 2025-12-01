@@ -19,6 +19,10 @@ public class EnquiryService {
         return enqueryRepository.findAll();
     }
 
+    public List<Enquery> getByPropertyId(Long propertyId){
+        return enqueryRepository.findByPropertyId(propertyId);
+    }
+
     public Response addUpdate(Enquery enquery) {
         Response response = new Response();
         try {
@@ -33,6 +37,7 @@ public class EnquiryService {
                     dbEnquery.setUpdatedAt(LocalDateTime.now());
                     dbEnquery.setEnquiryFrom(enquery.getEnquiryFrom());
                     dbEnquery.setProjectLink(enquery.getProjectLink());
+                    dbEnquery.setPropertyId(enquery.getPropertyId());
                     enqueryRepository.save(dbEnquery);
                     response.setIsSuccess(1);
                     response.setMessage("Data updated successfully...");

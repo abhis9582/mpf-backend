@@ -103,7 +103,7 @@ public class ProjectTypesService {
                             .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
                             .filter(project ->
                                     project.getProjectStatus() != null &&
-                                            "New Launch".equals(project.getProjectStatus().getStatusName()))
+                                            "New Launched".equals(project.getProjectStatus().getStatusName()))
                             .map(project-> {
                         ProjectDetailDto projectDetailDto = new ProjectDetailDto();
                         commonMapper.mapProjectToProjectDto(project, projectDetailDto);
