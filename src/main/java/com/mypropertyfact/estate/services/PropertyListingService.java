@@ -247,8 +247,25 @@ public class PropertyListingService {
             listing.setAmenities(amenitySet);
         }
         
-        // Set approval status to PENDING
-        listing.setApprovalStatus(ProjectApprovalStatus.PENDING);
+        // Set approval status - use from DTO if provided, otherwise default to PENDING
+        if (dto.getApprovalStatus() != null && !dto.getApprovalStatus().isEmpty()) {
+            try {
+                listing.setApprovalStatus(ProjectApprovalStatus.valueOf(dto.getApprovalStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid approval status '{}', defaulting to PENDING", dto.getApprovalStatus());
+                listing.setApprovalStatus(ProjectApprovalStatus.PENDING);
+            }
+        } else {
+            listing.setApprovalStatus(ProjectApprovalStatus.PENDING);
+        }
+        
+        // Set isUserSubmitted - use from DTO if provided, otherwise default based on approval status
+        if (dto.getIsUserSubmitted() != null) {
+            listing.setIsUserSubmitted(dto.getIsUserSubmitted());
+        } else {
+            // Default: DRAFT = false (not submitted), others = true (submitted)
+            listing.setIsUserSubmitted(listing.getApprovalStatus() != ProjectApprovalStatus.DRAFT);
+        }
         
         try {
             // Save the listing first to get the ID
@@ -478,19 +495,179 @@ public class PropertyListingService {
                 .orElseThrow(() -> new RuntimeException("Property listing not found or unauthorized"));
         }
         
-        // Update fields (similar to create, but only update provided fields)
+        // ========== UPDATE BASIC INFORMATION ==========
+        if (dto.getListingType() != null) listing.setListingType(dto.getListingType());
+        if (dto.getTransaction() != null) listing.setTransaction(dto.getTransaction());
+        if (dto.getSubType() != null) listing.setSubType(dto.getSubType());
         if (dto.getTitle() != null) listing.setTitle(dto.getTitle());
+        else if (dto.getTitle() == null && (dto.getBedrooms() != null || dto.getSubType() != null || dto.getLocality() != null)) {
+            // Regenerate title if key fields changed
+            listing.setTitle(generateTitle(dto));
+        }
         if (dto.getDescription() != null) listing.setDescription(dto.getDescription());
-        if (dto.getTotalPrice() != null) listing.setTotalPrice(dto.getTotalPrice());
+        if (dto.getStatus() != null) listing.setStatus(dto.getStatus());
+        if (dto.getPossession() != null) listing.setPossession(dto.getPossession());
+        if (dto.getOccupancy() != null) listing.setOccupancy(dto.getOccupancy());
+        if (dto.getNoticePeriod() != null) listing.setNoticePeriod(dto.getNoticePeriod());
         
-        // Update Features if provided
-        if (dto.getFeatureIds() != null) {
+        // ========== UPDATE LOCATION & AREA ==========
+        if (dto.getProjectName() != null) listing.setProjectName(dto.getProjectName());
+        if (dto.getBuilderName() != null) listing.setBuilderName(dto.getBuilderName());
+        if (dto.getAddress() != null) listing.setAddress(dto.getAddress());
+        if (dto.getLocality() != null) listing.setLocalityName(dto.getLocality());
+        if (dto.getPinCode() != null) listing.setPincode(dto.getPinCode());
+        if (dto.getLatitude() != null) listing.setLatitude(dto.getLatitude());
+        if (dto.getLongitude() != null) listing.setLongitude(dto.getLongitude());
+        
+        // Area Details
+        if (dto.getCarpetArea() != null) listing.setCarpetArea(dto.getCarpetArea());
+        if (dto.getBuiltUpArea() != null) listing.setBuiltUpArea(dto.getBuiltUpArea());
+        if (dto.getSuperBuiltUpArea() != null) listing.setSuperBuiltUpArea(dto.getSuperBuiltUpArea());
+        if (dto.getPlotArea() != null) listing.setPlotArea(dto.getPlotArea());
+        
+        // ========== UPDATE PRICING ==========
+        if (dto.getTotalPrice() != null) listing.setTotalPrice(dto.getTotalPrice());
+        if (dto.getPricePerSqft() != null) listing.setPricePerSqft(dto.getPricePerSqft());
+        if (dto.getMaintenanceCam() != null) listing.setMaintenanceCharges(dto.getMaintenanceCam());
+        if (dto.getBookingAmount() != null) listing.setBookingAmount(dto.getBookingAmount());
+        
+        // ========== UPDATE PROPERTY DETAILS ==========
+        if (dto.getFloorNo() != null) listing.setFloorNumber(dto.getFloorNo());
+        if (dto.getTotalFloors() != null) listing.setTotalFloors(dto.getTotalFloors());
+        if (dto.getFacing() != null) listing.setFacing(dto.getFacing());
+        if (dto.getAgeOfConstruction() != null) listing.setAgeOfConstruction(dto.getAgeOfConstruction());
+        
+        // ========== UPDATE CONFIGURATION ==========
+        if (dto.getBedrooms() != null) listing.setBedrooms(dto.getBedrooms());
+        if (dto.getBathrooms() != null) listing.setBathrooms(dto.getBathrooms());
+        if (dto.getBalconies() != null) listing.setBalconies(dto.getBalconies());
+        if (dto.getParkingType() != null) listing.setParking(dto.getParkingType());
+        if (dto.getFurnishingLevel() != null) listing.setFurnished(dto.getFurnishingLevel());
+        
+        // Update Features by IDs
+        if (dto.getFeatureIds() != null && !dto.getFeatureIds().isEmpty()) {
             Set<Feature> featureSet = dto.getFeatureIds().stream()
                 .map(featureId -> featureRepository.findById(featureId))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
             listing.setFeatures(featureSet);
+        } else if (dto.getIncludedItems() != null && !dto.getIncludedItems().isEmpty()) {
+            // Fallback: Handle feature names if IDs not provided
+            Set<Feature> featureSet = new HashSet<>();
+            for (String featureName : dto.getIncludedItems()) {
+                Feature feature = featureRepository.findByTitleIgnoreCase(featureName)
+                    .orElseGet(() -> {
+                        log.info("Creating new feature: {}", featureName);
+                        Feature newFeature = new Feature();
+                        newFeature.setTitle(featureName);
+                        newFeature.setAltTag(featureName.toLowerCase().replace(" ", "-"));
+                        newFeature.setStatus(true);
+                        return featureRepository.save(newFeature);
+                    });
+                featureSet.add(feature);
+            }
+            listing.setFeatures(featureSet);
+        }
+        
+        // ========== UPDATE MEDIA & CONTACT ==========
+        if (dto.getVideoUrl() != null) listing.setVirtualTour(dto.getVideoUrl());
+        if (dto.getOwnershipType() != null) listing.setOwnershipType(dto.getOwnershipType());
+        if (dto.getReraId() != null) listing.setReraId(dto.getReraId());
+        if (dto.getReraState() != null) listing.setReraState(dto.getReraState());
+        if (dto.getContactName() != null) listing.setContactName(dto.getContactName());
+        if (dto.getContactPhone() != null) {
+            listing.setContactPhone(dto.getContactPhone());
+        } else if (dto.getPrimaryContact() != null) {
+            listing.setContactPhone(dto.getPrimaryContact());
+        }
+        if (dto.getContactEmail() != null) {
+            listing.setContactEmail(dto.getContactEmail());
+        } else if (dto.getPrimaryEmail() != null) {
+            listing.setContactEmail(dto.getPrimaryEmail());
+        }
+        if (dto.getContactPreference() != null) listing.setContactPreference(dto.getContactPreference());
+        if (dto.getPreferredTime() != null) listing.setPreferredTime(dto.getPreferredTime());
+        if (dto.getAdditionalNotes() != null) listing.setAdditionalNotes(dto.getAdditionalNotes());
+        if (dto.getTruthfulDeclaration() != null) listing.setTruthfulDeclaration(dto.getTruthfulDeclaration());
+        if (dto.getDpdpConsent() != null) listing.setDpdpConsent(dto.getDpdpConsent());
+        
+        // ========== UPDATE RELATIONSHIPS ==========
+        // Update City
+        if (dto.getCityId() != null) {
+            cityRepository.findById(dto.getCityId()).ifPresent(listing::setCity);
+        } else if (dto.getCity() != null) {
+            City city = cityRepository.findByNameIgnoreCase(dto.getCity())
+                .orElseGet(() -> {
+                    log.info("Creating new city: {}", dto.getCity());
+                    City newCity = new City();
+                    newCity.setName(dto.getCity());
+                    newCity.setSlugUrl(generateSlug(dto.getCity()));
+                    newCity.setCreatedAt(LocalDateTime.now());
+                    newCity.setUpdatedAt(LocalDateTime.now());
+                    return cityRepository.save(newCity);
+                });
+            listing.setCity(city);
+        }
+        
+        // Update Builder
+        if (dto.getBuilderId() != null) {
+            builderRepository.findById(dto.getBuilderId()).ifPresent(listing::setBuilder);
+        } else if (dto.getBuilderName() != null && !dto.getBuilderName().isEmpty()) {
+            Builder builder = builderRepository.findByBuilderNameIgnoreCase(dto.getBuilderName())
+                .orElseGet(() -> {
+                    log.info("Creating new builder: {}", dto.getBuilderName());
+                    Builder newBuilder = new Builder();
+                    newBuilder.setBuilderName(dto.getBuilderName());
+                    newBuilder.setSlugUrl(generateSlug(dto.getBuilderName()));
+                    newBuilder.setCreatedAt(LocalDateTime.now());
+                    newBuilder.setUpdatedAt(LocalDateTime.now());
+                    return builderRepository.save(newBuilder);
+                });
+            listing.setBuilder(builder);
+        }
+        
+        // Update Locality
+        if (dto.getLocalityId() != null) {
+            localityRepository.findById((long) dto.getLocalityId()).ifPresent(listing::setLocality);
+        }
+        
+        // Update Listing Type Entity
+        if (dto.getListingType() != null) {
+            projectTypeRepository.findByProjectTypeNameIgnoreCase(dto.getListingType())
+                .ifPresent(listing::setListingTypeEntity);
+        }
+        
+        // Update Status Entity
+        if (dto.getStatus() != null) {
+            projectStatusRepository.findByStatusNameIgnoreCase(dto.getStatus())
+                .ifPresent(listing::setStatusEntity);
+        }
+        
+        // Update Amenities
+        if (dto.getAmenityIds() != null && !dto.getAmenityIds().isEmpty()) {
+            Set<Amenity> amenitySet = dto.getAmenityIds().stream()
+                .map(amenityId -> amenityRepository.findById(amenityId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+            listing.setAmenities(amenitySet);
+        } else if (dto.getSocietyFeatures() != null && !dto.getSocietyFeatures().isEmpty()) {
+            // Handle amenity names if IDs not provided
+            Set<Amenity> amenitySet = new HashSet<>();
+            for (String amenityName : dto.getSocietyFeatures()) {
+                Amenity amenity = amenityRepository.findByTitleIgnoreCase(amenityName)
+                    .orElseGet(() -> {
+                        log.info("Creating new amenity: {}", amenityName);
+                        Amenity newAmenity = new Amenity();
+                        newAmenity.setTitle(amenityName);
+                        newAmenity.setAltTag(amenityName.toLowerCase().replace(" ", "-"));
+                        newAmenity.setStatus(true);
+                        return amenityRepository.save(newAmenity);
+                    });
+                amenitySet.add(amenity);
+            }
+            listing.setAmenities(amenitySet);
         }
         
         // Update Nearby Benefits if provided
@@ -517,11 +694,25 @@ public class PropertyListingService {
             }
         }
         
+        // Update approval status if provided
+        if (dto.getApprovalStatus() != null && !dto.getApprovalStatus().isEmpty()) {
+            try {
+                listing.setApprovalStatus(ProjectApprovalStatus.valueOf(dto.getApprovalStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid approval status '{}', keeping existing status", dto.getApprovalStatus());
+            }
+        }
+        
+        // Update isUserSubmitted if provided
+        if (dto.getIsUserSubmitted() != null) {
+            listing.setIsUserSubmitted(dto.getIsUserSubmitted());
+        }
+        
         // Update images if provided
+        // Note: Frontend sends only NEW images to upload, existing images are preserved
+        // If images array is provided and not empty, add them to existing images
         if (images != null && images.length > 0) {
-            // Delete existing images
-            propertyListingImageRepository.deleteByPropertyListingId(id);
-            // Save new images
+            // Save new images (existing images are preserved)
             savePropertyImages(listing, images);
         }
         

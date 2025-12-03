@@ -93,5 +93,9 @@ public class PropertyListingRequestDto {
     private String additionalNotes;
     private Boolean truthfulDeclaration;
     private Boolean dpdpConsent;
+    
+    // ========== APPROVAL STATUS ==========
+    private String approvalStatus;        // DRAFT, PENDING, APPROVED, REJECTED, REQUIRES_CHANGES
+    private Boolean isUserSubmitted;      // Whether the property is submitted for approval
 }
 

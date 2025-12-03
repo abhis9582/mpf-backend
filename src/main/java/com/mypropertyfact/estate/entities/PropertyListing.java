@@ -251,6 +251,9 @@ public class PropertyListing {
     @Column(name = "approval_status", length = 50)
     private ProjectApprovalStatus approvalStatus = ProjectApprovalStatus.PENDING;
     
+    @Column(name = "is_user_submitted")
+    private Boolean isUserSubmitted = false;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by_id")
     @JsonIgnore
