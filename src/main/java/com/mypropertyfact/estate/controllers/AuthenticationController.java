@@ -8,7 +8,9 @@ import com.mypropertyfact.estate.configs.dtos.LoginResponse;
 import com.mypropertyfact.estate.configs.dtos.LoginUserDto;
 import com.mypropertyfact.estate.configs.dtos.RegisterUserDto;
 import com.mypropertyfact.estate.dtos.TokenRequest;
+import com.mypropertyfact.estate.entities.MasterRole;
 import com.mypropertyfact.estate.entities.User;
+import com.mypropertyfact.estate.repositories.MasterRoleRepository;
 import com.mypropertyfact.estate.repositories.UserRepository;
 import com.mypropertyfact.estate.services.AuthenticationService;
 import com.mypropertyfact.estate.services.JwtService;
@@ -18,9 +20,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+@Slf4j
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
@@ -29,14 +37,16 @@ public class AuthenticationController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
+    private final MasterRoleRepository masterRoleRepository;
     private final OTPService otpService;
     private final PasswordEncoder passwordEncoder;
 
     public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository,
-                                    OTPService otpService, PasswordEncoder passwordEncoder) {
+                                    MasterRoleRepository masterRoleRepository, OTPService otpService, PasswordEncoder passwordEncoder) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.userRepository = userRepository;
+        this.masterRoleRepository = masterRoleRepository;
         this.otpService = otpService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -51,14 +61,13 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
-
         String jwtToken = jwtService.generateToken(authenticatedUser);
         String refreshToken = jwtService.generateRefreshToken(authenticatedUser);
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(jwtToken);
         loginResponse.setRefreshToken(refreshToken);
         loginResponse.setExpiresIn(jwtService.getExpirationTime());
-
+        loginResponse.setUser(authenticatedUser);
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -87,7 +96,11 @@ public class AuthenticationController {
                 // Register new user
                 RegisterUserDto registerUserDto = new RegisterUserDto();
                 registerUserDto.setEmail(email);
-                registerUserDto.setFullName(name);
+                // Ensure fullName is not null - use email prefix or default if name is not available
+                String userFullName = (name != null && !name.trim().isEmpty()) 
+                        ? name.trim() 
+                        : (email != null ? email.split("@")[0] : "User");
+                registerUserDto.setFullName(userFullName);
                 registerUserDto.setPassword(UUID.randomUUID().toString()); // random password since using Google login
                 user = authenticationService.signupWithoutPassword(registerUserDto);
                 userStatus = "new";
@@ -116,11 +129,17 @@ public class AuthenticationController {
             // Verify token
             Claims claims = jwtService.validateToken(token); // custom util (explained below)
 
-            return ResponseEntity.ok().body(Map.of(
-                    "valid", true,
-                    "email", claims.getSubject(),
-                    "expiresAt", claims.getExpiration().toString()
-            ));
+            // Extract roles from token
+            Set<String> roles = jwtService.extractRoles(token);
+            List<String> rolesList = new ArrayList<>(roles);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", true);
+            response.put("email", claims.getSubject());
+            response.put("expiresAt", claims.getExpiration().toString());
+            response.put("roles", rolesList);
+            
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("valid", false));
         }
@@ -142,6 +161,7 @@ public class AuthenticationController {
                 loginResponse.setToken(jwtToken);
                 loginResponse.setRefreshToken(refToken);
                 loginResponse.setExpiresIn(jwtService.getExpirationTime());
+                loginResponse.setUser(user);
             });
             return ResponseEntity.ok(loginResponse);
         } catch (RuntimeException e) {
@@ -160,10 +180,11 @@ public class AuthenticationController {
             String phoneNumber = request.get("phoneNumber");
             
             if (phoneNumber == null || phoneNumber.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Phone number is required"));
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Phone number is required", "message", "Please enter your phone number"));
             }
 
-            // Generate and send OTP
+            // Generate and send OTP (validation happens inside OTPService)
             String otpCode = otpService.generateOTP(phoneNumber);
             
             return ResponseEntity.ok(Map.of(
@@ -173,9 +194,22 @@ public class AuthenticationController {
                 "expiresIn", 300 // 5 minutes
             ));
             
+        } catch (IllegalArgumentException e) {
+            // User-friendly validation errors
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage(), "message", e.getMessage()));
         } catch (Exception e) {
+            // Check for database/data truncation errors
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && errorMessage.contains("Data truncation")) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid phone number format", 
+                                "message", "Please enter a valid 10-digit phone number"));
+            }
+            // Generic error message
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to send OTP: " + e.getMessage()));
+                .body(Map.of("error", "Failed to send OTP", 
+                            "message", "Unable to send OTP. Please check your phone number and try again."));
         }
     }
 
@@ -194,15 +228,17 @@ public class AuthenticationController {
             if (phoneNumber == null || phoneNumber.isEmpty() || 
                 otpCode == null || otpCode.isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Phone number and OTP are required"));
+                    .body(Map.of("error", "Phone number and OTP are required",
+                                "message", "Please enter both phone number and OTP"));
             }
 
-            // Verify OTP
+            // Verify OTP (phone number will be normalized inside verifyOTP)
             boolean isValid = otpService.verifyOTP(phoneNumber, otpCode);
             
             if (!isValid) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid or expired OTP"));
+                    .body(Map.of("error", "Invalid or expired OTP",
+                                "message", "The OTP you entered is incorrect or has expired. Please request a new OTP."));
             }
 
             // Check if user exists
@@ -217,14 +253,35 @@ public class AuthenticationController {
             } else {
                 // New user - register
                 user = new User();
+                // Ensure id is null so it can be auto-generated
+                user.setId(null);
                 user.setPhone(phoneNumber);
-                user.setFullName(fullName != null ? fullName : "User");
+                // Ensure fullName is not null or empty
+                String userFullName = (fullName != null && !fullName.trim().isEmpty()) 
+                        ? fullName.trim() 
+                        : "User";
+                user.setFullName(userFullName);
                 // Generate a random email if not provided
                 user.setEmail(phoneNumber + "@mobile.user");
                 // Generate a secure random password
                 String randomPassword = UUID.randomUUID().toString();
                 user.setPassword(passwordEncoder.encode(randomPassword));
-                user.setRole("ROLE_USER");
+                
+                // Set default USER role
+                Set<MasterRole> roles = new HashSet<>();
+                masterRoleRepository.findByRoleNameIgnoreCase("USER")
+                        .ifPresentOrElse(
+                                roles::add,
+                                () -> {
+                                    // Create USER role if it doesn't exist
+                                    MasterRole userRole = new MasterRole();
+                                    userRole.setRoleName("USER");
+                                    userRole.setDescription("Default user role");
+                                    userRole.setIsActive(true);
+                                    roles.add(masterRoleRepository.save(userRole));
+                                }
+                        );
+                user.setRoles(roles);
                 user.setVerified(true); // Verified via OTP
                 
                 user = userRepository.save(user);
@@ -246,20 +303,64 @@ public class AuthenticationController {
             response.put("token", jwtToken);
             response.put("refreshToken", refreshToken);
             response.put("expiresIn", jwtService.getExpirationTime());
+            // Get role names from MasterRole entities
+            List<String> roleNames = user.getRoles() != null 
+                ? user.getRoles().stream()
+                    .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
+                    .map(role -> "ROLE_" + role.getRoleName())
+                    .toList()
+                : List.of("ROLE_USER");
+            
             response.put("user", Map.of(
                 "id", user.getId(),
                 "fullName", user.getFullName(),
                 "phone", user.getPhone(),
                 "email", user.getEmail(),
-                "role", user.getRole(),
+                "role", roleNames.isEmpty() ? "ROLE_USER" : roleNames.get(0),
+                "roles", roleNames,
                 "verified", user.getVerified()
             ));
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            // Get the root cause of the exception
+            Throwable rootCause = e;
+            while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+                rootCause = rootCause.getCause();
+            }
+            
+            String errorMessage = rootCause.getMessage();
+            String userFriendlyMessage;
+            
+            // Check for specific database errors and provide user-friendly messages
+            if (errorMessage != null) {
+                if (errorMessage.contains("Field 'id' doesn't have a default value") || 
+                    errorMessage.contains("doesn't have a default value")) {
+                    userFriendlyMessage = "Unable to create your account. Please contact support or try again later.";
+                } else if (errorMessage.contains("Data truncation")) {
+                    userFriendlyMessage = "Invalid data provided. Please check your information and try again.";
+                } else if (errorMessage.contains("Duplicate entry") || errorMessage.contains("already exists")) {
+                    userFriendlyMessage = "An account with this phone number already exists. Please sign in instead.";
+                } else if (errorMessage.contains("ConstraintViolationException") || 
+                          errorMessage.contains("constraint")) {
+                    userFriendlyMessage = "Invalid information provided. Please check your details and try again.";
+                } else {
+                    // Generic user-friendly message for other errors
+                    userFriendlyMessage = "Unable to complete your registration. Please try again or contact support if the problem persists.";
+                }
+            } else {
+                userFriendlyMessage = "Unable to complete your registration. Please try again or contact support if the problem persists.";
+            }
+            
+            // Log the actual error for debugging (but don't expose it to users)
+            // Note: This is a database configuration issue - the users table id column needs AUTO_INCREMENT
+            System.err.println("Error verifying OTP: " + errorMessage);
+            e.printStackTrace();
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to verify OTP: " + e.getMessage()));
+                .body(Map.of("error", "Registration failed", 
+                            "message", userFriendlyMessage));
         }
     }
 }

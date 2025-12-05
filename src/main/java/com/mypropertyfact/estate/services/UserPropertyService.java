@@ -4,7 +4,6 @@ import com.mypropertyfact.estate.dtos.UserPropertySubmissionDto;
 import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.repositories.*;
-import com.mypropertyfact.estate.common.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -29,17 +29,17 @@ public class User implements UserDetails {
     @Column(unique = true, length = 100)
     private String email; // Made nullable for mobile-only registration
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "role", length = 50)
-    private String role = "ROLE_USER"; // Default role - kept for backward compatibility
+    // @Column(name = "role", length = 50)
+    // private String role = "ROLE_USER"; // Default role - kept for backward compatibility
 
     @Column(name = "phone", length = 20)
     private String phone;
     
     // Many-to-Many relationship with MasterRole for multiple roles support
-    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -69,6 +69,9 @@ public class User implements UserDetails {
     @Column(name = "verified")
     private Boolean verified = false;
 
+    @Column(name = "enabled")
+    private Boolean enabled = true;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
@@ -91,10 +94,10 @@ public class User implements UserDetails {
         }
         
         // Fallback to legacy single role field for backward compatibility
-        if (authorities.isEmpty()) {
-            String userRole = (role != null && !role.isEmpty()) ? role : "ROLE_USER";
-            authorities.add(new SimpleGrantedAuthority(userRole));
-        }
+        // if (authorities.isEmpty()) {
+        //     String userRole = (role != null && !role.isEmpty()) ? role : "ROLE_USER";
+        //     authorities.add(new SimpleGrantedAuthority(userRole));
+        // }
         
         return authorities;
     }
@@ -106,21 +109,21 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return enabled != null && enabled;
     }
 }

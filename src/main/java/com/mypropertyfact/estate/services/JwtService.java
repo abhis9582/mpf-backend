@@ -1,6 +1,7 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.entities.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,8 +14,12 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -45,6 +50,25 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, User user, long expiration) {
+        // Add role and permissions to JWT claims
+        // Extract role names from MasterRole entities
+        Set<String> userRoles = user.getRoles() != null 
+            ? user.getRoles().stream()
+                .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
+                .map(role -> "ROLE_" + role.getRoleName())
+                .collect(Collectors.toSet())
+            : Set.of("ROLE_USER"); // Default role if no roles assigned
+        extraClaims.put("role", userRoles);
+        
+        // Extract permissions from user's authorities (roles)
+        // List<String> permissions = user.getAuthorities().stream()
+        //         .map(authority -> authority.getAuthority())
+        //         .toList();
+        // extraClaims.put("permissions", permissions);
+        extraClaims.put("email", user.getEmail());
+        extraClaims.put("userId", user.getId());
+        extraClaims.put("fullName", user.getFullName());
+        
         return buildToken(extraClaims, user, expiration);
     }
 
@@ -100,5 +124,47 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    /**
+     * Extract roles from JWT token
+     */
+    @SuppressWarnings("unchecked")
+    public Set<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        Object roleClaim = claims.get("role");
+        if (roleClaim instanceof Set) {
+            return (Set<String>) roleClaim;
+        } else if (roleClaim instanceof List) {
+            return new HashSet<>((List<String>) roleClaim);
+        } else if (roleClaim instanceof String) {
+            return Set.of((String) roleClaim);
+        }
+        return Set.of("ROLE_USER"); // Default role
+    }
+
+    /**
+     * Extract permissions from JWT token
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> extractPermissions(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("permissions", List.class);
+    }
+
+    /**
+     * Extract user ID from JWT token
+     */
+    public Integer extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", Integer.class);
+    }
+
+    /**
+     * Extract full name from JWT token
+     */
+    public String extractFullName(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("fullName", String.class);
     }
 }

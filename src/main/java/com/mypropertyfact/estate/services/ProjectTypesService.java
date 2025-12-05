@@ -95,13 +95,16 @@ public class ProjectTypesService {
             projectTypeDetailDto.setMetaTitle(projectType.getMetaTitle());
             projectTypeDetailDto.setMetaKeywords(projectType.getMetaKeyword());
             projectTypeDetailDto.setMetaDescription(projectType.getMetaDesc());
-        });
-        if(url.equals("new-launches")){
-            List<ProjectDetailDto> dtoList;
-            List<Project> projects = projectRepository.findProjectsByStatusNameOrderByProjectNameAsc();
-            dtoList = projects.stream()
-                    .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
-                    .map(project-> {
+            List<ProjectDetailDto> projectDetailDtoList = new ArrayList<>();
+            if(projectType.getProject() != null){
+                if(url.equals("new-launches")){
+                    List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
+                    projectDetailDtoList = projects.stream()
+                            .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
+                            .filter(project ->
+                                    project.getProjectStatus() != null &&
+                                            "New Launched".equals(project.getProjectStatus().getStatusName()))
+                            .map(project-> {
                         ProjectDetailDto projectDetailDto = new ProjectDetailDto();
                         commonMapper.mapProjectToProjectDto(project, projectDetailDto);
                         return projectDetailDto;

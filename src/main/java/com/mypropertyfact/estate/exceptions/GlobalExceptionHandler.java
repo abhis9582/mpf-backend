@@ -2,10 +2,14 @@ package com.mypropertyfact.estate.exceptions;
 
 import com.mypropertyfact.estate.models.ErrorResponse;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,8 +19,37 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    
+    // Handle expired JWT tokens gracefully - don't log as error
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<Map<String, Object>> handleExpiredJwtException(ExpiredJwtException ex) {
+        // Log at debug level only, not as an error
+        log.debug("JWT token expired: {}", ex.getMessage());
+        
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.UNAUTHORIZED.value());
+        error.put("error", "Unauthorized");
+        error.put("message", "JWT token has expired. Please refresh your token or login again.");
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    // Handle authentication failures (bad credentials) gracefully
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentialsException(BadCredentialsException ex) {
+        // Log at info level, not as an error (this is expected behavior for wrong credentials)
+        log.info("Authentication failed: Invalid credentials provided");
+        
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.UNAUTHORIZED.value());
+        error.put("error", "Unauthorized");
+        error.put("message", "Invalid email or password. Please check your credentials and try again.");
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex){
@@ -67,6 +100,34 @@ public class GlobalExceptionHandler {
         }
         
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // Handles data integrity violations (e.g., duplicate email, unique constraint violations)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String errorMessage = ex.getMessage();
+        String userFriendlyMessage = "An error occurred while processing your request.";
+        
+        // Check for duplicate email error
+        if (errorMessage != null) {
+            if (errorMessage.contains("Duplicate entry") && errorMessage.contains("email")) {
+                // Extract email from error message if possible
+                userFriendlyMessage = "An account with this email address already exists. Please use a different email or try logging in instead.";
+            } else if (errorMessage.contains("Duplicate entry") && errorMessage.contains("phone")) {
+                userFriendlyMessage = "An account with this phone number already exists. Please use a different phone number or try logging in instead.";
+            } else if (errorMessage.contains("Duplicate entry")) {
+                userFriendlyMessage = "This information is already in use. Please use different details.";
+            }
+        }
+        
+        log.info("Data integrity violation: {}", errorMessage);
+        
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.CONFLICT.value());
+        error.put("error", "Conflict");
+        error.put("message", userFriendlyMessage);
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     //Handles IllegalArgumentException in whole project
