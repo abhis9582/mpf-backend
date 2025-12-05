@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService{
@@ -19,5 +20,61 @@ public class UserService{
         List<User> users = new ArrayList<>();
         userRepository.findAll().forEach(users::add);
         return users;
+    }
+
+    public Optional<User> findById(Integer id) {
+        return userRepository.findById(id);
+    }
+
+    public User updateUser(Integer id, User updatedUser) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        
+        if (updatedUser.getFullName() != null) {
+            user.setFullName(updatedUser.getFullName());
+        }
+        if (updatedUser.getPhone() != null) {
+            user.setPhone(updatedUser.getPhone());
+        }
+        if (updatedUser.getLocation() != null) {
+            user.setLocation(updatedUser.getLocation());
+        }
+        if (updatedUser.getBio() != null) {
+            user.setBio(updatedUser.getBio());
+        }
+        if (updatedUser.getAvatar() != null) {
+            user.setAvatar(updatedUser.getAvatar());
+        }
+        if (updatedUser.getExperience() != null) {
+            user.setExperience(updatedUser.getExperience());
+        }
+        if (updatedUser.getRating() != null) {
+            user.setRating(updatedUser.getRating());
+        }
+        if (updatedUser.getTotalDeals() != null) {
+            user.setTotalDeals(updatedUser.getTotalDeals());
+        }
+        if (updatedUser.getVerified() != null) {
+            user.setVerified(updatedUser.getVerified());
+        }
+        if (updatedUser.getEnabled() != null) {
+            user.setEnabled(updatedUser.getEnabled());
+        }
+        
+        return userRepository.save(user);
+    }
+
+    public User activateUser(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setEnabled(true);
+        return userRepository.save(user);
+    }
+
+    public User deactivateUser(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setEnabled(false);
+        return userRepository.save(user);
     }
 }

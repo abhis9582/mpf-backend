@@ -58,6 +58,10 @@ public class LocationBenefitService {
 
     public Response addUpdateBenefit(MultipartFile file, LocationBenefitDto locationBenefitDto) {
         Response response = new Response();
+        if (locationBenefitDto == null) {
+            response.setMessage("All fields are required !");
+            return response;
+        }
         Optional<Project> project = this.projectRepository.findById(locationBenefitDto.getProjectId());
         try {
             String iconImageName = "";

@@ -109,13 +109,13 @@ public class UserRoleService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            // Fallback to legacy role field
-            if (user.getRole() != null && !user.getRole().isEmpty()) {
-                return List.of(user.getRole());
-            }
-            return List.of();
-        }
+        // if (user.getRoles() == null || user.getRoles().isEmpty()) {
+        //     // Fallback to legacy role field
+        //     if (user.getRole() != null && !user.getRole().isEmpty()) {
+        //         return List.of(user.getRole());
+        //     }
+        //     return List.of();
+        // }
         
         return user.getRoles().stream()
                 .filter(role -> role.getIsActive() != null && role.getIsActive())
@@ -141,9 +141,9 @@ public class UserRoleService {
         }
         
         // Fallback to legacy role field
-        if (user.getRole() != null) {
-            return roleName.equalsIgnoreCase(user.getRole());
-        }
+        // if (user.getRole() != null) {
+        //     return roleName.equalsIgnoreCase(user.getRole());
+        // }
         
         return false;
     }

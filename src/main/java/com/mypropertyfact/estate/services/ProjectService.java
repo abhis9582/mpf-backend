@@ -101,7 +101,7 @@ public class ProjectService {
                                 String priceStr = project.getProjectPrice();
                                 return isNumeric(priceStr);
                             })
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
                             .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                             .toList();
                 } else {
@@ -136,7 +136,7 @@ public class ProjectService {
                                 return isNumeric(priceStr);
                             })
                             .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
                             .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                             .toList();
                 } else {
@@ -161,7 +161,7 @@ public class ProjectService {
                                 return isNumeric(priceStr);
                             })
                             .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
                             .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                             .toList();
                 } else {

@@ -34,4 +34,9 @@ public class EnquiryController {
     public ResponseEntity<SuccessResponse> updateStatus(@PathVariable("enquiryId") int enquiryId, @RequestBody Map<String, String> request) {
         return ResponseEntity.ok(enquiryService.updateStatus(enquiryId, request.get("status")));
     }
+
+    @GetMapping("/by-property/{propertyId}")
+    public ResponseEntity<List<Enquery>> getByPropertyId(@PathVariable Long propertyId){
+        return new ResponseEntity<>(enquiryService.getByPropertyId(propertyId), HttpStatus.OK);
+    }
 }

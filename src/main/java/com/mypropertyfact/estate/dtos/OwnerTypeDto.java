@@ -1,8 +1,8 @@
 package com.mypropertyfact.estate.dtos;
 
-import java.time.LocalDateTime;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class OwnerTypeDto {

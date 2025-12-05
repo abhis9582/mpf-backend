@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/get/images")
+@RequestMapping({"/get/images", "/fetch-image"})
 public class FetchImageController {
     @Value("${uploads_path}")
     private String uploadDir;
@@ -55,6 +55,24 @@ public class FetchImageController {
             if (resource.exists()) {
                 return ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_JPEG) // or determine the correct type dynamically
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/feature/{filename}")
+    public ResponseEntity<Resource> getFeatureImage(@PathVariable String filename) {
+        try {
+            Path imagePath = Paths.get(filePath + "feature/", filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
                         .body(resource);
             } else {
                 return ResponseEntity.notFound().build();
@@ -157,10 +175,47 @@ public class FetchImageController {
         }
     }
 
+    @GetMapping("/property-listings/{listingId}/{filename}")
+    public ResponseEntity<Resource> getPropertyListingImage(@PathVariable String listingId, @PathVariable String filename) {
+        try {
+            // Property listing images are stored in: upload_dir/property-listings/{listingId}/{filename}
+            Path imagePath = Paths.get(filePath + "property-listings" + "/" + listingId, filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/location-benefit/{filename}")
     public ResponseEntity<Resource> getLocationBenefitImage(@PathVariable String filename) {
         try {
             Path imagePath = Paths.get(iconPath, filename);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/nearby-benefit/{filename}")
+    public ResponseEntity<Resource> getNearbyBenefitImage(@PathVariable String filename) {
+        try {
+            Path imagePath = Paths.get(filePath + "nearby-benefit/", filename);
             Resource resource = new UrlResource(imagePath.toUri());
 
             if (resource.exists()) {

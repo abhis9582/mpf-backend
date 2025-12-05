@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.services.UserService;
+import com.mypropertyfact.estate.services.UserRoleService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,10 +20,12 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
+    private final UserRoleService userRoleService;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService, UserRepository userRepository, UserRoleService userRoleService) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.userRoleService = userRoleService;
     }
 
     @GetMapping("/me")
@@ -94,5 +97,60 @@ public class UserController {
     public ResponseEntity<List<User>> allUsers() {
         List <User> users = userService.allUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        return userService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User updatedUser) {
+        try {
+            User user = userService.updateUser(id, updatedUser);
+            log.info("User updated successfully: {}", user.getEmail());
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            log.error("Error updating user: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<User> activateUser(@PathVariable Integer id) {
+        try {
+            User user = userService.activateUser(id);
+            log.info("User activated successfully: {}", user.getEmail());
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            log.error("Error activating user: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<User> deactivateUser(@PathVariable Integer id) {
+        try {
+            User user = userService.deactivateUser(id);
+            log.info("User deactivated successfully: {}", user.getEmail());
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            log.error("Error deactivating user: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/roles")
+    public ResponseEntity<User> updateUserRoles(@PathVariable Integer id, @RequestBody List<Integer> roleIds) {
+        try {
+            User user = userRoleService.assignRolesToUser(id, roleIds);
+            log.info("User roles updated successfully: {}", user.getEmail());
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            log.error("Error updating user roles: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
     }
 }
