@@ -101,7 +101,7 @@ public class ProjectService {
                                 String priceStr = project.getProjectPrice();
                                 return isNumeric(priceStr);
                             })
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launch"))
+                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
                             .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                             .toList();
                 } else {
@@ -179,11 +179,17 @@ public class ProjectService {
             } else {
                 filteredList = projects.stream()
                         .filter(project -> {
-                            // Check for null and non-numeric price
                             String priceStr = project.getProjectPrice();
-                            return isNumeric(priceStr);
+
+                            // If not numeric → include directly
+                            if (!isNumeric(priceStr)) {
+                                return true;
+                            }
+
+                            // If numeric → apply range filter
+                            float price = Float.parseFloat(priceStr);
+                            return price > s && price < e;
                         })
-                        .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
                         .toList();
             }
         } catch (Exception ex) {
