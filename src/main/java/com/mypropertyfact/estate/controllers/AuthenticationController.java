@@ -148,24 +148,46 @@ public class AuthenticationController {
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
+        
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Refresh token is required"));
+        }
+        
         try {
             Claims claims = jwtService.validateToken(refreshToken);
             String username = claims.getSubject();
 
             Optional<User> userDetails = userRepository.findByEmail(username);
+            
+            if (!userDetails.isPresent()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "User not found"));
+            }
+            
+            User user = userDetails.get();
+            
+            // Generate new access + refresh tokens
+            String jwtToken = jwtService.generateToken(user);
+            String refToken = jwtService.generateRefreshToken(user);
+            
             LoginResponse loginResponse = new LoginResponse();
-            userDetails.ifPresent(user -> {
-                // Generate new access + refresh tokens
-                String jwtToken = jwtService.generateToken(user);
-                String refToken = jwtService.generateRefreshToken(user);
-                loginResponse.setToken(jwtToken);
-                loginResponse.setRefreshToken(refToken);
-                loginResponse.setExpiresIn(jwtService.getExpirationTime());
-                loginResponse.setUser(user);
-            });
+            loginResponse.setToken(jwtToken);
+            loginResponse.setRefreshToken(refToken);
+            loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            loginResponse.setUser(user);
+            
             return ResponseEntity.ok(loginResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Refresh token has expired"));
+        } catch (io.jsonwebtoken.MalformedJwtException | io.jsonwebtoken.security.SignatureException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid refresh token"));
+        } catch (Exception e) {
+            log.error("Error refreshing token: ", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Failed to refresh token"));
         }
     }
 
