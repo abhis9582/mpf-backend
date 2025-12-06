@@ -86,9 +86,9 @@ public class ProjectTypesService {
 
     @Transactional
     public ProjectTypeDto getBySlug(String url) {
-        Optional<ProjectTypes> projectTypeData = this.projectTypeRepository.findBySlugUrl(url);
         ProjectTypeDto projectTypeDetailDto = new ProjectTypeDto();
-        projectTypeData.ifPresent(projectType-> {
+        Optional<ProjectTypes> projectTypeData = this.projectTypeRepository.findBySlugUrl(url);
+        projectTypeData.ifPresent(projectType -> {
             projectTypeDetailDto.setId(projectType.getId());
             projectTypeDetailDto.setProjectTypeName(projectType.getProjectTypeName());
             projectTypeDetailDto.setProjectTypeDescription(projectType.getProjectTypeDesc());
@@ -109,20 +109,22 @@ public class ProjectTypesService {
                         commonMapper.mapProjectToProjectDto(project, projectDetailDto);
                         return projectDetailDto;
                     }).toList();
-                }else{
-                    List<Project> projects = projectType.getProject();
-                    projectDetailDtoList = projects.stream()
+            projectTypeDetailDto.setProjectList(dtoList);
+        } else {
+            List<ProjectDetailDto> list;
+                if (projectTypeData.isPresent()) {
+                    ProjectTypes projectTypes = projectTypeData.get();
+                    List<Project> projects = projectTypes.getProject();
+                    list = projects.stream()
                             .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
-                            .map(project-> {
-                        ProjectDetailDto projectDetailDto = new ProjectDetailDto();
-                        commonMapper.mapProjectToProjectDto(project, projectDetailDto);
-                        return projectDetailDto;
-                    }).toList();
+                            .map(project -> {
+                                ProjectDetailDto projectDetailDto = new ProjectDetailDto();
+                                commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                                return projectDetailDto;
+                            }).toList();
+                    projectTypeDetailDto.setProjectList(list);
                 }
-                projectTypeDetailDto.setProjectList(projectDetailDtoList);
-            }
-        });
-
+        }
         return projectTypeDetailDto;
     }
 
