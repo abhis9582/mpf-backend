@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.controllers;
 
 import com.mypropertyfact.estate.dtos.AddUpdateProjectDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
+import com.mypropertyfact.estate.dtos.ProjectInfoDto;
 import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
@@ -25,9 +26,9 @@ public class ProjectController {
     private ProjectService projectService;
 
     @Transactional
-    @GetMapping("/get-all-projects-list")
+    @GetMapping("/get-all-projects")
     public ResponseEntity<List<ProjectDetailDto>> getAllProjectsList() {
-        log.info("Get-all-projects-list method is called.");
+        log.info("all-projects method is called.");
         return ResponseEntity.ok(projectService.getAllProjectsList());
     }
 
@@ -48,6 +49,11 @@ public class ProjectController {
     @GetMapping("/get/{url}")
     public ResponseEntity<ProjectDetailDto> getBySlug(@PathVariable("url") String url) {
         return new ResponseEntity<>(this.projectService.getBySlugUrl(url), HttpStatus.OK);
+    }
+
+    @GetMapping("/get-by-id/{id}")
+    public ResponseEntity<ProjectDetailDto> getById(@PathVariable("id") int id) {
+        return new ResponseEntity<>(this.projectService.getById(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -85,5 +91,13 @@ public class ProjectController {
             @RequestParam("size") Integer size
     ) {
         return ResponseEntity.ok(projectService.getProjectInParts(page, size));
+    }
+
+    @GetMapping("/all-projects")
+    public ResponseEntity<List<ProjectInfoDto>> getAllProjects(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        return ResponseEntity.ok(projectService.getAllProjects(page, size));
     }
 }

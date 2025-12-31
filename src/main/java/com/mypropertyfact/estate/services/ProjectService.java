@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
 import com.mypropertyfact.estate.dtos.AddUpdateProjectDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
+import com.mypropertyfact.estate.dtos.ProjectInfoDto;
 import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
@@ -12,6 +13,8 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,7 +56,7 @@ public class ProjectService {
     private CommonMapper commonMapper;
 
     @Value("${upload_dir}")
-    private String uploadDir; //D:/my-property-fact/public/
+    private String uploadDir;
 
     @Transactional
     public List<ProjectDetailDto> fetchAllProjects() {
@@ -214,7 +217,7 @@ public class ProjectService {
 
     public List<ProjectDetailDto> getAllProjectsList() {
         List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        System.out.println("Total projects are " + projects.size());
+        log.info("Total projects are " + projects.size());
         return projects.stream().map(project -> {
             ProjectDetailDto detailDto = new ProjectDetailDto();
             commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
@@ -222,6 +225,7 @@ public class ProjectService {
         }).toList();
     }
 
+    @CacheEvict(value = "projects", allEntries = true)
     @Transactional
     public Response addUpdateAmenity(ProjectAmenityDto dto) {
         Optional<Project> dbProject = projectRepository.findById(dto.getProjectId());
@@ -254,37 +258,12 @@ public class ProjectService {
         // If not found by the main query, try finding by slug directly to check if project exists
         if (projectData.isEmpty()) {
             log.warn("Project not found with approved/published status, checking if project exists with slug: {}", url);
-            // Try without status filter first to see if project exists
-            Optional<Project> projectBySlugNoFilter = projectRepository.findBySlugURLWithAllRelationsNoFilter(url);
-            if (projectBySlugNoFilter.isPresent()) {
-                Project project = projectBySlugNoFilter.get();
-                log.warn("Project EXISTS but status check failed - ID: {}, Name: {}, status: {}, isUserSubmitted: {}, approvalStatus: {}", 
-                    project.getId(), project.getProjectName(), project.isStatus(), project.getIsUserSubmitted(), project.getApprovalStatus());
-                
-                // If it's a user-submitted project that's not approved, we can still return it for now
-                // (Remove this if you want strict approval checking)
-                if (project.getIsUserSubmitted() != null && project.getIsUserSubmitted()) {
-                    log.info("Allowing user-submitted project even if not approved - approvalStatus: {}", project.getApprovalStatus());
-                    projectData = projectBySlugNoFilter;
-                }
-            } else {
-                // Try with simple findBySlugURL to verify slug exists at all
-                Optional<Project> projectBySlug = projectRepository.findBySlugURL(url);
-                if (projectBySlug.isPresent()) {
-                    Project project = projectBySlug.get();
-                    log.error("Project found with simple query but not with EntityGraph - ID: {}, Name: {}", 
-                        project.getId(), project.getProjectName());
-                } else {
-                    log.error("No project found with slug: {} - Slug does not exist in database", url);
-                }
-            }
+            
         }
         
         ProjectDetailDto detailDto = new ProjectDetailDto();
         if (projectData.isPresent()) {
             Project project = projectData.get();
-            log.info("Project found and mapping to DTO - ID: {}, Name: {}, Status: {}, ApprovalStatus: {}", 
-                project.getId(), project.getProjectName(), project.isStatus(), project.getApprovalStatus());
             commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
         } else {
             log.error("Returning empty DTO - no project found matching criteria");
@@ -292,6 +271,22 @@ public class ProjectService {
         return detailDto;
     }
 
+    @Transactional
+    public ProjectDetailDto getById(int id) {
+        log.info("Fetching project by id: {}", id);
+        Optional<Project> projectData = projectRepository.findByIdWithAllRelations(id);
+        
+        ProjectDetailDto detailDto = new ProjectDetailDto();
+        if (projectData.isPresent()) {
+            Project project = projectData.get();
+            commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
+        } else {
+            log.error("Project not found with id: {}", id);
+        }
+        return detailDto;
+    }
+
+    @CacheEvict(value = "projects", allEntries = true)
     @Transactional
     public Response deleteProject(int id) {
         Response response = new Response();
@@ -345,6 +340,7 @@ public class ProjectService {
         }
     }
 
+    @CacheEvict(value = "projects", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Response saveProject(MultipartFile projectLogo,
                                 MultipartFile locationMap,
@@ -358,12 +354,12 @@ public class ProjectService {
             if (addUpdateProjectDto.getId() > 0) {
                 dbProject = projectRepository.findById(addUpdateProjectDto.getId());
             }
-            // Generate slug URL if empty
+            // Generate slug URL from project name if empty
             if ((addUpdateProjectDto.getSlugURL() == null || addUpdateProjectDto.getSlugURL().isBlank())
                     && addUpdateProjectDto.getProjectName() != null
                     && !addUpdateProjectDto.getProjectName().isBlank()) {
 
-                // If slug is missing/blank → generate from project name
+                // Generate slug from project name
                 addUpdateProjectDto.setSlugURL(fileUtils.generateSlug(addUpdateProjectDto.getProjectName()));
             } else if (addUpdateProjectDto.getSlugURL() != null) {
 
@@ -371,25 +367,26 @@ public class ProjectService {
                 addUpdateProjectDto.setSlugURL(fileUtils.generateSlug(addUpdateProjectDto.getSlugURL()));
             }
             Optional<Project> bySlugURL = Optional.empty();
-            if (addUpdateProjectDto.getSlugURL() != null) {
+            if (addUpdateProjectDto.getSlugURL() != null && !addUpdateProjectDto.getSlugURL().isBlank()) {
                 bySlugURL = projectRepository.findBySlugURL(addUpdateProjectDto.getSlugURL());
             }
             // Generating path for storing image
             String projectDir = null;
-            if (!addUpdateProjectDto.getSlugURL().isBlank()) {
+            if (addUpdateProjectDto.getSlugURL() != null && !addUpdateProjectDto.getSlugURL().isBlank()) {
                 projectDir = uploadDir.concat("properties/") + addUpdateProjectDto.getSlugURL();
                 fileDestination = projectDir;
             }
             // Process images only if new files are provided
             if (dbProject.isPresent()) {
                 Project project = dbProject.get();
-                if (bySlugURL.isPresent() && bySlugURL.get().getId() != (addUpdateProjectDto.getId())) {
-                    throw new IllegalArgumentException("SlugURL already exists!");
+                // Check if slug URL exists and belongs to a different project
+                if (bySlugURL.isPresent() && bySlugURL.get().getId() != addUpdateProjectDto.getId()) {
+                    throw new IllegalArgumentException("This project URL is already in use by another project. Please choose a different URL.");
                 }
                 if (projectLogo != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectLogo(), projectDir);
                     if (!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)) {
-                        throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
+                        throw new IllegalArgumentException("Project logo image dimensions are incorrect. Please upload an image with dimensions 792x203 pixels or 390x100 pixels (aspect ratio 3:9).");
                     }
                     String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
                     project.setProjectLogo(savedProjectLogoImageName); //792 × 203 px Intrinsic aspect ratio:	792∶203
@@ -399,7 +396,7 @@ public class ProjectService {
                 if (locationMap != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getLocationMap(), projectDir); //300∶193  900 × 579
                     if (!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
+                        throw new IllegalArgumentException("Location map image dimensions are incorrect. Please upload an image with dimensions 900x579 pixels or 600x386 pixels.");
                     }
                     String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
                     project.setLocationMap(projectLocationMapImage);
@@ -409,7 +406,7 @@ public class ProjectService {
                 if (projectThumbnail != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectThumbnail(), projectDir);
                     if (!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
+                        throw new IllegalArgumentException("Project thumbnail image dimensions are incorrect. Please upload a square image with dimensions 600x600 pixels or 400x400 pixels (aspect ratio 1:1).");
                     }
                     String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
                     project.setProjectThumbnail(projectThumbnailImage); //600 x 600 1:1
@@ -423,12 +420,20 @@ public class ProjectService {
                 response.setIsSuccess(1);
             } else {
                 Project newProject = new Project();
+                // For new projects, check if slug already exists
                 if (bySlugURL.isPresent()) {
-                    throw new IllegalArgumentException("SlugURL already exists !");
+                    String generatedSlug = addUpdateProjectDto.getSlugURL();
+                    String projectName = addUpdateProjectDto.getProjectName();
+                    throw new IllegalArgumentException(
+                        String.format("A project with the URL '%s' already exists. " +
+                                    "Please change the project name (currently: '%s') to generate a different URL, " +
+                                    "or manually provide a unique project URL.", 
+                                    generatedSlug, projectName != null ? projectName : "N/A")
+                    );
                 }
                 if (projectLogo != null) {
                     if (!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)) {
-                        throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
+                        throw new IllegalArgumentException("Project logo image dimensions are incorrect. Please upload an image with dimensions 792x203 pixels or 390x100 pixels (aspect ratio 3:9).");
                     }
                     String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
                     savedFiles.add(savedProjectLogoImageName);
@@ -436,7 +441,7 @@ public class ProjectService {
                 }
                 if (locationMap != null) {
                     if (!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
+                        throw new IllegalArgumentException("Location map image dimensions are incorrect. Please upload an image with dimensions 900x579 pixels or 600x386 pixels.");
                     }
                     String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
                     newProject.setLocationMap(projectLocationMapImage);
@@ -444,7 +449,7 @@ public class ProjectService {
                 }
                 if (projectThumbnail != null) {
                     if (!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
+                        throw new IllegalArgumentException("Project thumbnail image dimensions are incorrect. Please upload a square image with dimensions 600x600 pixels or 400x400 pixels (aspect ratio 1:1).");
                     }
                     String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
                     newProject.setProjectThumbnail(projectThumbnailImage); //600 x 600 1:1
@@ -456,18 +461,35 @@ public class ProjectService {
                 response.setIsSuccess(1);
                 response.setProjectId(savedProject.getId());
             }
+        } catch (IllegalArgumentException e) {
+            // File cleanup if error
+            for (String fileName : savedFiles) {
+                try {
+                    fileUtils.deleteFileFromDestination(fileName, fileDestination);
+                } catch (Exception ex) {
+                    log.warn("Failed to delete file during rollback: {}", fileName);
+                }
+            }
+            // Re-throw IllegalArgumentException with user-friendly message
+            throw e;
         } catch (Exception e) {
             // File cleanup if error
             for (String fileName : savedFiles) {
                 try {
-                    fileUtils.deleteFileFromDestination(fileName, fileDestination); // Pass directory if required
+                    fileUtils.deleteFileFromDestination(fileName, fileDestination);
                 } catch (Exception ex) {
-                    System.err.println("Failed to delete file during rollback: " + fileName);
+                    log.warn("Failed to delete file during rollback: {}", fileName);
                 }
             }
-            response.setMessage(e.getMessage());
-            // Re-throw to ensure DB rollback
-            throw new RuntimeException(e);
+            log.error("Error saving project: {}", e.getMessage(), e);
+            // Provide user-friendly error message
+            String userMessage = "An error occurred while saving the project. Please check your input and try again.";
+            if (e.getMessage() != null && e.getMessage().contains("File")) {
+                userMessage = "There was an error processing the uploaded files. Please ensure the files are valid images and try again.";
+            } else if (e.getMessage() != null && e.getMessage().contains("database") || e.getMessage().contains("SQL")) {
+                userMessage = "A database error occurred. Please try again later or contact support if the problem persists.";
+            }
+            throw new RuntimeException(userMessage, e);
         }
         return response;
     }
@@ -552,4 +574,46 @@ public class ProjectService {
             return details;
         }).toList();
     }
+
+    /**
+     * Optimized method to get all projects with pagination support.
+     * Uses EntityGraph to eagerly fetch only required relations (builder, projectTypes, projectStatus, city)
+     * to avoid N+1 queries and reduce memory footprint.
+     * Results are cached to improve performance for frequently accessed data.
+     * 
+     * @param page Optional page number (0-indexed). If null, returns all projects.
+     * @param size Optional page size. If null, returns all projects.
+     * @return List of ProjectInfoDto. If pagination params are provided, returns paginated results.
+     */
+    @Cacheable(value = "projects", key = "#page != null && #size != null ? T(String).valueOf(#page).concat('-').concat(T(String).valueOf(#size)) : 'all'")
+    public List<ProjectInfoDto> getAllProjects(Integer page, Integer size) {
+        log.debug("Fetching projects from database - page: {}, size: {}", page, size);
+        List<Project> projects;
+        
+        // Use pagination if both page and size are provided
+        if (page != null && size != null && size > 0) {
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "projectName"));
+            projects = projectRepository.findAllForProjectInfo(pageable).getContent();
+        } else {
+            // Use optimized query without pagination
+            projects = projectRepository.findAllForProjectInfo(Sort.by(Sort.Direction.ASC, "projectName"));
+        }
+        
+        return projects.stream().map(project -> {
+            ProjectInfoDto infoDto = new ProjectInfoDto();
+            commonMapper.mapProjectToProjectInfoDto(project, infoDto);
+            return infoDto;
+        }).toList();
+    }
+
+    /**
+     * Overloaded method for backward compatibility - returns all projects without pagination.
+     * Consider using getAllProjects(page, size) for better performance with large datasets.
+     * Results are cached.
+     */
+    @Cacheable(value = "projects", key = "'all'")
+    public List<ProjectInfoDto> getAllProjects() {
+        return getAllProjects(null, null);
+    }
 }
+

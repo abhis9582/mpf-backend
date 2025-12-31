@@ -38,6 +38,12 @@ public class ProjectWalkthroughService {
                 return response;
             }
             Optional<Project> project = projectRepository.findById(projectWalkthroughDto.getProjectId());
+            Optional<ProjectWalkthrough> existsProjectWalkthrough = projectWalkthroughRepository.findByProjectId(projectWalkthroughDto.getProjectId());
+            if (existsProjectWalkthrough.isPresent()) {
+                response.setMessage("Project walkthrough already exists !");
+                response.setIsSuccess(0);
+                return response;
+            }
             if (projectWalkthroughDto.getId() > 0) {
                 Optional<ProjectWalkthrough> savedWalkthrough = projectWalkthroughRepository.findById(projectWalkthroughDto.getId());
                 savedWalkthrough.ifPresent(walkthrough -> {

@@ -13,6 +13,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -54,6 +55,31 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex){
         ErrorResponse error = new ErrorResponse("NOT_FOUND", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    // Handle missing static resources (e.g., favicon.ico) gracefully - don't log as error
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoResourceFoundException ex) {
+        String resourcePath = ex.getResourcePath();
+        
+        // Only log at debug level for common browser requests like favicon.ico
+        if (resourcePath != null && (resourcePath.equals("/favicon.ico") || 
+                                     resourcePath.startsWith("/favicon") ||
+                                     resourcePath.endsWith(".ico"))) {
+            log.debug("Static resource not found (browser request): {}", resourcePath);
+            // Return empty 404 response for favicon requests
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        
+        // Log other missing resources at info level (not error)
+        log.info("Static resource not found: {}", resourcePath);
+        
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Resource Not Found");
+        error.put("message", "The requested resource was not found.");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
     // Handles validation errors (e.g. @NotBlank, @Size)
@@ -133,24 +159,53 @@ public class GlobalExceptionHandler {
     //Handles IllegalArgumentException in whole project
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.warn("Validation error: {}", ex.getMessage());
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("status", HttpStatus.BAD_REQUEST.value());
-        error.put("error", "Bad Request");
-        error.put("message", ex.getMessage());
+        error.put("error", "Validation Error");
+        error.put("message", ex.getMessage() != null ? ex.getMessage() : "Invalid input provided. Please check your data and try again.");
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    // Handles RuntimeException (wrapped exceptions from service layer)
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+        String userMessage = ex.getMessage();
+        
+        // Extract user-friendly message if wrapped exception exists
+        if (ex.getCause() != null && ex.getCause() instanceof IllegalArgumentException) {
+            userMessage = ex.getCause().getMessage();
+        } else if (userMessage == null || userMessage.isEmpty()) {
+            userMessage = "An unexpected error occurred. Please try again later.";
+        }
+        
+        // Check if it's a known error or generic error
+        if (ex.getMessage() != null && ex.getMessage().contains("database") || 
+            (ex.getCause() != null && ex.getCause().getMessage() != null && 
+             ex.getCause().getMessage().contains("database"))) {
+            userMessage = "A database error occurred. Please try again later or contact support if the problem persists.";
+        }
+        
+        log.error("Runtime exception occurred: {}", ex.getMessage(), ex);
+        
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        error.put("error", "Error");
+        error.put("message", userMessage);
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // Optional: Handles other unexpected exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        log.error("Unexpected exception: {}", ex.getMessage(), ex);
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         error.put("error", "Internal Server Error");
-        error.put("message", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
-        // Log the full exception for debugging
-        ex.printStackTrace();
+        error.put("message", "An unexpected error occurred. Please try again later or contact support if the problem persists.");
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -46,6 +46,12 @@ public class ProjectAboutService {
                 return response;
             }
             Optional<Project> projectById = projectRepository.findById(projectAboutDto.getProjectId());
+            Optional<ProjectsAbout> projectAboutByProjectId = projectAboutRepository.findByProjectId(projectAboutDto.getProjectId());
+            if(projectAboutByProjectId.isPresent()){
+                response.setMessage("This project already has 'about' details. Please update the existing entry.");
+                response.setIsSuccess(0);
+                return response;
+            }
             if(projectAboutDto.getId() > 0){
                 Optional<ProjectsAbout> saveData = projectAboutRepository.findById(projectAboutDto.getId());
                 saveData.ifPresent(about-> {

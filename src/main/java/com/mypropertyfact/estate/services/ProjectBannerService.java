@@ -124,11 +124,56 @@ public class ProjectBannerService {
                 for (Integer id : projectBannerDto.getDeletedMobileImageIds()) {
                     projectMobileBannerRepository.findById(id).ifPresent(banner -> {
                         if (banner.getMobileImage() != null && !banner.getMobileImage().isBlank() && destination != null) {
+                            // If deleted banner was the thumbnail, update thumbnail
+                            if (project.isPresent() && banner.getMobileImage().equals(project.get().getProjectThumbnail())) {
+                                // Find first remaining mobile banner to use as new thumbnail
+                                List<ProjectMobileBanner> remainingBanners = projectMobileBannerRepository.findByProjectId(project.get().getId());
+                                remainingBanners.removeIf(b -> projectBannerDto.getDeletedMobileImageIds().contains(b.getId()));
+                                if (!remainingBanners.isEmpty()) {
+                                    ProjectMobileBanner newThumbnailBanner = remainingBanners.get(0);
+                                    project.get().setProjectThumbnail(newThumbnailBanner.getMobileImage());
+                                    project.get().setProjectThumbnailAltTag(newThumbnailBanner.getMobileAltTag());
+                                    projectRepository.save(project.get());
+                                } else {
+                                    // No remaining banners, clear thumbnail
+                                    project.get().setProjectThumbnail(null);
+                                    project.get().setProjectThumbnailAltTag(null);
+                                    projectRepository.save(project.get());
+                                }
+                            }
                             fileUtils.deleteFileFromDestination(banner.getMobileImage(), destination);
                         }
                     });
                 }
                 projectMobileBannerRepository.deleteAllById(projectBannerDto.getDeletedMobileImageIds());
+            }
+            
+            // Always update thumbnail to first mobile banner (after all operations)
+            if (project.isPresent()) {
+                List<ProjectMobileBanner> allMobileBanners = projectMobileBannerRepository.findByProjectId(project.get().getId());
+                if (!allMobileBanners.isEmpty()) {
+                    ProjectMobileBanner firstBanner = allMobileBanners.get(0);
+                    if (firstBanner.getMobileImage() != null) {
+                        // Delete old thumbnail if it exists and is different from first banner
+                        if (project.get().getProjectThumbnail() != null && 
+                            !project.get().getProjectThumbnail().isBlank() && 
+                            !project.get().getProjectThumbnail().equals(firstBanner.getMobileImage()) &&
+                            destination != null) {
+                            fileUtils.deleteFileFromDestination(project.get().getProjectThumbnail(), destination);
+                        }
+                        project.get().setProjectThumbnail(firstBanner.getMobileImage());
+                        project.get().setProjectThumbnailAltTag(firstBanner.getMobileAltTag());
+                        projectRepository.save(project.get());
+                    }
+                } else {
+                    // No mobile banners left, clear thumbnail
+                    if (project.get().getProjectThumbnail() != null && !project.get().getProjectThumbnail().isBlank() && destination != null) {
+                        fileUtils.deleteFileFromDestination(project.get().getProjectThumbnail(), destination);
+                    }
+                    project.get().setProjectThumbnail(null);
+                    project.get().setProjectThumbnailAltTag(null);
+                    projectRepository.save(project.get());
+                }
             }
             // Delete old desktop images
             if (projectBannerDto.getDeletedDesktopImageIds() != null) {

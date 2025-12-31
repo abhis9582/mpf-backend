@@ -238,7 +238,7 @@ public class CommonMapper {
         detailDto.setProjectFaqList(projectFaqList);
         List<ProjectMobileBannerDto> projectMobileBannerDtoList = new ArrayList<>();
         if (project.getProjectMobileBanners() != null) {
-            List<ProjectMobileBanner> projectMobileBanners = project.getProjectMobileBanners();
+            Set<ProjectMobileBanner> projectMobileBanners = project.getProjectMobileBanners();
             projectMobileBannerDtoList = projectMobileBanners.stream().map(mobileBanner -> {
                 ProjectMobileBannerDto projectMobileBannerDto = new ProjectMobileBannerDto();
                 projectMobileBannerDto.setProjectId(project.getId());
@@ -252,8 +252,8 @@ public class CommonMapper {
         }
         detailDto.setProjectMobileBannerDtoList(projectMobileBannerDtoList);
         List<ProjectDesktopBannerDto> projectDesktopBannerDtoList = new ArrayList<>();
-        if (project.getProjectMobileBanners() != null) {
-            List<ProjectDesktopBanner> projectDesktopBanners = project.getProjectDesktopBanners();
+        if (project.getProjectDesktopBanners() != null) {
+            Set<ProjectDesktopBanner> projectDesktopBanners = project.getProjectDesktopBanners();
             projectDesktopBannerDtoList = projectDesktopBanners.stream().map(desktopBanner -> {
                 ProjectDesktopBannerDto projectDesktopBannerDto = new ProjectDesktopBannerDto();
                 projectDesktopBannerDto.setProjectId(project.getId());
@@ -266,35 +266,6 @@ public class CommonMapper {
             }).toList();
         }
         detailDto.setProjectDesktopBannerDtoList(projectDesktopBannerDtoList);
-        
-        // Map user-submitted property fields
-        detailDto.setBedrooms(project.getBedrooms());
-        detailDto.setBathrooms(project.getBathrooms());
-        detailDto.setBalconies(project.getBalconies());
-        detailDto.setFloorNumber(project.getFloorNumber());
-        detailDto.setTotalFloors(project.getTotalFloors());
-        detailDto.setFacing(project.getFacing());
-        detailDto.setAgeOfConstruction(project.getAgeOfConstruction());
-        detailDto.setCarpetAreaSqft(project.getCarpetAreaSqft());
-        detailDto.setBuiltUpAreaSqft(project.getBuiltUpAreaSqft());
-        detailDto.setSuperBuiltUpAreaSqft(project.getSuperBuiltUpAreaSqft());
-        detailDto.setPlotAreaSqft(project.getPlotAreaSqft());
-        detailDto.setPricePerSqft(project.getPricePerSqft());
-        detailDto.setMaintenanceCharges(project.getMaintenanceCharges());
-        detailDto.setBookingAmount(project.getBookingAmount());
-        detailDto.setFurnishedStatus(project.getFurnishedStatus());
-        detailDto.setParkingDetails(project.getParkingDetails());
-        detailDto.setTransactionType(project.getTransactionType());
-        detailDto.setListingType(project.getListingType());
-        detailDto.setPropertySubtype(project.getPropertySubtype());
-        detailDto.setPossessionStatus(project.getPossessionStatus());
-        detailDto.setOccupancyStatus(project.getOccupancyStatus());
-        detailDto.setNoticePeriod(project.getNoticePeriod());
-        detailDto.setContactName(project.getContactName());
-        detailDto.setContactPhone(project.getContactPhone());
-        detailDto.setContactEmail(project.getContactEmail());
-        detailDto.setPreferredTime(project.getPreferredTime());
-        detailDto.setAdditionalNotes(project.getAdditionalNotes());
         // Calculate totalPrice from projectPrice if possible, or use from totalPrice field if exists
         if (project.getProjectPrice() != null && !project.getProjectPrice().isEmpty()) {
             try {
@@ -374,6 +345,30 @@ public class CommonMapper {
                 projectShortDetails.setProjectBannerImage(banner.getDesktopImage());
                 break; // stop once you find the first valid one
             }
+        }
+    }
+
+    public void mapProjectToProjectInfoDto(Project project, ProjectInfoDto infoDto) {
+        infoDto.setId(project.getId());
+        infoDto.setProjectName(project.getProjectName());
+        infoDto.setProjectPrice(project.getProjectPrice());
+        infoDto.setSlugURL(project.getSlugURL());
+        infoDto.setProjectConfiguration(project.getProjectConfiguration());
+        infoDto.setStatus(project.isStatus());
+        
+        if (project.getProjectStatus() != null) {
+            infoDto.setProjectStatus(project.getProjectStatus().getStatusName());
+        }
+        if (project.getProjectTypes() != null) {
+            infoDto.setProjectType(project.getProjectTypes().getProjectTypeName());
+        }
+        if (project.getCity() != null && project.getProjectLocality() != null) {
+            infoDto.setProjectAddress(project.getProjectLocality().concat(", ").concat(project.getCity().getName()));
+        }
+        infoDto.setProjectThumbnailImage(project.getProjectThumbnail());
+        infoDto.setThumbNailAltTag(project.getProjectThumbnailAltTag());
+        if (project.getBuilder() != null) {
+            infoDto.setBuilderName(project.getBuilder().getBuilderName());
         }
     }
 }
