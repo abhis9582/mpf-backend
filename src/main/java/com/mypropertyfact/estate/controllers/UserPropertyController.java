@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mypropertyfact.estate.dtos.UserPropertySubmissionDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.User;
-import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.services.UserPropertyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -78,11 +76,6 @@ public class UserPropertyController {
     @PutMapping("/{id}/submit")
     public ResponseEntity<?> submitForApproval(@PathVariable int id) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
-            
-            Project project = userPropertyService.submitForApproval(id, currentUser.getId());
-            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Property submitted for approval");
@@ -106,8 +99,6 @@ public class UserPropertyController {
     @GetMapping
     public ResponseEntity<?> getUserProperties() {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
             
             // List<Project> properties = userPropertyService.getUserProperties(currentUser.getId());
             
@@ -135,10 +126,6 @@ public class UserPropertyController {
     @GetMapping("/status/{status}")
     public ResponseEntity<?> getPropertiesByStatus(@PathVariable String status) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
-            
-            ProjectApprovalStatus approvalStatus = ProjectApprovalStatus.valueOf(status.toUpperCase());
             // List<Project> properties = userPropertyService.getUserPropertiesByStatus(
             //     currentUser.getId(), approvalStatus);
             
@@ -167,8 +154,6 @@ public class UserPropertyController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getPropertyDetails(@PathVariable int id) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
             
             // Check if user owns this property
             // List<Project> userProperties = userPropertyService.getUserProperties(currentUser.getId());
