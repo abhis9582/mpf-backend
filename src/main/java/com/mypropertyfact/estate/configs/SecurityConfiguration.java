@@ -78,6 +78,7 @@ public class SecurityConfiguration {
         config.addAllowedOriginPattern("https://mypropertyfact.com");
         config.addAllowedOriginPattern("http://mypropertyfact.in");
         config.addAllowedOriginPattern("http://mypropertyfact.com");
+        config.addAllowedOriginPattern("https://mpf-chatbot2.onrender.com");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         
