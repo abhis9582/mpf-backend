@@ -13,5 +13,5 @@ public class ProjectTypeDto {
     private String projectTypeName;
     private String projectTypeDescription;
     private String slugURL;
-    private List<ProjectDetailDto> projectList;
+    private List<ProjectShortDetails> projectList;
 }

@@ -2,6 +2,7 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
+import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.dtos.ProjectTypeDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectTypes;
@@ -95,8 +96,8 @@ public class ProjectTypesService {
             projectTypeDetailDto.setMetaTitle(projectType.getMetaTitle());
             projectTypeDetailDto.setMetaKeywords(projectType.getMetaKeyword());
             projectTypeDetailDto.setMetaDescription(projectType.getMetaDesc());
-            List<ProjectDetailDto> projectDetailDtoList = new ArrayList<>();
-            
+            List<ProjectShortDetails> projectDetailDtoList;
+
             if (projectType.getProject() != null) {
                 if (url.equals("new-launches")) {
                     List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
@@ -106,8 +107,8 @@ public class ProjectTypesService {
                                     project.getProjectStatus() != null &&
                                             "New Launched".equals(project.getProjectStatus().getStatusName()))
                             .map(project -> {
-                                ProjectDetailDto projectDetailDto = new ProjectDetailDto();
-                                commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                                ProjectShortDetails projectDetailDto = new ProjectShortDetails();
+                                commonMapper.mapShortProjectDetails(project, projectDetailDto);
                                 return projectDetailDto;
                             }).toList();
                 } else {
@@ -115,8 +116,8 @@ public class ProjectTypesService {
                     projectDetailDtoList = projects.stream()
                             .sorted(Comparator.comparing(Project::getProjectName, String.CASE_INSENSITIVE_ORDER))
                             .map(project -> {
-                                ProjectDetailDto projectDetailDto = new ProjectDetailDto();
-                                commonMapper.mapProjectToProjectDto(project, projectDetailDto);
+                                ProjectShortDetails projectDetailDto = new ProjectShortDetails();
+                                commonMapper.mapShortProjectDetails(project, projectDetailDto);
                                 return projectDetailDto;
                             }).toList();
                 }

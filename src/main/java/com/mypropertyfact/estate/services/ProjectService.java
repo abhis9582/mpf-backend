@@ -12,6 +12,8 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -65,143 +67,31 @@ public class ProjectService {
         }).toList();
     }
 
-    @Transactional
-    public List<ProjectDetailDto> searchByPropertyTypeLocationBudget(String propertyType, String propertyLocation, String budget) {
-//        List<Project> projects = projectRepository.findAllWithAllRelations();
-        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName")).stream().filter(Project::isStatus).toList();
-        List<Project> filteredList = projects;
-        int start = 0;
-        int end = 0;
-        switch (budget) {
-            case "Up to 1Cr*" -> {
-                end = 1;
-            }
-            case "1-3 Cr*" -> {
-                start = 1;
-                end = 3;
-            }
-            case "3-5 Cr*" -> {
-                start = 3;
-                end = 5;
-            }
-            case "Above 5 Cr*" -> {
-                start = 5;
-                end = 20;
-            }
-            default -> end = 20;
-        }
-        final int s = start;
-        final int e = end;
-        try {
-            if (!propertyType.isEmpty() && propertyLocation.isEmpty()) {
-                if (propertyType.equals("3")) {
-                    filteredList = projects.stream()
-                            .filter(project -> {
-                                // Check for null and non-numeric price
-                                String priceStr = project.getProjectPrice();
-                                return isNumeric(priceStr);
-                            })
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
-                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                            .toList();
-                } else {
-                    filteredList = projects.stream()
-                            .filter(project -> {
-                                // Check for null and non-numeric price
-                                String priceStr = project.getProjectPrice();
-                                return isNumeric(priceStr);
-                            })
-                            .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
-                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                            .toList();
-                }
-            } else if (!propertyLocation.isEmpty() &&
-                    propertyType.trim().isEmpty()) {
-                filteredList = projects.stream()
-                        .filter(project -> {
-                            // Check for null and non-numeric price
-                            String priceStr = project.getProjectPrice();
-                            return isNumeric(priceStr);
-                        })
-                        .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                        .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                        .toList();
-            } else if (!propertyLocation.trim().isEmpty() &&
-                    !propertyType.trim().isEmpty() && budget.isEmpty()) {
-                if (propertyType.equals("3")) {
-                    filteredList = projects.stream()
-                            .filter(project -> {
-                                // Check for null and non-numeric price
-                                String priceStr = project.getProjectPrice();
-                                return isNumeric(priceStr);
-                            })
-                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
-                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                            .toList();
-                } else {
-                    filteredList = projects.stream()
-                            .filter(project -> {
-                                // Check for null and non-numeric price
-                                String priceStr = project.getProjectPrice();
-                                return isNumeric(priceStr);
-                            })
-                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                            .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
-                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                            .toList();
-                }
-            } else if (!propertyLocation.trim().isEmpty() &&
-                    !propertyType.trim().isEmpty() && !budget.isEmpty()) {
-                if (propertyType.equals("3")) {
-                    filteredList = projects.stream()
-                            .filter(project -> {
-                                // Check for null and non-numeric price
-                                String priceStr = project.getProjectPrice();
-                                return isNumeric(priceStr);
-                            })
-                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                            .filter(project -> project.getProjectStatus().getStatusName().equals("New Launched"))
-                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                            .toList();
-                } else {
-                    filteredList = projects.stream()
-                            .filter(project -> {
-                                // Check for null and non-numeric price
-                                String priceStr = project.getProjectPrice();
-                                return isNumeric(priceStr);
-                            })
-                            .filter(project -> project.getCity().getId() == Integer.parseInt(propertyLocation))
-                            .filter(project -> project.getProjectTypes().getId() == Integer.parseInt(propertyType))
-                            .filter(project -> Float.parseFloat(project.getProjectPrice()) > s && Float.parseFloat(project.getProjectPrice()) < e)
-                            .toList();
-                }
-            } else {
-                filteredList = projects.stream()
-                        .filter(project -> {
-                            String priceStr = project.getProjectPrice();
+    @Transactional(readOnly = true)
+    public List<ProjectShortDetails> searchByPropertyTypeLocationBudget(
+            String propertyType, String propertyLocation, String budget) {
 
-                            // If not numeric → include directly
-                            if (!isNumeric(priceStr)) {
-                                return true;
-                            }
+        float[] range = getBudgetRange(budget);
+        Integer type = propertyType.isEmpty() ? null : Integer.parseInt(propertyType);
+        Integer city = propertyLocation.isEmpty() ? null : Integer.parseInt(propertyLocation);
 
-                            // If numeric → apply range filter
-                            float price = Float.parseFloat(priceStr);
-                            return price > s && price < e;
-                        })
-                        .toList();
-            }
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-        return filteredList.stream().map(project -> {
-            ProjectDetailDto detailDto = new ProjectDetailDto();
-            commonMapper.mapProjectToProjectDto(project, detailDto);
-            return detailDto;
+        List<Project> projects = projectRepository.searchProjects(type, city, range[0], range[1]);
+
+        return projects.stream().map(p -> {
+            ProjectShortDetails dto = new ProjectShortDetails();
+            commonMapper.mapShortProjectDetails(p, dto);
+            return dto;
         }).toList();
     }
-
+    private float[] getBudgetRange(String budget) {
+        return switch (budget) {
+            case "Up to 1Cr*" -> new float[]{0, 1};
+            case "1-3 Cr*" -> new float[]{1, 3};
+            case "3-5 Cr*" -> new float[]{3, 5};
+            case "Above 5 Cr*" -> new float[]{5, 20};
+            default -> new float[]{0, 20};
+        };
+    }
     private boolean isNumeric(String str) {
         if (str == null) return false;
         try {
@@ -346,6 +236,7 @@ public class ProjectService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = "projectShortDetails", allEntries = true)
     public Response saveProject(MultipartFile projectLogo,
                                 MultipartFile locationMap,
                                 MultipartFile projectThumbnail,
@@ -522,9 +413,10 @@ public class ProjectService {
         project.setStatus(dto.isStatus());
     }
     @Transactional
+    @Cacheable(value = "projectShortDetails")
     public List<ProjectShortDetails> getShortDetails() {
         List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        System.out.println("Total projects are " + projects.size());
+        log.info("Total projects are {}", projects.size());
         return projects.stream().map(project -> {
             ProjectShortDetails detailDto = new ProjectShortDetails();
             commonMapper.mapShortProjectDetails(project, detailDto);

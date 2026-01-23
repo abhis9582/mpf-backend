@@ -48,25 +48,25 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
     @Query("SELECT p FROM Project p WHERE p.slugURL = :url AND (p.status = true OR (p.isUserSubmitted IS NOT NULL AND p.isUserSubmitted = true AND (p.approvalStatus IS NULL OR p.approvalStatus = 'APPROVED')))")
     Optional<Project> findBySlugURLWithAllRelations(@Param("url") String url);
-    
+
     @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
     @Query("SELECT p FROM Project p WHERE p.slugURL = :url")
     Optional<Project> findBySlugURLWithAllRelationsNoFilter(@Param("url") String url);
 
     List<Project> findByStatusTrueOrderByProjectNameAsc();
-    
+
     // ========== New methods for user property submission ==========
-    
+
     /**
      * Find projects submitted by a specific user
      */
     List<Project> findBySubmittedById(Integer userId);
-    
+
     /**
      * Find projects by user and approval status
      */
     List<Project> findBySubmittedByIdAndApprovalStatus(Integer userId, com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
-    
+
     /**
      * Find projects by approval status (for admin)
      */
@@ -78,4 +78,26 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     @Query("SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.floorPlans ORDER BY p.projectName")
     List<Project> findAllWithFloorPlans();
 
+    @Query("""
+            SELECT p FROM Project p
+            WHERE p.status = true
+            AND (:type IS NULL OR p.projectTypes.id = :type)
+            AND (:city IS NULL OR p.city.id = :city)
+            AND (CAST(p.projectPrice AS float) BETWEEN :start AND :end)
+            """)
+    List<Project> searchProjects(
+            @Param("type") Integer type,
+            @Param("city") Integer city,
+            @Param("start") float start,
+            @Param("end") float end
+    );
+
+    @Query("""
+            SELECT p FROM Project p
+            JOIN FETCH p.projectStatus s
+            WHERE (:typeId IS NULL OR p.projectTypes.id = :typeId)
+            AND (:newLaunch = false OR s.statusName = 'New Launched')
+            ORDER BY p.projectName ASC
+            """)
+    List<Project> findProjectsByType(Integer typeId, boolean newLaunch);
 }
