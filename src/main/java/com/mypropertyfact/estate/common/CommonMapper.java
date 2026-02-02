@@ -266,35 +266,6 @@ public class CommonMapper {
             }).toList();
         }
         detailDto.setProjectDesktopBannerDtoList(projectDesktopBannerDtoList);
-        
-        // Map user-submitted property fields
-        detailDto.setBedrooms(project.getBedrooms());
-        detailDto.setBathrooms(project.getBathrooms());
-        detailDto.setBalconies(project.getBalconies());
-        detailDto.setFloorNumber(project.getFloorNumber());
-        detailDto.setTotalFloors(project.getTotalFloors());
-        detailDto.setFacing(project.getFacing());
-        detailDto.setAgeOfConstruction(project.getAgeOfConstruction());
-        detailDto.setCarpetAreaSqft(project.getCarpetAreaSqft());
-        detailDto.setBuiltUpAreaSqft(project.getBuiltUpAreaSqft());
-        detailDto.setSuperBuiltUpAreaSqft(project.getSuperBuiltUpAreaSqft());
-        detailDto.setPlotAreaSqft(project.getPlotAreaSqft());
-        detailDto.setPricePerSqft(project.getPricePerSqft());
-        detailDto.setMaintenanceCharges(project.getMaintenanceCharges());
-        detailDto.setBookingAmount(project.getBookingAmount());
-        detailDto.setFurnishedStatus(project.getFurnishedStatus());
-        detailDto.setParkingDetails(project.getParkingDetails());
-        detailDto.setTransactionType(project.getTransactionType());
-        detailDto.setListingType(project.getListingType());
-        detailDto.setPropertySubtype(project.getPropertySubtype());
-        detailDto.setPossessionStatus(project.getPossessionStatus());
-        detailDto.setOccupancyStatus(project.getOccupancyStatus());
-        detailDto.setNoticePeriod(project.getNoticePeriod());
-        detailDto.setContactName(project.getContactName());
-        detailDto.setContactPhone(project.getContactPhone());
-        detailDto.setContactEmail(project.getContactEmail());
-        detailDto.setPreferredTime(project.getPreferredTime());
-        detailDto.setAdditionalNotes(project.getAdditionalNotes());
         // Calculate totalPrice from projectPrice if possible, or use from totalPrice field if exists
         if (project.getProjectPrice() != null && !project.getProjectPrice().isEmpty()) {
             try {

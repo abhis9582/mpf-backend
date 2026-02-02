@@ -46,35 +46,13 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     List<Project> findAllWithAllRelations();
 
     @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
-    @Query("SELECT p FROM Project p WHERE p.slugURL = :url AND (p.status = true OR (p.isUserSubmitted IS NOT NULL AND p.isUserSubmitted = true AND (p.approvalStatus IS NULL OR p.approvalStatus = 'APPROVED')))")
+    @Query("SELECT p FROM Project p WHERE p.slugURL = :url AND p.status = true")
     Optional<Project> findBySlugURLWithAllRelations(@Param("url") String url);
 
     @EntityGraph(value = "Project.withAllRelations", type = EntityGraph.EntityGraphType.LOAD)
     @Query("SELECT p FROM Project p WHERE p.slugURL = :url")
     Optional<Project> findBySlugURLWithAllRelationsNoFilter(@Param("url") String url);
 
-    List<Project> findByStatusTrueOrderByProjectNameAsc();
-
-    // ========== New methods for user property submission ==========
-
-    /**
-     * Find projects submitted by a specific user
-     */
-    List<Project> findBySubmittedById(Integer userId);
-
-    /**
-     * Find projects by user and approval status
-     */
-    List<Project> findBySubmittedByIdAndApprovalStatus(Integer userId, com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
-
-    /**
-     * Find projects by approval status (for admin)
-     */
-    List<Project> findByApprovalStatus(com.mypropertyfact.estate.enums.ProjectApprovalStatus approvalStatus);
-
-    /**
-     * Find all projects with their floor plans loaded (avoids N+1 queries)
-     */
     @Query("SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.floorPlans ORDER BY p.projectName")
     List<Project> findAllWithFloorPlans();
 

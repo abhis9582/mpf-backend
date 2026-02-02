@@ -67,13 +67,6 @@ public class UserPropertyService {
         
         // Initially inactive until approved
         project.setStatus(false);
-        
-        // Set approval status to DRAFT (user can submit later)
-        project.setApprovalStatus(ProjectApprovalStatus.DRAFT);
-        project.setIsUserSubmitted(true);
-        project.setSubmittedBy(user);
-        project.setSubmittedAt(LocalDateTime.now());
-        
         // Map description
         project.setLocationDesc(dto.getDescription());
         
@@ -196,44 +189,6 @@ public class UserPropertyService {
             }
             project.setAmenities(amenitySet);
         }
-        
-        // Map all new detailed fields
-        project.setBedrooms(dto.getBedrooms());
-        project.setBathrooms(dto.getBathrooms());
-        project.setBalconies(dto.getBalconies());
-        project.setFloorNumber(dto.getFloor());
-        project.setTotalFloors(dto.getTotalFloors());
-        project.setFacing(dto.getFacing());
-        project.setAgeOfConstruction(dto.getAgeOfConstruction());
-        
-        // Area details
-        project.setCarpetAreaSqft(dto.getCarpetArea());
-        project.setBuiltUpAreaSqft(dto.getBuiltUpArea());
-        project.setSuperBuiltUpAreaSqft(dto.getSuperBuiltUpArea());
-        project.setPlotAreaSqft(dto.getPlotArea());
-        
-        // Pricing details
-        project.setPricePerSqft(dto.getPricePerSqFt());
-        project.setMaintenanceCharges(dto.getMaintenanceCharges());
-        project.setBookingAmount(dto.getBookingAmount());
-        project.setFurnishedStatus(dto.getFurnished());
-        project.setParkingDetails(dto.getParking());
-        
-        // Property type and transaction
-        project.setTransactionType(dto.getTransaction());
-        project.setListingType(dto.getListingType());
-        project.setPropertySubtype(dto.getSubType());
-        project.setPossessionStatus(dto.getPossession());
-        project.setOccupancyStatus(dto.getOccupancy());
-        project.setNoticePeriod(dto.getNoticePeriod());
-        
-        // Contact information
-        project.setContactName(dto.getContactName());
-        project.setContactPhone(dto.getContactPhone());
-        project.setContactEmail(dto.getContactEmail());
-        project.setPreferredTime(dto.getPreferredTime());
-        project.setAdditionalNotes(dto.getAdditionalNotes());
-        
         // Set timestamps
         project.setCreatedAt(LocalDateTime.now());
         project.setUpdatedAt(LocalDateTime.now());
@@ -251,31 +206,9 @@ public class UserPropertyService {
         
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new RuntimeException("Project not found"));
-        
-        // Verify ownership
-        if (!project.getSubmittedBy().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized: You don't own this property");
-        }
-        
-        // Change status to PENDING
-        project.setApprovalStatus(ProjectApprovalStatus.PENDING);
-        project.setSubmittedAt(LocalDateTime.now());
-        
         return projectRepository.save(project);
     }
-    
-    @Transactional
-    public List<Project> getUserProperties(int userId) {
-        log.info("Fetching properties for user: {}", userId);
-        return projectRepository.findBySubmittedById(userId);
-    }
-    
-    @Transactional
-    public List<Project> getUserPropertiesByStatus(int userId, ProjectApprovalStatus status) {
-        log.info("Fetching properties with status {} for user: {}", status, userId);
-        return projectRepository.findBySubmittedByIdAndApprovalStatus(userId, status);
-    }
-    
+
     private String generateTitle(Integer bedrooms, String subType, String locality) {
         if (bedrooms != null && subType != null && locality != null) {
             return bedrooms + " BHK " + subType + " in " + locality;

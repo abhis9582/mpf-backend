@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -57,7 +56,6 @@ public class UserPropertyController {
             response.put("success", true);
             response.put("message", "Property saved successfully");
             response.put("propertyId", savedProject.getId());
-            response.put("status", savedProject.getApprovalStatus());
             response.put("data", savedProject);
             
             return ResponseEntity.ok(response);
@@ -87,7 +85,6 @@ public class UserPropertyController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Property submitted for approval");
-            response.put("status", project.getApprovalStatus());
             
             return ResponseEntity.ok(response);
             
@@ -111,12 +108,8 @@ public class UserPropertyController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) auth.getPrincipal();
             
-            List<Project> properties = userPropertyService.getUserProperties(currentUser.getId());
-            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("count", properties.size());
-            response.put("data", properties);
             
             return ResponseEntity.ok(response);
             
@@ -141,14 +134,10 @@ public class UserPropertyController {
             User currentUser = (User) auth.getPrincipal();
             
             ProjectApprovalStatus approvalStatus = ProjectApprovalStatus.valueOf(status.toUpperCase());
-            List<Project> properties = userPropertyService.getUserPropertiesByStatus(
-                currentUser.getId(), approvalStatus);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("status", status);
-            response.put("count", properties.size());
-            response.put("data", properties);
             
             return ResponseEntity.ok(response);
             
@@ -169,36 +158,14 @@ public class UserPropertyController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getPropertyDetails(@PathVariable int id) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
-            
-            // Check if user owns this property
-            List<Project> userProperties = userPropertyService.getUserProperties(currentUser.getId());
-            Project property = userProperties.stream()
-                .filter(p -> p.getId() == id)
-                .findFirst()
-                .orElse(null);
-            
-            if (property == null) {
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("success", false);
-                errorResponse.put("message", "Property not found or access denied");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-            }
-            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", property);
-            
             return ResponseEntity.ok(response);
-            
         } catch (Exception e) {
             log.error("Error fetching property details: {}", e.getMessage(), e);
-            
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Failed to fetch property: " + e.getMessage());
-            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

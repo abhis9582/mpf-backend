@@ -148,15 +148,6 @@ public class ProjectService {
             Optional<Project> projectBySlugNoFilter = projectRepository.findBySlugURLWithAllRelationsNoFilter(url);
             if (projectBySlugNoFilter.isPresent()) {
                 Project project = projectBySlugNoFilter.get();
-                log.warn("Project EXISTS but status check failed - ID: {}, Name: {}, status: {}, isUserSubmitted: {}, approvalStatus: {}", 
-                    project.getId(), project.getProjectName(), project.isStatus(), project.getIsUserSubmitted(), project.getApprovalStatus());
-                
-                // If it's a user-submitted project that's not approved, we can still return it for now
-                // (Remove this if you want strict approval checking)
-                if (project.getIsUserSubmitted() != null && project.getIsUserSubmitted()) {
-                    log.info("Allowing user-submitted project even if not approved - approvalStatus: {}", project.getApprovalStatus());
-                    projectData = projectBySlugNoFilter;
-                }
             } else {
                 // Try with simple findBySlugURL to verify slug exists at all
                 Optional<Project> projectBySlug = projectRepository.findBySlugURL(url);
@@ -173,8 +164,6 @@ public class ProjectService {
         ProjectDetailDto detailDto = new ProjectDetailDto();
         if (projectData.isPresent()) {
             Project project = projectData.get();
-            log.info("Project found and mapping to DTO - ID: {}, Name: {}, Status: {}, ApprovalStatus: {}", 
-                project.getId(), project.getProjectName(), project.isStatus(), project.getApprovalStatus());
             commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
         } else {
             log.error("Returning empty DTO - no project found matching criteria");
