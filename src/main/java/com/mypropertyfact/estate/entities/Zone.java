@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -7,32 +8,27 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Data
-@Table(name = "localities", indexes = {
-        @Index(name = "idx_slug", columnList = "slug"),
-        @Index(name = "idx_is_active", columnList = "isActive")
-})
 @Entity
-@ToString(exclude = {"city", "zone", "projectTypes"})
-public class Locality {
+@Table(name = "zones")
+@Data
+@ToString(exclude = {"city", "localities"})
+public class Zone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(nullable = false, length = 255)
-    private String localityName;
+    private String zoneName;
 
     @Column(unique = true, nullable = false)
     private String slug;
-    private Double latitude;
-    private Double longitude;
-    private Integer pinCode;
-    @Lob
+
     private String description;
-    private Double averagePricePerSqFt;
-    private boolean isActive;
+
+    private boolean isActive = true;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -41,15 +37,12 @@ public class Locality {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id", nullable = false)
+    @JsonIgnore
     private City city;
 
-    @ManyToOne
-    @JoinColumn(name = "zone_id", nullable = true)
-    private Zone zone;
-
-    @ManyToOne
-    @JoinColumn(name = "locality_category_id", nullable = false)
-    private ProjectTypes projectTypes;
+    @OneToMany(mappedBy = "zone", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Locality> localities;
 }

@@ -50,25 +50,16 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, User user, long expiration) {
-        // Add role and permissions to JWT claims
-        // Extract role names from MasterRole entities
-        Set<String> userRoles = user.getRoles() != null 
+        Set<String> userRoles = user.getRoles() != null
             ? user.getRoles().stream()
                 .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
                 .map(role -> "ROLE_" + role.getRoleName())
                 .collect(Collectors.toSet())
-            : Set.of("ROLE_USER"); // Default role if no roles assigned
+            : Set.of("ROLE_USER");
         extraClaims.put("role", userRoles);
-        
-        // Extract permissions from user's authorities (roles)
-        // List<String> permissions = user.getAuthorities().stream()
-        //         .map(authority -> authority.getAuthority())
-        //         .toList();
-        // extraClaims.put("permissions", permissions);
         extraClaims.put("email", user.getEmail());
         extraClaims.put("userId", user.getId());
         extraClaims.put("fullName", user.getFullName());
-        
         return buildToken(extraClaims, user, expiration);
     }
 

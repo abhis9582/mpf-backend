@@ -16,7 +16,10 @@ public class LocalityDto {
     private Boolean isActive;
     private int cityId;
     private String cityName;
+    private int stateId;
     private String stateName;
+    private int countryId;
+    private String countryName;
     private int localityCategory;
     private String localityCategoryName;
 }

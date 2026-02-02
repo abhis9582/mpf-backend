@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.dtos;
 
+import com.mypropertyfact.estate.configs.dtos.LocalityDto;
 import lombok.Data;
 
 import java.util.List;
@@ -20,4 +21,5 @@ public class CityDto {
     private String cityImage;
     private String slugURL;
     private List<ProjectDetailDto> projectList;
+    private List<LocalityDto> localityList;
 }

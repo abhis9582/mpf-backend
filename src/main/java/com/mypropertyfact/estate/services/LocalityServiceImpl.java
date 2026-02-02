@@ -46,12 +46,19 @@ public class LocalityServiceImpl implements LocalityService {
             localityDto.setLongitude(locality.getLongitude());
             localityDto.setPinCode(locality.getPinCode());
             localityDto.setAveragePricePerSqFt(locality.getAveragePricePerSqFt());
+            localityDto.setIsActive(locality.isActive());
             if(locality.getCity() != null) {
-                localityDto.setCityId(locality.getCity().getId());
-                localityDto.setCityName(locality.getCity().getName());
-//                if(locality.getCity() != null) {
-//                    localityDto.setStateName(locality.getCity().getDistrict().getState().getStateName());
-//                }
+                City city = locality.getCity();
+                localityDto.setCityId(city.getId());
+                localityDto.setCityName(city.getName());
+                if(city.getState() != null) {
+                    localityDto.setStateId(city.getState().getId());
+                    localityDto.setStateName(city.getState().getStateName());
+                    if(city.getState().getCountry() != null) {
+                        localityDto.setCountryId(city.getState().getCountry().getId());
+                        localityDto.setCountryName(city.getState().getCountry().getCountryName());
+                    }
+                }
             }
             if(locality.getProjectTypes() != null) {
                 localityDto.setLocalityCategory(locality.getProjectTypes().getId());

@@ -63,17 +63,15 @@ public class ProjectTypesService {
 
             if (projectTypes.getId() > 0) {
                 ProjectTypes dbProjectTypes = this.projectTypeRepository.findById(projectTypes.getId()).get();
-                if (dbProjectTypes != null) {
-                    dbProjectTypes.setProjectTypeName(projectTypes.getProjectTypeName());
-                    dbProjectTypes.setSlugUrl(projectTypes.getSlugUrl());
-                    dbProjectTypes.setProjectTypeDesc(projectTypes.getProjectTypeDesc());
-                    dbProjectTypes.setMetaDesc(projectTypes.getMetaDesc());
-                    dbProjectTypes.setMetaKeyword(projectTypes.getMetaKeyword());
-                    dbProjectTypes.setMetaTitle(projectTypes.getMetaTitle());
-                    this.projectTypeRepository.save(dbProjectTypes);
-                    response.setIsSuccess(1);
-                    response.setMessage("Project type updated successfully...");
-                }
+                dbProjectTypes.setProjectTypeName(projectTypes.getProjectTypeName());
+                dbProjectTypes.setSlugUrl(projectTypes.getSlugUrl());
+                dbProjectTypes.setProjectTypeDesc(projectTypes.getProjectTypeDesc());
+                dbProjectTypes.setMetaDesc(projectTypes.getMetaDesc());
+                dbProjectTypes.setMetaKeyword(projectTypes.getMetaKeyword());
+                dbProjectTypes.setMetaTitle(projectTypes.getMetaTitle());
+                this.projectTypeRepository.save(dbProjectTypes);
+                response.setIsSuccess(1);
+                response.setMessage("Project type updated successfully...");
             } else {
                 this.projectTypeRepository.save(projectTypes);
                 response.setMessage("Project type added successfully...");

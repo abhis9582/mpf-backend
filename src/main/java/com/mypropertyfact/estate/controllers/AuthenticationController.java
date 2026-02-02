@@ -15,8 +15,11 @@ import com.mypropertyfact.estate.repositories.UserRepository;
 import com.mypropertyfact.estate.services.AuthenticationService;
 import com.mypropertyfact.estate.services.JwtService;
 import com.mypropertyfact.estate.services.OTPService;
+import com.mypropertyfact.estate.services.SendEmailHandler;
+
 import io.jsonwebtoken.Claims;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,22 +36,25 @@ import java.util.Set;
 @RestController
 public class AuthenticationController {
 
-    private static final String CLIENT_ID = "699880944933-smqbrqmo1lffls5sj7lq77hmhmgqnv19.apps.googleusercontent.com";
+    @Value("${google.client.id}")
+    private String googleClientId;
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
     private final MasterRoleRepository masterRoleRepository;
     private final OTPService otpService;
     private final PasswordEncoder passwordEncoder;
+    private final SendEmailHandler sendEmailHandler;
 
     public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository,
-                                    MasterRoleRepository masterRoleRepository, OTPService otpService, PasswordEncoder passwordEncoder) {
+                                    MasterRoleRepository masterRoleRepository, OTPService otpService, PasswordEncoder passwordEncoder, SendEmailHandler sendEmailHandler) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.userRepository = userRepository;
         this.masterRoleRepository = masterRoleRepository;
         this.otpService = otpService;
         this.passwordEncoder = passwordEncoder;
+        this.sendEmailHandler = sendEmailHandler;
     }
 
     @PostMapping("/signup")
@@ -76,7 +82,7 @@ public class AuthenticationController {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance()
-        ).setAudience(Collections.singletonList(CLIENT_ID)).build();
+        ).setAudience(Collections.singletonList(googleClientId)).build();
 
         GoogleIdToken idToken = verifier.verify(tokenRequest.getToken());
 
@@ -199,20 +205,20 @@ public class AuthenticationController {
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOTP(@RequestBody Map<String, String> request) {
         try {
-            String phoneNumber = request.get("phoneNumber");
+            String email = request.get("email");
             
-            if (phoneNumber == null || phoneNumber.isEmpty()) {
+            if (email == null || email.isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Phone number is required", "message", "Please enter your phone number"));
+                    .body(Map.of("error", "Email is required", "message", "Please enter your email"));
             }
 
             // Generate and send OTP (validation happens inside OTPService)
-            String otpCode = otpService.generateOTP(phoneNumber);
-            
+            String otpCode = otpService.generateOTP(email);
+            sendEmailHandler.sendEmail(email, "OTP for MyPropertyFact", "Your OTP is: " + otpCode);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "OTP sent successfully",
-                "otp", otpCode, // In production, remove this - return only in development
+                // "otp", otpCode,
                 "expiresIn", 300 // 5 minutes
             ));
             
@@ -243,19 +249,19 @@ public class AuthenticationController {
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOTPAndRegister(@RequestBody Map<String, String> request) {
         try {
-            String phoneNumber = request.get("phoneNumber");
+            String email = request.get("email");
             String otpCode = request.get("otp");
             String fullName = request.get("fullName");
 
-            if (phoneNumber == null || phoneNumber.isEmpty() || 
+            if (email == null || email.isEmpty() ||
                 otpCode == null || otpCode.isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Phone number and OTP are required",
-                                "message", "Please enter both phone number and OTP"));
+                    .body(Map.of("error", "Email and OTP are required",
+                                "message", "Please enter both email and OTP"));
             }
 
             // Verify OTP (phone number will be normalized inside verifyOTP)
-            boolean isValid = otpService.verifyOTP(phoneNumber, otpCode);
+            boolean isValid = otpService.verifyOTP(email, otpCode);
             
             if (!isValid) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -264,7 +270,7 @@ public class AuthenticationController {
             }
 
             // Check if user exists
-            Optional<User> existingUser = userRepository.findByPhone(phoneNumber);
+            Optional<User> existingUser = userRepository.findByEmail(email);
             User user;
             String userStatus;
 
@@ -277,14 +283,14 @@ public class AuthenticationController {
                 user = new User();
                 // Ensure id is null so it can be auto-generated
                 user.setId(null);
-                user.setPhone(phoneNumber);
+                user.setEmail(email);
                 // Ensure fullName is not null or empty
                 String userFullName = (fullName != null && !fullName.trim().isEmpty()) 
                         ? fullName.trim() 
                         : "User";
                 user.setFullName(userFullName);
                 // Generate a random email if not provided
-                user.setEmail(phoneNumber + "@mobile.user");
+                user.setEmail(email);
                 // Generate a secure random password
                 String randomPassword = UUID.randomUUID().toString();
                 user.setPassword(passwordEncoder.encode(randomPassword));
@@ -333,15 +339,16 @@ public class AuthenticationController {
                     .toList()
                 : List.of("ROLE_USER");
             
-            response.put("user", Map.of(
-                "id", user.getId(),
-                "fullName", user.getFullName(),
-                "phone", user.getPhone(),
-                "email", user.getEmail(),
-                "role", roleNames.isEmpty() ? "ROLE_USER" : roleNames.get(0),
-                "roles", roleNames,
-                "verified", user.getVerified()
-            ));
+            // Use HashMap instead of Map.of() to handle null values (phone can be null for email-based registration)
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("fullName", user.getFullName() != null ? user.getFullName() : "");
+            userMap.put("phone", user.getPhone() != null ? user.getPhone() : "");
+            userMap.put("email", user.getEmail() != null ? user.getEmail() : "");
+            userMap.put("role", roleNames.isEmpty() ? "ROLE_USER" : roleNames.get(0));
+            userMap.put("roles", roleNames);
+            userMap.put("verified", user.getVerified() != null ? user.getVerified() : false);
+            response.put("user", userMap);
 
             return ResponseEntity.ok(response);
 

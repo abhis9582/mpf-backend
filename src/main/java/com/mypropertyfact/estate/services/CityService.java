@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.ConstantMessages;
 import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
+import com.mypropertyfact.estate.configs.dtos.LocalityDto;
 import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.*;
@@ -36,11 +37,59 @@ public class CityService {
 //        return cityRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "name"));
 //    }
 
+    @Transactional
     public List<CityDto> getAllCities(){
         List<City> cities = cityRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
         return cities.stream().map(city -> {
             CityDto cityDto = new CityDto();
             commonMapper.mapCityDtoToCity(cityDto, city);
+            
+            // Add state and country info
+            if(city.getState() != null) {
+                State state = city.getState();
+                cityDto.setStateId(state.getId());
+                cityDto.setStateName(state.getStateName());
+                if(state.getCountry() != null) {
+                    cityDto.setCountryId(state.getCountry().getId());
+                    cityDto.setCountryName(state.getCountry().getCountryName());
+                }
+            }
+            
+            // Include localities
+            List<LocalityDto> localityDtoList = new ArrayList<>();
+            if (city.getLocalities() != null) {
+                List<Locality> localities = city.getLocalities();
+                localityDtoList = localities.stream()
+                        .sorted(Comparator.comparing(Locality::getLocalityName, String::compareToIgnoreCase))
+                        .map(locality -> {
+                            LocalityDto localityDto = new LocalityDto();
+                            localityDto.setId(locality.getId());
+                            localityDto.setLocalityName(locality.getLocalityName());
+                            localityDto.setSlug(locality.getSlug());
+                            localityDto.setLatitude(locality.getLatitude());
+                            localityDto.setLongitude(locality.getLongitude());
+                            localityDto.setPinCode(locality.getPinCode());
+                            localityDto.setDescription(locality.getDescription());
+                            localityDto.setAveragePricePerSqFt(locality.getAveragePricePerSqFt());
+                            localityDto.setIsActive(locality.isActive());
+                            localityDto.setCityId(city.getId());
+                            localityDto.setCityName(city.getName());
+                            if(city.getState() != null) {
+                                localityDto.setStateId(city.getState().getId());
+                                localityDto.setStateName(city.getState().getStateName());
+                                if(city.getState().getCountry() != null) {
+                                    localityDto.setCountryId(city.getState().getCountry().getId());
+                                    localityDto.setCountryName(city.getState().getCountry().getCountryName());
+                                }
+                            }
+                            if (locality.getProjectTypes() != null) {
+                                localityDto.setLocalityCategory(locality.getProjectTypes().getId());
+                                localityDto.setLocalityCategoryName(locality.getProjectTypes().getProjectTypeName());
+                            }
+                            return localityDto;
+                        }).toList();
+            }
+            cityDto.setLocalityList(localityDtoList);
             return cityDto;
         }).toList();
     }
@@ -151,6 +200,42 @@ public class CityService {
             cityDetailDto.setProjectList(projectDetailDtoList);
             cityDetailDto.setCityDescription(city.getCityDisc());
             cityDetailDto.setCityImage(city.getCityImage());
+            
+            // Include localities
+            List<LocalityDto> localityDtoList = new ArrayList<>();
+            if (city.getLocalities() != null) {
+                List<Locality> localities = city.getLocalities();
+                localityDtoList = localities.stream()
+                        .sorted(Comparator.comparing(Locality::getLocalityName, String::compareToIgnoreCase))
+                        .map(locality -> {
+                            LocalityDto localityDto = new LocalityDto();
+                            localityDto.setId(locality.getId());
+                            localityDto.setLocalityName(locality.getLocalityName());
+                            localityDto.setSlug(locality.getSlug());
+                            localityDto.setLatitude(locality.getLatitude());
+                            localityDto.setLongitude(locality.getLongitude());
+                            localityDto.setPinCode(locality.getPinCode());
+                            localityDto.setDescription(locality.getDescription());
+                            localityDto.setAveragePricePerSqFt(locality.getAveragePricePerSqFt());
+                            localityDto.setIsActive(locality.isActive());
+                            localityDto.setCityId(city.getId());
+                            localityDto.setCityName(city.getName());
+                            if(city.getState() != null) {
+                                localityDto.setStateId(city.getState().getId());
+                                localityDto.setStateName(city.getState().getStateName());
+                                if(city.getState().getCountry() != null) {
+                                    localityDto.setCountryId(city.getState().getCountry().getId());
+                                    localityDto.setCountryName(city.getState().getCountry().getCountryName());
+                                }
+                            }
+                            if (locality.getProjectTypes() != null) {
+                                localityDto.setLocalityCategory(locality.getProjectTypes().getId());
+                                localityDto.setLocalityCategoryName(locality.getProjectTypes().getProjectTypeName());
+                            }
+                            return localityDto;
+                        }).toList();
+            }
+            cityDetailDto.setLocalityList(localityDtoList);
         });
         return cityDetailDto;
     }

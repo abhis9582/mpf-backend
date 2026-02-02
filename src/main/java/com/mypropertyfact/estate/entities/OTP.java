@@ -17,8 +17,8 @@ public class OTP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "phone_number", nullable = false, length = 30)
-    private String phoneNumber;
+    @Column(name = "email", nullable = false, length = 100)
+    private String email;
 
     @Column(name = "otp_code", nullable = false, length = 6)
     private String otpCode;

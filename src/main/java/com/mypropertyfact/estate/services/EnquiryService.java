@@ -15,6 +15,8 @@ import java.util.Optional;
 public class EnquiryService {
     @Autowired
     private EnqueryRepository enqueryRepository;
+    @Autowired
+    private SendEmailHandler sendEmailHandler;
     public List<Enquery> getAll(){
         return enqueryRepository.findAll();
     }
@@ -46,7 +48,7 @@ public class EnquiryService {
                 }
             } else {
                 enqueryRepository.save(enquery);
-//                sendEmailHandler.sendEmail(enquery.getEmail(), "Thank you for giving details", "Hi, Thank you out team will get back to you");
+               sendEmailHandler.sendEmail(enquery.getEmail(), "Thank you for giving details", "Hi, Thank you out team will get back to you");
                 response.setIsSuccess(1);
                 response.setMessage("Data saved successfully...");
             }

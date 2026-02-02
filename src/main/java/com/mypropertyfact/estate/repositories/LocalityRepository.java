@@ -3,11 +3,22 @@ package com.mypropertyfact.estate.repositories;
 import com.mypropertyfact.estate.entities.Locality;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LocalityRepository extends JpaRepository<Locality, Long> {
 
     @Query("SELECT l FROM Locality l JOIN FETCH l.city")
     List<Locality> findAllWithCity();
+
+    @Query("SELECT l FROM Locality l WHERE LOWER(l.localityName) = LOWER(:localityName) " +
+           "AND l.city.id = :cityId AND (l.zone.id = :zoneId OR (l.zone IS NULL AND :zoneId IS NULL))")
+    Optional<Locality> findByLocalityNameAndCityIdAndZoneId(
+            @Param("localityName") String localityName,
+            @Param("cityId") Integer cityId,
+            @Param("zoneId") Long zoneId);
+
+    Optional<Locality> findBySlug(String slug);
 }
