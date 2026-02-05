@@ -214,7 +214,79 @@ public class AuthenticationController {
 
             // Generate and send OTP (validation happens inside OTPService)
             String otpCode = otpService.generateOTP(email);
-            sendEmailHandler.sendEmail(email, "OTP for MyPropertyFact", "Your OTP is: " + otpCode);
+            String body = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <style>
+                body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+                }
+                .container {
+                max-width: 600px;
+                background: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                }
+                .header {
+                text-align: center;
+                font-size: 22px;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 15px;
+                }
+                .otp-box {
+                text-align: center;
+                font-size: 26px;
+                font-weight: bold;
+                letter-spacing: 3px;
+                background: #eef2ff;
+                padding: 10px;
+                border-radius: 6px;
+                margin: 20px 0;
+                color: #1f2937;
+                }
+                .message {
+                font-size: 14px;
+                color: #555;
+                line-height: 1.6;
+                }
+                .footer {
+                margin-top: 20px;
+                font-size: 13px;
+                color: #777;
+                }
+            </style>
+            </head>
+            <body>
+            <div class="container">
+                <div class="header">Welcome to My Property Fact</div>
+
+                <p class="message">
+                Hello,<br><br>
+                Your One-Time Password (OTP) to securely log in is:
+                </p>
+
+                <div class="otp-box">%s</div>
+
+                <p class="message">
+                Please do not share this OTP with anyone. It is valid for a limited time only.
+                If you did not request this, please ignore this email.
+                </p>
+
+                <div class="footer">
+                Regards,<br>
+                <strong>My Property Fact Team</strong>
+                </div>
+            </div>
+            </body>
+            </html>
+            """.formatted(otpCode);
+            sendEmailHandler.sendEmail(email, "OTP for MyPropertyFact", body);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "OTP sent successfully",

@@ -2,14 +2,20 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.entities.Enquery;
+import com.mypropertyfact.estate.entities.PropertyListing;
+import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.EnqueryRepository;
+import com.mypropertyfact.estate.repositories.PropertyListingRepository;
+import com.mypropertyfact.estate.repositories.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EnquiryService {
@@ -17,11 +23,17 @@ public class EnquiryService {
     private EnqueryRepository enqueryRepository;
     @Autowired
     private SendEmailHandler sendEmailHandler;
-    public List<Enquery> getAll(){
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PropertyListingRepository propertyListingRepository;
+
+    public List<Enquery> getAll() {
         return enqueryRepository.findAll();
     }
 
-    public List<Enquery> getByPropertyId(Long propertyId){
+    public List<Enquery> getByPropertyId(Long propertyId) {
         return enqueryRepository.findByPropertyId(propertyId);
     }
 
@@ -48,7 +60,8 @@ public class EnquiryService {
                 }
             } else {
                 enqueryRepository.save(enquery);
-               sendEmailHandler.sendEmail(enquery.getEmail(), "Thank you for giving details", "Hi, Thank you out team will get back to you");
+                sendEmailHandler.sendEmail(enquery.getEmail(), "Thank you for giving details",
+                        "Hi, Thank you out team will get back to you");
                 response.setIsSuccess(1);
                 response.setMessage("Data saved successfully...");
             }
@@ -86,5 +99,14 @@ public class EnquiryService {
             successResponse.setMessage("Something went wrong while updating status !");
         }
         return successResponse;
+    }
+
+    public List<Enquery> getUserLeads(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isPresent()){
+            List<PropertyListing> propertyListings = propertyListingRepository.findByUserId(user.get().getId());
+            return enqueryRepository.findByPropertyIdIn(propertyListings.stream().map(PropertyListing::getId).collect(Collectors.toList()));
+        }
+        return null;
     }
 }

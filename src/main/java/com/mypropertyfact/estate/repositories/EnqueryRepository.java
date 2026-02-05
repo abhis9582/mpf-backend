@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface EnqueryRepository extends JpaRepository<Enquery, Integer> {
     List<Enquery> findByPropertyId(Long propertyId);
+    List<Enquery> findByPropertyIdIn(List<Long> propertyIds);
 }

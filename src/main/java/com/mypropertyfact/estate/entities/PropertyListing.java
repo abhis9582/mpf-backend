@@ -35,6 +35,9 @@ public class PropertyListing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "property_uid", length = 100, unique = true)
+    private String propertyUid;
     
     // ========== BASIC INFORMATION ==========
     
