@@ -81,7 +81,6 @@ public class SecurityConfiguration {
         config.addAllowedOriginPattern("http://mypropertyfact.com");
         config.addAllowedOriginPattern("https://mpf-chatbot2.onrender.com");
         config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
         
         source.registerCorsConfiguration("/**", config);
         return source;
