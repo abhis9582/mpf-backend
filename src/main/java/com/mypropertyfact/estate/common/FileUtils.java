@@ -4,6 +4,8 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 @Component
+@Slf4j
 public class FileUtils {
 
     private final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -220,7 +223,7 @@ public class FileUtils {
                 Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
         return imageName;
     }

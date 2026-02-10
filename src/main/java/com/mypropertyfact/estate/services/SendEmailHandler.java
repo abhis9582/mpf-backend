@@ -7,8 +7,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class SendEmailHandler {
 
     @Autowired
@@ -22,7 +24,7 @@ public class SendEmailHandler {
             helper.setSubject(subject);
             helper.setText(body, true);
             javaMailSender.send(message);
-            System.out.println("Email sent successfully!");
+            log.info("Email sent successfully...");
         } catch (Exception e) {
             e.printStackTrace();
         }

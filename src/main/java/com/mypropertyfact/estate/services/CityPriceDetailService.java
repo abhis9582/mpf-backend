@@ -8,6 +8,9 @@ import com.mypropertyfact.estate.models.CityPriceDataResponse;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityPriceDetailRepository;
 import com.mypropertyfact.estate.repositories.HeaderRepository;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CityPriceDetailService {
     @Autowired
     private CityPriceDetailRepository cityPriceDetailRepository;
@@ -172,7 +176,7 @@ public class CityPriceDetailService {
             return new ArrayList<>(categoryMap.values());
         } catch (Exception e) {
             String message = e.getMessage();
-            System.out.printf(message);
+            log.error(message);
         }
         return null;
     }
@@ -243,7 +247,7 @@ public class CityPriceDetailService {
             return new ArrayList<>(categoryMap.values());
         } catch (Exception e) {
             String message = e.getMessage();
-            System.out.printf(message);
+            log.error(message);
         }
         return null;
     }

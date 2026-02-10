@@ -11,6 +11,9 @@ import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.DistrictService;
 import com.mypropertyfact.estate.repositories.DistrictRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class DistrictServiceImpl implements DistrictService {
 
     private final DistrictRepository districtRepository;
@@ -59,7 +63,7 @@ public class DistrictServiceImpl implements DistrictService {
                     state.ifPresent(district::setState);
                     districtRepository.save(district);
                 }
-//                System.out.println("Saving: " + data.getOfficeName() + " - " + data.getPinCode());
+                log.info("Saving: {} - {}", data.getOfficeName(), data.getPinCode());
             }
             return new SuccessResponse(1,"Uploaded " + dataList.size() + " records successfully");
 

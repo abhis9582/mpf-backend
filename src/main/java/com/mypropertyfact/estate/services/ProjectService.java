@@ -104,7 +104,7 @@ public class ProjectService {
 
     public List<ProjectDetailDto> getAllProjectsList() {
         List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        System.out.println("Total projects are " + projects.size());
+        log.info("Total projects are {}", projects.size());
         return projects.stream().map(project -> {
             ProjectDetailDto detailDto = new ProjectDetailDto();
             commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);

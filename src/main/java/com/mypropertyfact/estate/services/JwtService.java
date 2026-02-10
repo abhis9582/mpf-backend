@@ -1,12 +1,17 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.entities.User;
+import com.mypropertyfact.estate.repositories.UserRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,11 +22,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
@@ -31,6 +38,8 @@ public class JwtService {
 
     @Value("${security.jwt.refresh.expiration-time}")
     private long jwtRefreshTokenExpiration;
+
+    private final UserRepository userRepository;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -51,11 +60,11 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, User user, long expiration) {
         Set<String> userRoles = user.getRoles() != null
-            ? user.getRoles().stream()
-                .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
-                .map(role -> "ROLE_" + role.getRoleName())
-                .collect(Collectors.toSet())
-            : Set.of("ROLE_USER");
+                ? user.getRoles().stream()
+                        .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
+                        .map(role -> "ROLE_" + role.getRoleName())
+                        .collect(Collectors.toSet())
+                : Set.of("ROLE_USER");
         extraClaims.put("role", userRoles);
         extraClaims.put("email", user.getEmail());
         extraClaims.put("userId", user.getId());
@@ -70,8 +79,7 @@ public class JwtService {
     private String buildToken(
             Map<String, Object> extraClaims,
             User user,
-            long expiration
-    ) {
+            long expiration) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -157,5 +165,47 @@ public class JwtService {
     public String extractFullName(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("fullName", String.class);
+    }
+
+    public String getExpiryFromCookie(HttpServletRequest request) {
+
+        String token = null;
+
+        if (request.getCookies() != null) {
+            for (Cookie c : request.getCookies()) {
+                if ("token".equals(c.getName())) {
+                    token = c.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
+            return null;
+        }
+
+        Claims claims = extractAllClaims(token);
+        return claims.getExpiration().toInstant().toString(); // ISO format
+    }
+
+    public String generateTokenFromRefresh(String refreshToken) {
+        if (!isRefreshTokenValid(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+        String email = extractUsername(refreshToken);
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        return generateToken(user.get());
+    }
+
+    public boolean isRefreshTokenValid(String refreshToken) {
+        try {
+            extractAllClaims(refreshToken);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -10,6 +10,9 @@ import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 
 @Service
+@Slf4j
 public class CityService {
 
     private final CityRepository cityRepository;
@@ -161,7 +165,7 @@ public class CityService {
         try {
             city = (City) this.cityRepository.findById(id).get();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return city;
     }

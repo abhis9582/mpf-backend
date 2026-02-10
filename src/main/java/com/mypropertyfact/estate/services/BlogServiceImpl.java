@@ -171,7 +171,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public Page<BlogDto> getWithPagination(int page, int size, String from) {
+    public Page<BlogDto> getWithPagination(int page, int size, String from, String search) {
         // Step 1: Fetch all blogs (no pagination)
         List<Blog> allBlogs = blogRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -190,7 +190,7 @@ public class BlogServiceImpl implements BlogService {
             return blogDto;
         }).toList();
 
-        // Step 3: Filter based on "from"
+        // Step 3: Filter based on "from" and "search"
         List<BlogDto> filteredList;
         if ("blog".equalsIgnoreCase(from)) {
             filteredList = dtoList.stream()
@@ -201,11 +201,13 @@ public class BlogServiceImpl implements BlogService {
                     .filter(blog -> blog.getCategoryId() == 5)
                     .toList();
         }
-
         // Step 4: Manual pagination on the filtered list
         int start = Math.min(page * size, filteredList.size());
         int end = Math.min(start + size, filteredList.size());
         List<BlogDto> pagedList = filteredList.subList(start, end);
+        if (search != null && !search.isEmpty()) {
+            return new PageImpl<>(filteredList, PageRequest.of(page, size), filteredList.size());
+        }
 
         // Step 5: Return as Page<BlogDto>
         return new PageImpl<>(pagedList, PageRequest.of(page, size), filteredList.size());

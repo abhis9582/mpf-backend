@@ -13,8 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(
@@ -46,6 +44,9 @@ public class SecurityConfiguration {
                         .authenticated()
                         .requestMatchers("/api/public/**")
                         .permitAll()
+                        .requestMatchers("/auth/session").authenticated()
+                        .requestMatchers("/auth/refresh").authenticated()
+                        .requestMatchers("/auth/logout").permitAll() 
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

@@ -18,18 +18,25 @@ import com.mypropertyfact.estate.services.OTPService;
 import com.mypropertyfact.estate.services.SendEmailHandler;
 
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Slf4j
 @RequestMapping("/auth")
@@ -46,8 +53,18 @@ public class AuthenticationController {
     private final PasswordEncoder passwordEncoder;
     private final SendEmailHandler sendEmailHandler;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository,
-                                    MasterRoleRepository masterRoleRepository, OTPService otpService, PasswordEncoder passwordEncoder, SendEmailHandler sendEmailHandler) {
+    @Value("${http.secure}")
+    private boolean httpSecure;
+
+    @Value("${security.jwt.expiration-time}")
+    private long accessTokenExpiration;
+    @Value("${security.jwt.refresh.expiration-time}")
+    private long refreshTokenExpiration;
+
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService,
+            UserRepository userRepository,
+            MasterRoleRepository masterRoleRepository, OTPService otpService, PasswordEncoder passwordEncoder,
+            SendEmailHandler sendEmailHandler) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.userRepository = userRepository;
@@ -65,14 +82,31 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto,
+            HttpServletResponse response) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
         String refreshToken = jwtService.generateRefreshToken(authenticatedUser);
+        ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
+                .httpOnly(true)
+                .secure(httpSecure)
+                .path("/")
+                .sameSite(httpSecure ? "None" : "Lax")
+                .maxAge(accessTokenExpiration / 1000) // 1 day
+                .build();
+        ResponseCookie refresh = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(httpSecure)
+                .path("/")
+                .sameSite(httpSecure ? "None" : "Lax")
+                .maxAge(refreshTokenExpiration / 1000) // 7 day
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+        response.addHeader("Set-Cookie", refresh.toString());
         LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setRefreshToken(refreshToken);
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+        // loginResponse.setToken(jwtToken);
+        // loginResponse.setRefreshToken(refreshToken);
+        // loginResponse.setExpiresIn(jwtService.getExpirationTime());
         loginResponse.setUser(authenticatedUser);
         return ResponseEntity.ok(loginResponse);
     }
@@ -81,8 +115,7 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, Object>> googleLogin(@RequestBody TokenRequest tokenRequest) throws Exception {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance()
-        ).setAudience(Collections.singletonList(googleClientId)).build();
+                GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(googleClientId)).build();
 
         GoogleIdToken idToken = verifier.verify(tokenRequest.getToken());
 
@@ -102,9 +135,10 @@ public class AuthenticationController {
                 // Register new user
                 RegisterUserDto registerUserDto = new RegisterUserDto();
                 registerUserDto.setEmail(email);
-                // Ensure fullName is not null - use email prefix or default if name is not available
-                String userFullName = (name != null && !name.trim().isEmpty()) 
-                        ? name.trim() 
+                // Ensure fullName is not null - use email prefix or default if name is not
+                // available
+                String userFullName = (name != null && !name.trim().isEmpty())
+                        ? name.trim()
                         : (email != null ? email.split("@")[0] : "User");
                 registerUserDto.setFullName(userFullName);
                 registerUserDto.setPassword(UUID.randomUUID().toString()); // random password since using Google login
@@ -144,7 +178,7 @@ public class AuthenticationController {
             response.put("email", claims.getSubject());
             response.put("expiresAt", claims.getExpiration().toString());
             response.put("roles", rolesList);
-            
+
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("valid", false));
@@ -154,35 +188,35 @@ public class AuthenticationController {
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
-        
+
         if (refreshToken == null || refreshToken.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Refresh token is required"));
         }
-        
+
         try {
             Claims claims = jwtService.validateToken(refreshToken);
             String username = claims.getSubject();
 
             Optional<User> userDetails = userRepository.findByEmail(username);
-            
+
             if (!userDetails.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "User not found"));
             }
-            
+
             User user = userDetails.get();
-            
+
             // Generate new access + refresh tokens
             String jwtToken = jwtService.generateToken(user);
             String refToken = jwtService.generateRefreshToken(user);
-            
+
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setToken(jwtToken);
             loginResponse.setRefreshToken(refToken);
             loginResponse.setExpiresIn(jwtService.getExpirationTime());
             loginResponse.setUser(user);
-            
+
             return ResponseEntity.ok(loginResponse);
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -206,109 +240,109 @@ public class AuthenticationController {
     public ResponseEntity<?> sendOTP(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
-            
+
             if (email == null || email.isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Email is required", "message", "Please enter your email"));
+                        .body(Map.of("error", "Email is required", "message", "Please enter your email"));
             }
 
             // Generate and send OTP (validation happens inside OTPService)
             String otpCode = otpService.generateOTP(email);
             String body = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <style>
-                body {
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                margin: 0;
-                padding: 0;
-                }
-                .container {
-                max-width: 600px;
-                background: #ffffff;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                }
-                .header {
-                text-align: center;
-                font-size: 22px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 15px;
-                }
-                .otp-box {
-                text-align: center;
-                font-size: 26px;
-                font-weight: bold;
-                letter-spacing: 3px;
-                background: #eef2ff;
-                padding: 10px;
-                border-radius: 6px;
-                margin: 20px 0;
-                color: #1f2937;
-                }
-                .message {
-                font-size: 14px;
-                color: #555;
-                line-height: 1.6;
-                }
-                .footer {
-                margin-top: 20px;
-                font-size: 13px;
-                color: #777;
-                }
-            </style>
-            </head>
-            <body>
-            <div class="container">
-                <div class="header">Welcome to My Property Fact</div>
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                    <style>
+                        body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                        }
+                        .container {
+                        max-width: 600px;
+                        background: #ffffff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                        }
+                        .header {
+                        text-align: center;
+                        font-size: 22px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                        margin-bottom: 15px;
+                        }
+                        .otp-box {
+                        text-align: center;
+                        font-size: 26px;
+                        font-weight: bold;
+                        letter-spacing: 3px;
+                        background: #eef2ff;
+                        padding: 10px;
+                        border-radius: 6px;
+                        margin: 20px 0;
+                        color: #1f2937;
+                        }
+                        .message {
+                        font-size: 14px;
+                        color: #555;
+                        line-height: 1.6;
+                        }
+                        .footer {
+                        margin-top: 20px;
+                        font-size: 13px;
+                        color: #777;
+                        }
+                    </style>
+                    </head>
+                    <body>
+                    <div class="container">
+                        <div class="header">Welcome to My Property Fact</div>
 
-                <p class="message">
-                Hello,<br><br>
-                Your One-Time Password (OTP) to securely log in is:
-                </p>
+                        <p class="message">
+                        Hello,<br><br>
+                        Your One-Time Password (OTP) to securely log in is:
+                        </p>
 
-                <div class="otp-box">%s</div>
+                        <div class="otp-box">%s</div>
 
-                <p class="message">
-                Please do not share this OTP with anyone. It is valid for a limited time only.
-                If you did not request this, please ignore this email.
-                </p>
+                        <p class="message">
+                        Please do not share this OTP with anyone. It is valid for a limited time only.
+                        If you did not request this, please ignore this email.
+                        </p>
 
-                <div class="footer">
-                Regards,<br>
-                <strong>My Property Fact Team</strong>
-                </div>
-            </div>
-            </body>
-            </html>
-            """.formatted(otpCode);
+                        <div class="footer">
+                        Regards,<br>
+                        <strong>My Property Fact Team</strong>
+                        </div>
+                    </div>
+                    </body>
+                    </html>
+                    """.formatted(otpCode);
             sendEmailHandler.sendEmail(email, "OTP for MyPropertyFact", body);
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "OTP sent successfully",
-                // "otp", otpCode,
-                "expiresIn", 300 // 5 minutes
+                    "success", true,
+                    "message", "OTP sent successfully",
+                    // "otp", otpCode,
+                    "expiresIn", 300 // 5 minutes
             ));
-            
+
         } catch (IllegalArgumentException e) {
             // User-friendly validation errors
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage(), "message", e.getMessage()));
+                    .body(Map.of("error", e.getMessage(), "message", e.getMessage()));
         } catch (Exception e) {
             // Check for database/data truncation errors
             String errorMessage = e.getMessage();
             if (errorMessage != null && errorMessage.contains("Data truncation")) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Invalid phone number format", 
+                        .body(Map.of("error", "Invalid phone number format",
                                 "message", "Please enter a valid 10-digit phone number"));
             }
             // Generic error message
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to send OTP", 
+                    .body(Map.of("error", "Failed to send OTP",
                             "message", "Unable to send OTP. Please check your phone number and try again."));
         }
     }
@@ -316,7 +350,8 @@ public class AuthenticationController {
     /**
      * Verify OTP and register/login user
      * POST /auth/verify-otp
-     * Body: { "phoneNumber": "+911234567890", "otp": "123456", "fullName": "John Doe" }
+     * Body: { "phoneNumber": "+911234567890", "otp": "123456", "fullName": "John
+     * Doe" }
      */
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOTPAndRegister(@RequestBody Map<String, String> request) {
@@ -326,19 +361,20 @@ public class AuthenticationController {
             String fullName = request.get("fullName");
 
             if (email == null || email.isEmpty() ||
-                otpCode == null || otpCode.isEmpty()) {
+                    otpCode == null || otpCode.isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Email and OTP are required",
+                        .body(Map.of("error", "Email and OTP are required",
                                 "message", "Please enter both email and OTP"));
             }
 
             // Verify OTP (phone number will be normalized inside verifyOTP)
             boolean isValid = otpService.verifyOTP(email, otpCode);
-            
+
             if (!isValid) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid or expired OTP",
-                                "message", "The OTP you entered is incorrect or has expired. Please request a new OTP."));
+                        .body(Map.of("error", "Invalid or expired OTP",
+                                "message",
+                                "The OTP you entered is incorrect or has expired. Please request a new OTP."));
             }
 
             // Check if user exists
@@ -357,8 +393,8 @@ public class AuthenticationController {
                 user.setId(null);
                 user.setEmail(email);
                 // Ensure fullName is not null or empty
-                String userFullName = (fullName != null && !fullName.trim().isEmpty()) 
-                        ? fullName.trim() 
+                String userFullName = (fullName != null && !fullName.trim().isEmpty())
+                        ? fullName.trim()
                         : "User";
                 user.setFullName(userFullName);
                 // Generate a random email if not provided
@@ -366,7 +402,7 @@ public class AuthenticationController {
                 // Generate a secure random password
                 String randomPassword = UUID.randomUUID().toString();
                 user.setPassword(passwordEncoder.encode(randomPassword));
-                
+
                 // Set default USER role
                 Set<MasterRole> roles = new HashSet<>();
                 masterRoleRepository.findByRoleNameIgnoreCase("USER")
@@ -379,11 +415,10 @@ public class AuthenticationController {
                                     userRole.setDescription("Default user role");
                                     userRole.setIsActive(true);
                                     roles.add(masterRoleRepository.save(userRole));
-                                }
-                        );
+                                });
                 user.setRoles(roles);
                 user.setVerified(true); // Verified via OTP
-                
+
                 user = userRepository.save(user);
                 userStatus = "new";
             }
@@ -404,14 +439,15 @@ public class AuthenticationController {
             response.put("refreshToken", refreshToken);
             response.put("expiresIn", jwtService.getExpirationTime());
             // Get role names from MasterRole entities
-            List<String> roleNames = user.getRoles() != null 
-                ? user.getRoles().stream()
-                    .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
-                    .map(role -> "ROLE_" + role.getRoleName())
-                    .toList()
-                : List.of("ROLE_USER");
-            
-            // Use HashMap instead of Map.of() to handle null values (phone can be null for email-based registration)
+            List<String> roleNames = user.getRoles() != null
+                    ? user.getRoles().stream()
+                            .filter(role -> role != null && role.getIsActive() != null && role.getIsActive())
+                            .map(role -> "ROLE_" + role.getRoleName())
+                            .toList()
+                    : List.of("ROLE_USER");
+
+            // Use HashMap instead of Map.of() to handle null values (phone can be null for
+            // email-based registration)
             Map<String, Object> userMap = new HashMap<>();
             userMap.put("id", user.getId());
             userMap.put("fullName", user.getFullName() != null ? user.getFullName() : "");
@@ -430,21 +466,21 @@ public class AuthenticationController {
             while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
                 rootCause = rootCause.getCause();
             }
-            
+
             String errorMessage = rootCause.getMessage();
             String userFriendlyMessage;
-            
+
             // Check for specific database errors and provide user-friendly messages
             if (errorMessage != null) {
-                if (errorMessage.contains("Field 'id' doesn't have a default value") || 
-                    errorMessage.contains("doesn't have a default value")) {
+                if (errorMessage.contains("Field 'id' doesn't have a default value") ||
+                        errorMessage.contains("doesn't have a default value")) {
                     userFriendlyMessage = "Unable to create your account. Please contact support or try again later.";
                 } else if (errorMessage.contains("Data truncation")) {
                     userFriendlyMessage = "Invalid data provided. Please check your information and try again.";
                 } else if (errorMessage.contains("Duplicate entry") || errorMessage.contains("already exists")) {
                     userFriendlyMessage = "An account with this phone number already exists. Please sign in instead.";
-                } else if (errorMessage.contains("ConstraintViolationException") || 
-                          errorMessage.contains("constraint")) {
+                } else if (errorMessage.contains("ConstraintViolationException") ||
+                        errorMessage.contains("constraint")) {
                     userFriendlyMessage = "Invalid information provided. Please check your details and try again.";
                 } else {
                     // Generic user-friendly message for other errors
@@ -453,15 +489,77 @@ public class AuthenticationController {
             } else {
                 userFriendlyMessage = "Unable to complete your registration. Please try again or contact support if the problem persists.";
             }
-            
+
             // Log the actual error for debugging (but don't expose it to users)
-            // Note: This is a database configuration issue - the users table id column needs AUTO_INCREMENT
+            // Note: This is a database configuration issue - the users table id column
+            // needs AUTO_INCREMENT
             System.err.println("Error verifying OTP: " + errorMessage);
             e.printStackTrace();
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Registration failed", 
+                    .body(Map.of("error", "Registration failed",
                             "message", userFriendlyMessage));
         }
+    }
+
+    public String getMethodName(@RequestParam String param) {
+        return new String();
+    }
+
+    @GetMapping("/session")
+    public ResponseEntity<?> session(Authentication authentication, HttpServletRequest request) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        // String expiresAt = jwtService.getExpiryFromCookie(request);
+        String expiresAt = new Date(System.currentTimeMillis() + 2 * 60 * 1000).toInstant()
+                .toString();
+
+        return ResponseEntity.ok(Map.of(
+                "email", authentication.getName(),
+                "roles", authentication.getAuthorities()
+                        .stream()
+                        .map(a -> a.getAuthority())
+                        .toList(),
+                "expiresAt", expiresAt));
+    }
+
+    // Handling logout
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(httpSecure) // keep false for localhost
+                .path("/")
+                .sameSite(httpSecure ? "None" : "Lax")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+        return ResponseEntity.ok(Map.of("message", "Logged out"));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = null;
+        if (request.getCookies() != null) {
+            for (Cookie c : request.getCookies()) {
+                if ("refreshToken".equals(c.getName())) {
+                    refreshToken = c.getValue();
+                }
+            }
+        }
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String newAccessToken = jwtService.generateTokenFromRefresh(refreshToken);
+        ResponseCookie newCookie = ResponseCookie.from("token", newAccessToken)
+                .httpOnly(true)
+                .secure(httpSecure)
+                .path("/")
+                .sameSite(httpSecure ? "None" : "Lax")
+                .maxAge(accessTokenExpiration / 1000) // 1 day
+                .build();
+        response.addHeader("Set-Cookie", newCookie.toString());
+        return ResponseEntity.ok(Map.of("message", "Token refreshed"));
     }
 }
