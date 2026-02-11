@@ -20,7 +20,7 @@ import java.util.Map;
  * No authentication required - for public property browsing
  */
 @RestController
-@RequestMapping("/api/public/properties")
+@RequestMapping("/api/v1/public/properties")
 @Slf4j
 public class PublicPropertyController {
     

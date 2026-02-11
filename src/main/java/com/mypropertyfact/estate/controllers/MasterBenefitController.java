@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/benefit")
+@RequestMapping("/api/v1/benefit")
 public class MasterBenefitController {
 
     @Autowired

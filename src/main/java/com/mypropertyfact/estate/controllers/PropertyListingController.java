@@ -26,7 +26,7 @@ import java.util.Optional;
  * Handles user-submitted property listings from the portal form
  */
 @RestController
-@RequestMapping("/api/user/property-listings")
+@RequestMapping("/api/v1/user/property-listings")
 @Slf4j
 public class PropertyListingController {
     

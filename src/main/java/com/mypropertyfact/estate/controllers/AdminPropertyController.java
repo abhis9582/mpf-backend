@@ -23,7 +23,7 @@ import java.util.Map;
  * Only users with SUPERADMIN role can access these endpoints
  */
 @RestController
-@RequestMapping("/api/admin/property-listings")
+@RequestMapping("/api/v1/admin/property-listings")
 @Slf4j
 public class AdminPropertyController {
     

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/floor-plans")
+@RequestMapping("/api/v1/floor-plans")
 public class FloorPlanController {
     @Autowired
     private FloorPlanService floorPlanService;

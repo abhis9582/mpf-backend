@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/project-status")
+@RequestMapping("/api/v1/project-status")
 public class ProjectStatusController {
 
     private final ProjectStatusService projectStatusService;

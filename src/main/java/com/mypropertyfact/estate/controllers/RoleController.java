@@ -20,7 +20,7 @@ import java.util.Map;
  * Only users with SUPERADMIN role can access these endpoints
  */
 @RestController
-@RequestMapping("/api/admin/roles")
+@RequestMapping("/api/v1/admin/roles")
 @Slf4j
 public class RoleController {
     

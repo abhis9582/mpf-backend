@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/city")
+@RequestMapping("/api/v1/city")
 public class CityController {
     private final CityService cityService;
 

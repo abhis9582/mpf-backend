@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/feature")
+@RequestMapping("/api/v1/feature")
 public class FeatureController {
     
     @Autowired

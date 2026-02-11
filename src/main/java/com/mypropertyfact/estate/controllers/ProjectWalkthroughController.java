@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/project-walkthrough")
+@RequestMapping("/api/v1/project-walkthrough")
 public class ProjectWalkthroughController {
     @Autowired
     private ProjectWalkthroughService projectWalkthroughService;

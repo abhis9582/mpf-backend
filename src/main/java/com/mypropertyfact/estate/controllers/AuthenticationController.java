@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Slf4j
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RestController
 public class AuthenticationController {
 

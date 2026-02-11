@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/city-price-detail")
+@RequestMapping("/api/v1/city-price-detail")
 public class CityPriceDetailController {
     @Autowired
     private CityPriceDetailService cityPriceDetailService;

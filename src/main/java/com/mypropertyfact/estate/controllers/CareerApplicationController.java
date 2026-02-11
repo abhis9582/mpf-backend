@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/career")
+@RequestMapping("/api/v1/career")
 public class CareerApplicationController {
 
     @Autowired

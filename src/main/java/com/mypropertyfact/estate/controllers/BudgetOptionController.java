@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/budget-option")
+@RequestMapping("/api/v1/budget-option")
 public class BudgetOptionController {
     @Autowired
     private BudgetOptionService budgetOptionService;

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/web-story")
+@RequestMapping("/api/v1/web-story")
 public class WebStoryController {
 
     @Autowired

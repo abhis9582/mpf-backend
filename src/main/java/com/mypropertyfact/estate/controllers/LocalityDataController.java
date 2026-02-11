@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/locality-data")
+@RequestMapping("/api/v1/locality-data")
 @RestController
 public class LocalityDataController {
 

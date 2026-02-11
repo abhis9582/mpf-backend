@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/project-faqs")
+@RequestMapping("/api/v1/project-faqs")
 public class ProjectFaqsController {
     @Autowired
     private ProjectFaqsService projectFaqsService;

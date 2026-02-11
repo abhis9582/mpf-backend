@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/location-benefit")
+@RequestMapping("/api/v1/location-benefit")
 public class LocationBenefitController {
     @Autowired
     private LocationBenefitService locationBenefitService;

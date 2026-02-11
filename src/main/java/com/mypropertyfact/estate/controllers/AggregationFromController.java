@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/aggregationFrom")
+@RequestMapping("/api/v1/aggregationFrom")
 @Slf4j
 public class AggregationFromController {
     @Autowired

@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/blog-image")
+@RequestMapping("/api/v1/blog-image")
 public class BlogContentImageController {
 
     @Autowired

@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/user/properties")
+@RequestMapping("/api/v1/user/properties")
 @Slf4j
 public class UserPropertyController {
     

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/project-gallery")
+@RequestMapping("/api/v1/project-gallery")
 public class ProjectGalleryController {
     @Autowired
     private ProjectGalleryService projectGalleryService;

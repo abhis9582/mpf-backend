@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/top-locations-by-transaction")
+@RequestMapping("/api/v1/top-locations-by-transaction")
 public class TopLocationsByTransactionController {
     private TopLocationsByTransactionService topLocationsByTransactionService;
 

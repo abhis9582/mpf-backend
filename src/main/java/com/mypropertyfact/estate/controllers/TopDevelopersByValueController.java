@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/top-developers-by-value")
+@RequestMapping("/api/v1/top-developers-by-value")
 @RestController
 public class TopDevelopersByValueController {
     @Autowired

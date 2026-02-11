@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/enquiry")
+@RequestMapping("/api/v1/enquiry")
 public class EnquiryController {
     @Autowired
     private EnquiryService enquiryService;

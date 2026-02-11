@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping({"/get/images", "/fetch-image"})
+@RequestMapping({"/api/v1/get/images", "/api/v1/fetch-image"})
 public class FetchImageController {
     @Value("${uploads_path}")
     private String uploadDir;

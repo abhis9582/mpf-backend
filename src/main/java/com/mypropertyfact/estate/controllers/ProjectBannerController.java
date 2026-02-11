@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/project-banner")
+@RequestMapping("/api/v1/project-banner")
 public class ProjectBannerController {
     @Autowired
     private ProjectBannerService projectBannerService;

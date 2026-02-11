@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/web-story-category")
+@RequestMapping("/api/v1/web-story-category")
 public class WebStoryCategoryController {
 
     @Autowired

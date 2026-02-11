@@ -61,7 +61,7 @@ class MyPropertyFactApplicationTests {
 		Mockito.when(jwtService.generateToken(mockUser)).thenReturn(jwtToken);
 		Mockito.when(jwtService.generateRefreshToken(mockUser)).thenReturn(refreshToken);
 
-		mockMvc.perform(post("/auth/login")
+		mockMvc.perform(post("/api/v1/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"email\":\"mpf@gmail.com\",\"password\":\"mpf@2025\"}"))
 				.andExpect(status().isOk())
@@ -78,7 +78,7 @@ class MyPropertyFactApplicationTests {
 		Mockito.when(authenticationService.authenticate(Mockito.any(LoginUserDto.class)))
 				.thenThrow(new RuntimeException("Invalid credentials"));
 
-		mockMvc.perform(post("/auth/login")
+		mockMvc.perform(post("/api/v1/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"email\":\"admin@example.com\",\"password\":\"wrongpass\"}"))
 				.andExpect(status().isInternalServerError());
@@ -88,14 +88,14 @@ class MyPropertyFactApplicationTests {
 
 	@Test
 	void testLogoutSuccess() throws Exception {
-		mockMvc.perform(post("/auth/logout"))
+		mockMvc.perform(post("/api/v1/auth/logout"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("Logged out"));
 	}
 
 	@Test
 	void testLogoutClearsCookies() throws Exception {
-		mockMvc.perform(post("/auth/logout"))
+		mockMvc.perform(post("/api/v1/auth/logout"))
 				.andExpect(status().isOk())
 				.andExpect(header().exists("Set-Cookie"))
 				.andExpect(jsonPath("$.message").value("Logged out"));

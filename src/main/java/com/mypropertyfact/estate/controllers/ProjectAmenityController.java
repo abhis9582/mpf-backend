@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/project-amenity")
+@RequestMapping("/api/v1/project-amenity")
 public class ProjectAmenityController {
     @Autowired
     private ProjectAmenityService projectAmenityService;

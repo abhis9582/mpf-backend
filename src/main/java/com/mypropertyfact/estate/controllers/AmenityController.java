@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amenity")
+@RequestMapping("/api/v1/amenity")
 public class AmenityController {
     @Autowired
     private AmenityService amenityService;

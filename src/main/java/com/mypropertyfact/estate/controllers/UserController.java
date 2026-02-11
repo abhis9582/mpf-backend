@@ -14,7 +14,7 @@ import com.mypropertyfact.estate.repositories.UserRepository;
 
 import java.util.List;
 
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 @RestController
 @Slf4j
 public class UserController {
