@@ -72,6 +72,10 @@ public class User implements UserDetails {
     @Column(name = "enabled")
     private Boolean enabled = true;
 
+    /** Incremented on each admin login to invalidate previous sessions (single-session for admin). */
+    @Column(name = "token_version", nullable = false)
+    private Integer tokenVersion = 0;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;

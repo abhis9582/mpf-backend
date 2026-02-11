@@ -14,6 +14,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true, // Enables @Secured annotation
@@ -67,12 +72,35 @@ public class SecurityConfiguration {
     public UrlBasedCorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(corsProperties.isAllowCredentials());
-        config.setAllowedOriginPatterns(corsProperties.getAllowedOrigins());
-        config.setAllowedMethods(corsProperties.getAllowedMethods());
-        config.setAllowedHeaders(corsProperties.getAllowedHeaders());
+        List<String> origins = normalizeCorsList(corsProperties.getAllowedOrigins(),
+                "http://localhost:3000", "http://127.0.0.1:3000");
+        config.setAllowedOriginPatterns(origins);
+        config.setAllowedMethods(normalizeCorsList(corsProperties.getAllowedMethods(),
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(normalizeCorsList(corsProperties.getAllowedHeaders(), "*"));
+        config.setMaxAge(corsProperties.getMaxAge() > 0 ? corsProperties.getMaxAge() : 3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    /**
+     * Normalize CORS list from properties: supports indexed list or single comma-separated string.
+     * Trims and removes surrounding quotes from each value.
+     */
+    private static List<String> normalizeCorsList(List<String> fromProps, String... defaults) {
+        if (fromProps == null || fromProps.isEmpty()) {
+            return Arrays.asList(defaults);
+        }
+        List<String> result = fromProps.stream()
+                .flatMap(s -> s.contains(",") ? Stream.of(s.split(",")) : Stream.of(s))
+                .map(String::trim)
+                .map(s -> s.length() >= 2 && s.startsWith("\"") && s.endsWith("\"")
+                        ? s.substring(1, s.length() - 1) : s)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
+        return result.isEmpty() ? Arrays.asList(defaults) : result;
     }
 
 }

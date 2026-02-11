@@ -44,10 +44,11 @@ class MyPropertyFactApplicationTests {
 	}
 
 	@Test
-	void testLoginSuccess() {
+	void testLoginSuccess() throws Exception {
 		User mockUser = new User();
 		mockUser.setId(1);
-		mockUser.setEmail("admin@example.com");
+		mockUser.setEmail("mpf@gmail.com");
+		mockUser.setFullName("MPF User");
 		MasterRole mockRole = new MasterRole();
 		mockRole.setRoleName("SUPERADMIN");
 		mockRole.setDescription("Super admin role");
@@ -59,31 +60,45 @@ class MyPropertyFactApplicationTests {
 				.thenReturn(mockUser);
 		Mockito.when(jwtService.generateToken(mockUser)).thenReturn(jwtToken);
 		Mockito.when(jwtService.generateRefreshToken(mockUser)).thenReturn(refreshToken);
-		try {
+
 		mockMvc.perform(post("/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"username\":\"admin\",\"password\":\"pass\"}"))
+				.content("{\"email\":\"mpf@gmail.com\",\"password\":\"mpf@2025\"}"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.user.username").value("admin"))
+				.andExpect(jsonPath("$.user.email").value("mpf@gmail.com"))
+				.andExpect(jsonPath("$.user.id").value(1))
 				.andExpect(cookie().exists("token"))
 				.andExpect(cookie().exists("refreshToken"))
 				.andExpect(cookie().value("token", jwtToken))
 				.andExpect(cookie().value("refreshToken", refreshToken));
-		}catch (Exception e) {
-			log.error("Error in testLoginSuccess", e);
-		}
 	}
 
 	@Test
-    void testLoginFailure_InvalidCredentials() throws Exception {
-        // Simulate authentication failure
-        Mockito.when(authenticationService.authenticate(Mockito.any(LoginUserDto.class)))
-                .thenThrow(new RuntimeException("Invalid credentials"));
+	void testLoginFailure_InvalidCredentials() throws Exception {
+		Mockito.when(authenticationService.authenticate(Mockito.any(LoginUserDto.class)))
+				.thenThrow(new RuntimeException("Invalid credentials"));
 
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"admin\",\"password\":\"wrongpass\"}"))
-                .andExpect(status().isInternalServerError());
-    }
+		mockMvc.perform(post("/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"admin@example.com\",\"password\":\"wrongpass\"}"))
+				.andExpect(status().isInternalServerError());
+	}
+
+	// --- auth/logout tests ---
+
+	@Test
+	void testLogoutSuccess() throws Exception {
+		mockMvc.perform(post("/auth/logout"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("Logged out"));
+	}
+
+	@Test
+	void testLogoutClearsCookies() throws Exception {
+		mockMvc.perform(post("/auth/logout"))
+				.andExpect(status().isOk())
+				.andExpect(header().exists("Set-Cookie"))
+				.andExpect(jsonPath("$.message").value("Logged out"));
+	}
 
 }

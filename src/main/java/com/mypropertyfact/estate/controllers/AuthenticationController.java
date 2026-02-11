@@ -112,7 +112,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<Map<String, Object>> googleLogin(@RequestBody TokenRequest tokenRequest) throws Exception {
+    public ResponseEntity<?> googleLogin(@RequestBody TokenRequest tokenRequest,
+        HttpServletResponse response ) throws Exception {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(googleClientId)).build();
@@ -146,12 +147,29 @@ public class AuthenticationController {
                 userStatus = "new";
             }
             String jwtToken = jwtService.generateToken(user);
-            Map<String, Object> data = new HashMap<>();
-            data.put("status", userStatus);
-            data.put("token", jwtToken);
-            data.put("email", user.getEmail());
-            data.put("fullName", user.getFullName());
-            return ResponseEntity.ok(data);
+            String refreshToken = jwtService.generateRefreshToken(user);
+            ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
+                    .httpOnly(true)
+                    .secure(httpSecure)
+                    .path("/")
+                    .sameSite(httpSecure ? "None" : "Lax")
+                    .maxAge(accessTokenExpiration / 1000) // 1 day
+                    .build();
+            ResponseCookie refresh = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .secure(httpSecure)
+                    .path("/")
+                    .sameSite(httpSecure ? "None" : "Lax")
+                    .maxAge(refreshTokenExpiration / 1000) // 7 day
+                    .build();
+            response.addHeader("Set-Cookie", cookie.toString());
+            response.addHeader("Set-Cookie", refresh.toString());
+            LoginResponse loginResponse = new LoginResponse();
+            // loginResponse.setToken(jwtToken);
+            // loginResponse.setRefreshToken(refreshToken);
+            // loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            loginResponse.setUser(user);
+            return ResponseEntity.ok(loginResponse);
         } else {
             throw new RuntimeException("Invalid Google token");
         }
@@ -525,14 +543,22 @@ public class AuthenticationController {
     // Handling logout
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("token", "")
+        ResponseCookie accessCookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
-                .secure(httpSecure) // keep false for localhost
+                .secure(httpSecure)
                 .path("/")
                 .sameSite(httpSecure ? "None" : "Lax")
                 .maxAge(0)
                 .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(httpSecure)
+                .path("/")
+                .sameSite(httpSecure ? "None" : "Lax")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", accessCookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
         return ResponseEntity.ok(Map.of("message", "Logged out"));
     }
 

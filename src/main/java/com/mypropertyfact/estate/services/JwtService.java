@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -40,6 +41,7 @@ public class JwtService {
     private long jwtRefreshTokenExpiration;
 
     private final UserRepository userRepository;
+    private final UserRoleService userRoleService;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -69,6 +71,7 @@ public class JwtService {
         extraClaims.put("email", user.getEmail());
         extraClaims.put("userId", user.getId());
         extraClaims.put("fullName", user.getFullName());
+        extraClaims.put("tv", user.getTokenVersion() != null ? user.getTokenVersion() : 0);
         return buildToken(extraClaims, user, expiration);
     }
 
@@ -160,6 +163,23 @@ public class JwtService {
     }
 
     /**
+     * Extract token version from JWT (used for single-session invalidation for admin).
+     * Returns null if claim is missing (legacy tokens).
+     */
+    public Integer extractTokenVersion(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Object tv = claims.get("tv");
+            if (tv instanceof Number) {
+                return ((Number) tv).intValue();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Extract full name from JWT token
      */
     public String extractFullName(String token) {
@@ -168,9 +188,7 @@ public class JwtService {
     }
 
     public String getExpiryFromCookie(HttpServletRequest request) {
-
         String token = null;
-
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
                 if ("token".equals(c.getName())) {
@@ -179,13 +197,15 @@ public class JwtService {
                 }
             }
         }
-
         if (token == null) {
             return null;
         }
-
-        Claims claims = extractAllClaims(token);
-        return claims.getExpiration().toInstant().toString(); // ISO format
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.getExpiration().toInstant().toString(); // ISO format
+        } catch (Exception e) {
+            return null; // expired or invalid token
+        }
     }
 
     public String generateTokenFromRefresh(String refreshToken) {
@@ -193,11 +213,19 @@ public class JwtService {
             throw new RuntimeException("Invalid refresh token");
         }
         String email = extractUsername(refreshToken);
-        Optional<User> user = userRepository.findByEmail(email);
-        if(user.isEmpty()) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found");
         }
-        return generateToken(user.get());
+        User user = userOpt.get();
+        if (userRoleService.userHasRole(user.getId(), "SUPERADMIN")) {
+            Integer tokenVersion = extractTokenVersion(refreshToken);
+            Integer currentVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+            if (!Objects.equals(tokenVersion, currentVersion)) {
+                throw new RuntimeException("Session invalidated by another login");
+            }
+        }
+        return generateToken(user);
     }
 
     public boolean isRefreshTokenValid(String refreshToken) {

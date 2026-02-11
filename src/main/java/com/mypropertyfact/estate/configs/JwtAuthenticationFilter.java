@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.configs;
 
+import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.services.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -53,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             for (Cookie c : request.getCookies()) {
                 if ("token".equals(c.getName())) {
                     token = c.getValue();
+                    break;
                 }
             }
         }
@@ -71,18 +73,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(token, userDetails)) {
+                    boolean sessionValid = true;
+                    if (userDetails instanceof User user) {
+                        boolean isSuperAdmin = user.getRoles() != null && user.getRoles().stream()
+                                .anyMatch(r -> r != null && Boolean.TRUE.equals(r.getIsActive())
+                                        && "SUPERADMIN".equalsIgnoreCase(r.getRoleName()));
+                        if (isSuperAdmin) {
+                            Integer tokenVersion = jwtService.extractTokenVersion(token);
+                            Integer currentVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+                            sessionValid = (tokenVersion != null && tokenVersion.equals(currentVersion));
+                        }
+                    }
+                    if (sessionValid) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities());
 
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
+                        authToken.setDetails(
+                                new WebAuthenticationDetailsSource()
+                                        .buildDetails(request));
 
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource()
-                                    .buildDetails(request));
-
-                    SecurityContextHolder.getContext()
-                            .setAuthentication(authToken);
+                        SecurityContextHolder.getContext()
+                                .setAuthentication(authToken);
+                    }
                 }
             }
             filterChain.doFilter(request, response);
