@@ -511,9 +511,7 @@ public class AuthenticationController {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        // String expiresAt = jwtService.getExpiryFromCookie(request);
-        String expiresAt = new Date(System.currentTimeMillis() + 2 * 60 * 1000).toInstant()
-                .toString();
+        String expiresAt = jwtService.getExpiryFromCookie(request);
 
         return ResponseEntity.ok(Map.of(
                 "email", authentication.getName(),
