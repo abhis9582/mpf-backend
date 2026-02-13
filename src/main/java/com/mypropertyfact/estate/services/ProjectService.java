@@ -55,7 +55,7 @@ public class ProjectService {
     private CommonMapper commonMapper;
 
     @Value("${upload_dir}")
-    private String uploadDir; //D:/my-property-fact/public/
+    private String uploadDir; // D:/my-property-fact/public/
 
     @Transactional
     public List<ProjectDetailDto> fetchAllProjects() {
@@ -83,17 +83,20 @@ public class ProjectService {
             return dto;
         }).toList();
     }
+
     private float[] getBudgetRange(String budget) {
         return switch (budget) {
-            case "Up to 1Cr*" -> new float[]{0, 1};
-            case "1-3 Cr*" -> new float[]{1, 3};
-            case "3-5 Cr*" -> new float[]{3, 5};
-            case "Above 5 Cr*" -> new float[]{5, 20};
-            default -> new float[]{0, 20};
+            case "Up to 1Cr*" -> new float[] { 0, 1 };
+            case "1-3 Cr*" -> new float[] { 1, 3 };
+            case "3-5 Cr*" -> new float[] { 3, 5 };
+            case "Above 5 Cr*" -> new float[] { 5, 20 };
+            default -> new float[] { 0, 20 };
         };
     }
+
     private boolean isNumeric(String str) {
-        if (str == null) return false;
+        if (str == null)
+            return false;
         try {
             Float.parseFloat(str);
             return true;
@@ -123,7 +126,9 @@ public class ProjectService {
         Project project = dbProject.get();
         Set<Amenity> dtoAmenities = new HashSet<>();
         if (dto.getAmenityList() != null) {
-            Set<Amenity> list = dto.getAmenityList().stream().map(amenity -> amenityRepository.findById(amenity.getId()).orElse(null)).collect(Collectors.toSet());
+            Set<Amenity> list = dto.getAmenityList().stream()
+                    .map(amenity -> amenityRepository.findById(amenity.getId()).orElse(null))
+                    .collect(Collectors.toSet());
             dtoAmenities.addAll(list);
         }
         if (dtoAmenities.isEmpty()) {
@@ -140,8 +145,9 @@ public class ProjectService {
     public ProjectDetailDto getBySlugUrl(String url) {
         log.info("Fetching project by slug: {}", url);
         Optional<Project> projectData = projectRepository.findBySlugURLWithAllRelations(url);
-        
-        // If not found by the main query, try finding by slug directly to check if project exists
+
+        // If not found by the main query, try finding by slug directly to check if
+        // project exists
         if (projectData.isEmpty()) {
             log.warn("Project not found with approved/published status, checking if project exists with slug: {}", url);
             // Try without status filter first to see if project exists
@@ -153,14 +159,14 @@ public class ProjectService {
                 Optional<Project> projectBySlug = projectRepository.findBySlugURL(url);
                 if (projectBySlug.isPresent()) {
                     Project project = projectBySlug.get();
-                    log.error("Project found with simple query but not with EntityGraph - ID: {}, Name: {}", 
-                        project.getId(), project.getProjectName());
+                    log.error("Project found with simple query but not with EntityGraph - ID: {}, Name: {}",
+                            project.getId(), project.getProjectName());
                 } else {
                     log.error("No project found with slug: {} - Slug does not exist in database", url);
                 }
             }
         }
-        
+
         ProjectDetailDto detailDto = new ProjectDetailDto();
         if (projectData.isPresent()) {
             Project project = projectData.get();
@@ -210,7 +216,6 @@ public class ProjectService {
         return response;
     }
 
-
     private void deleteDirectory(String dirPath) {
         File directory = new File(dirPath);
         if (directory.exists()) {
@@ -227,9 +232,9 @@ public class ProjectService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "projectShortDetails", allEntries = true)
     public Response saveProject(MultipartFile projectLogo,
-                                MultipartFile locationMap,
-                                MultipartFile projectThumbnail,
-                                AddUpdateProjectDto addUpdateProjectDto) {
+            MultipartFile locationMap,
+            MultipartFile projectThumbnail,
+            AddUpdateProjectDto addUpdateProjectDto) {
         Response response = new Response();
         List<String> savedFiles = new ArrayList<>();
         String fileDestination = null;
@@ -269,17 +274,19 @@ public class ProjectService {
                 if (projectLogo != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectLogo(), projectDir);
                     if (!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)) {
-                        throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
+                        throw new IllegalArgumentException(
+                                "Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
                     }
                     String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
-                    project.setProjectLogo(savedProjectLogoImageName); //792 × 203 px Intrinsic aspect ratio:	792∶203
+                    project.setProjectLogo(savedProjectLogoImageName); // 792 × 203 px Intrinsic aspect ratio: 792∶203
                     savedFiles.add(savedProjectLogoImageName);
                     project.setProjectThumbnailAltTag(fileUtils.generateImageAltTag(projectLogo));
                 }
                 if (locationMap != null && projectDir != null && !projectDir.isBlank()) {
-                    fileUtils.deleteFileFromDestination(project.getLocationMap(), projectDir); //300∶193  900 × 579
+                    fileUtils.deleteFileFromDestination(project.getLocationMap(), projectDir); // 300∶193 900 × 579
                     if (!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
+                        throw new IllegalArgumentException(
+                                "Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
                     }
                     String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
                     project.setLocationMap(projectLocationMapImage);
@@ -289,14 +296,15 @@ public class ProjectService {
                 if (projectThumbnail != null && projectDir != null && !projectDir.isBlank()) {
                     fileUtils.deleteFileFromDestination(project.getProjectThumbnail(), projectDir);
                     if (!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
+                        throw new IllegalArgumentException(
+                                "Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
                     }
                     String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
-                    project.setProjectThumbnail(projectThumbnailImage); //600 x 600 1:1
+                    project.setProjectThumbnail(projectThumbnailImage); // 600 x 600 1:1
                     savedFiles.add(projectThumbnailImage);
                     project.setProjectThumbnailAltTag(fileUtils.generateImageAltTag(projectThumbnail));
                 }
-                //save data to database
+                // save data to database
                 mapDtoToEntity(project, addUpdateProjectDto);
                 projectRepository.save(project);
                 response.setMessage(Constants.PROJECT_UPDATED);
@@ -308,7 +316,8 @@ public class ProjectService {
                 }
                 if (projectLogo != null) {
                     if (!fileUtils.isValidAspectRatio(projectLogo.getInputStream(), 792, 203)) {
-                        throw new IllegalArgumentException("Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
+                        throw new IllegalArgumentException(
+                                "Project logo should be of aspect ratio 3:9 or having dimension 792x203 or 390×100");
                     }
                     String savedProjectLogoImageName = processFile(projectLogo, projectDir, 792, 203);
                     savedFiles.add(savedProjectLogoImageName);
@@ -316,7 +325,8 @@ public class ProjectService {
                 }
                 if (locationMap != null) {
                     if (!fileUtils.isValidAspectRatio(locationMap.getInputStream(), 815, 813)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
+                        throw new IllegalArgumentException(
+                                "Location map image should be of aspect ratio 3:9 or having dimension 900x579 or 600×386");
                     }
                     String projectLocationMapImage = processFile(locationMap, projectDir, 815, 813);
                     newProject.setLocationMap(projectLocationMapImage);
@@ -324,10 +334,11 @@ public class ProjectService {
                 }
                 if (projectThumbnail != null) {
                     if (!fileUtils.isValidAspectRatio(projectThumbnail.getInputStream(), 600, 600)) {
-                        throw new IllegalArgumentException("Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
+                        throw new IllegalArgumentException(
+                                "Location map image should be of aspect ratio 1:1 or having dimension 600x600 or 400×400");
                     }
                     String projectThumbnailImage = processFile(projectThumbnail, projectDir, 600, 600);
-                    newProject.setProjectThumbnail(projectThumbnailImage); //600 x 600 1:1
+                    newProject.setProjectThumbnail(projectThumbnailImage); // 600 x 600 1:1
                     savedFiles.add(projectThumbnailImage);
                 }
                 mapDtoToEntity(newProject, addUpdateProjectDto);
@@ -401,6 +412,7 @@ public class ProjectService {
         project.setFloorPlanDesc(dto.getFloorPlanDescription());
         project.setStatus(dto.isStatus());
     }
+
     @Transactional
     @Cacheable(value = "projectShortDetails")
     public List<ProjectShortDetails> getShortDetails() {
@@ -416,7 +428,7 @@ public class ProjectService {
     public Set<String> getAllFloorTypes() {
         List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
         Set<String> uniqueBhk = new HashSet<>();
-        projects.stream().map(project-> {
+        projects.stream().map(project -> {
             uniqueBhk.addAll(List.of(project.getProjectConfiguration().split(",")));
             return null;
         }).toList();
@@ -433,4 +445,37 @@ public class ProjectService {
             return details;
         }).toList();
     }
+
+    // Handling project upload by excel file
+    public Response uploadProjects(MultipartFile file) {
+        Response response = new Response();
+        if (file == null) {
+            response.setMessage("File is required");
+            response.setIsSuccess(0);
+            return response;
+        }
+        if (!isExcelFile(file)) {
+            response.setMessage("File should be an excel file");
+            response.setIsSuccess(0);
+            return response;
+        }
+        try {
+            String savedFileName = fileUtils.saveOriginalImage(file, uploadDir);
+            response.setMessage("Projects uploaded successfully");
+            response.setIsSuccess(1);
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setIsSuccess(0);
+        }
+        return response;
+    }
+
+    // Checking if file is an excel file
+    private boolean isExcelFile(MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        return fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
+    }
+
+    
+
 }

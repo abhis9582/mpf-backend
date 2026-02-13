@@ -13,6 +13,8 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -360,5 +362,155 @@ public class FileUtils {
     public boolean checkFileSize(MultipartFile file) {
         // Check file size (<= 5 MB here)
         return file.getSize() <= MAX_FILE_SIZE;
+    }
+
+    /** Maximum quality for JPEG when we re-encode (avoids blur). */
+    private static final float JPEG_QUALITY_MAX = 0.98f;
+
+    /** Mild sharpen kernel (3x3) for upscaled images – restores perceived sharpness. */
+    private static final float[] SHARPEN_KERNEL = {
+            0f, -0.5f, 0f,
+            -0.5f, 3f, -0.5f,
+            0f, -0.5f, 0f
+    };
+
+    /**
+     * Apply a mild sharpen to reduce blur after upscaling. Returns a new BufferedImage.
+     */
+    private BufferedImage applySharpen(BufferedImage src) {
+        try {
+            Kernel kernel = new Kernel(3, 3, SHARPEN_KERNEL);
+            ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+            BufferedImage dest = new BufferedImage(src.getWidth(), src.getHeight(), src.getType());
+            op.filter(src, dest);
+            return dest;
+        } catch (Exception e) {
+            log.warn("Sharpen failed, using original: {}", e.getMessage());
+            return src;
+        }
+    }
+
+    /**
+     * Detect image format from magic bytes. Returns extension (e.g. "png", "jpg") or null.
+     */
+    private String detectImageExtension(byte[] data) {
+        if (data == null || data.length < 12)
+            return null;
+        if (data[0] == (byte) 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47)
+            return "png";
+        if (data[0] == (byte) 0xFF && data[1] == (byte) 0xD8)
+            return "jpg";
+        if (data[0] == 0x47 && data[1] == 0x49 && data[2] == 0x46)
+            return "gif";
+        if (data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46 && data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50)
+            return "webp";
+        return null;
+    }
+
+    /**
+     * Save image from byte array at display-ready size (no blur from tiny images).
+     * Always resizes to fit within (maxWidth, maxHeight): upscales small images (e.g. 336x161
+     * from Excel) so the saved file has correct dimensions and the browser doesn't upscale.
+     * Uses BICUBIC and 0.98 quality.
+     */
+    public String saveImageFromBytes(byte[] data, String originalFileName, String destination,
+                                     int maxWidth, int maxHeight) {
+        if (data == null || data.length == 0 || destination == null) {
+            return null;
+        }
+        try {
+            if (!destination.endsWith(File.separator)) {
+                destination += File.separator;
+            }
+            File dir = new File(destination);
+            if (!dir.exists() && !dir.mkdirs()) {
+                return null;
+            }
+            String name = originalFileName != null ? originalFileName.replaceAll("\\s+", "_") : "image";
+            String extension = detectImageExtension(data);
+            if (extension == null) {
+                int dot = name.lastIndexOf('.');
+                if (dot > 0) {
+                    extension = name.substring(dot + 1).toLowerCase();
+                    name = name.substring(0, dot);
+                } else {
+                    extension = "png";
+                }
+            } else {
+                int dot = name.lastIndexOf('.');
+                if (dot > 0)
+                    name = name.substring(0, dot);
+            }
+            if (!Arrays.asList("png", "jpg", "jpeg", "gif", "webp").contains(extension)) {
+                extension = "png";
+            }
+            String fileName = System.currentTimeMillis() + "_" + name + "." + extension;
+            File outFile = new File(destination + fileName);
+
+            BufferedImage originalImage = ImageIO.read(new java.io.ByteArrayInputStream(data));
+            if (originalImage == null) {
+                return null;
+            }
+            int origW = originalImage.getWidth();
+            int origH = originalImage.getHeight();
+
+            // Always resize to target (upscale small images so output isn't tiny when displayed)
+            double scale = Math.min((double) maxWidth / origW, (double) maxHeight / origH);
+            int outW = Math.max(1, (int) Math.round(origW * scale));
+            int outH = Math.max(1, (int) Math.round(origH * scale));
+            boolean wasUpscaled = outW > origW || outH > origH;
+
+            BufferedImage toSave = new BufferedImage(outW, outH,
+                    originalImage.getType() == BufferedImage.TYPE_INT_ARGB || originalImage.getType() == BufferedImage.TYPE_4BYTE_ABGR
+                            ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = toSave.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            g.drawImage(originalImage, 0, 0, outW, outH, null);
+            g.dispose();
+
+            if (("jpg".equals(extension) || "jpeg".equals(extension)) && (toSave.getType() == BufferedImage.TYPE_INT_ARGB || toSave.getType() == BufferedImage.TYPE_4BYTE_ABGR)) {
+                BufferedImage rgb = new BufferedImage(toSave.getWidth(), toSave.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2 = rgb.createGraphics();
+                g2.setColor(Color.WHITE);
+                g2.fillRect(0, 0, rgb.getWidth(), rgb.getHeight());
+                g2.drawImage(toSave, 0, 0, null);
+                g2.dispose();
+                toSave = rgb;
+            }
+
+            if (wasUpscaled) {
+                toSave = applySharpen(toSave);
+            }
+
+            String formatName = "jpeg".equals(extension) ? "jpg" : extension;
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(formatName);
+            if (!writers.hasNext()) {
+                writers = ImageIO.getImageWritersByFormatName(extension);
+            }
+            if (!writers.hasNext()) {
+                Thumbnails.of(toSave).scale(1.0).outputFormat(formatName).outputQuality(JPEG_QUALITY_MAX).toFile(outFile);
+                return fileName;
+            }
+            ImageWriter writer = writers.next();
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            if (param.canWriteCompressed() && ("jpg".equals(formatName) || "jpeg".equals(extension) || "webp".equals(extension))) {
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(JPEG_QUALITY_MAX);
+            }
+            try (FileOutputStream fos = new FileOutputStream(outFile);
+                 ImageOutputStream ios = ImageIO.createImageOutputStream(fos)) {
+                writer.setOutput(ios);
+                writer.write(null, new IIOImage(toSave, null, null), param);
+            } finally {
+                writer.dispose();
+            }
+            return fileName;
+        } catch (Exception e) {
+            log.error("Failed to save image from bytes: {}", e.getMessage());
+            return null;
+        }
     }
 }
