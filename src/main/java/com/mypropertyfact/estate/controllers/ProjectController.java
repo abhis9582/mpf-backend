@@ -81,4 +81,9 @@ public class ProjectController {
     ) {
         return ResponseEntity.ok(projectService.getProjectInParts(page, size));
     }
+
+    @PostMapping("/upload-projects")
+    public ResponseEntity<Response> uploadProjects(@RequestParam("file") MultipartFile file) {
+        return new ResponseEntity<>(projectService.uploadProjects(file), HttpStatus.OK);
+    }
 }
