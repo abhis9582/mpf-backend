@@ -8,20 +8,19 @@ import com.mypropertyfact.estate.models.TopLocationByTransactionResponse;
 import com.mypropertyfact.estate.models.TopLocationsByTransactionMapper;
 import com.mypropertyfact.estate.repositories.HeaderRepository;
 import com.mypropertyfact.estate.repositories.TopLocationsByTransactionRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TopLocationsByTransactionService {
 
-    private TopLocationsByTransactionRepository topLocationsByTransactionRepository;
-    private HeaderRepository headerRepository;
-    TopLocationsByTransactionService(TopLocationsByTransactionRepository topLocationsByTransactionRepository,
-                                     HeaderRepository headerRepository){
-        this.topLocationsByTransactionRepository = topLocationsByTransactionRepository;
-        this.headerRepository = headerRepository;
-    }
+    private final TopLocationsByTransactionRepository topLocationsByTransactionRepository;
+    private final HeaderRepository headerRepository;
 
     public List<TopLocationsByTransaction> getAllTopLocationsByTransaction(){
         return topLocationsByTransactionRepository.findAll();
@@ -112,7 +111,7 @@ public class TopLocationsByTransactionService {
 
             return new ArrayList<>(dataMap.values());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return Collections.emptyList(); // Return an empty list instead of null to prevent NullPointerException
         }
     }

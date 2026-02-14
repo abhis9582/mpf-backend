@@ -6,6 +6,7 @@ import com.mypropertyfact.estate.entities.CareerApplication;
 import com.mypropertyfact.estate.interfaces.CareerApplicationService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CareerApplicationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -16,12 +17,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CareerApplicationImpl implements CareerApplicationService {
-    @Autowired
-    private CareerApplicationRepository careerApplicationRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final CareerApplicationRepository careerApplicationRepository;
+
+    private final FileUtils fileUtils;
 
     @Value("${upload_dir}")
     private String uploadDir;

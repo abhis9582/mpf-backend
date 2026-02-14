@@ -7,6 +7,7 @@ import com.mypropertyfact.estate.entities.ProjectGallery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectGalleryRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,16 +18,17 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectGalleryService {
-    @Autowired
-    private ProjectGalleryRepository projectGalleryRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
+
+    private final ProjectGalleryRepository projectGalleryRepository;
+
+    private final ProjectRepository projectRepository;
+
     @Value("${uploads_path}")
     private String uploadDir;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     public List<Map<String, Object>> getAllGalleryImages() {
         List<ProjectGallery> galleryImages = this.projectGalleryRepository.findAll();

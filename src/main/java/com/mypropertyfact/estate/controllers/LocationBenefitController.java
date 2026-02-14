@@ -1,8 +1,9 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.LocationBenefitDto;
+import com.mypropertyfact.estate.dtos.LocationBenefitDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.LocationBenefitService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/location-benefit")
+@RequiredArgsConstructor
 public class LocationBenefitController {
-    @Autowired
-    private LocationBenefitService locationBenefitService;
+
+    private final LocationBenefitService locationBenefitService;
+
     @GetMapping("/get-all")
     public ResponseEntity<List<Map<String, Object>>> getAllBenefits(){
         return new ResponseEntity<>(this.locationBenefitService.getAllBenefits(), HttpStatus.OK);

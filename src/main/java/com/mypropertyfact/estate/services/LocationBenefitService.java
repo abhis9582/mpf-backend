@@ -1,12 +1,13 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.LocationBenefitDto;
+import com.mypropertyfact.estate.dtos.LocationBenefitDto;
 import com.mypropertyfact.estate.entities.LocationBenefit;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.LocationBenefitRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -19,12 +20,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class LocationBenefitService {
-    @Autowired
-    private LocationBenefitRepository locationBenefitRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
+
+    private final LocationBenefitRepository locationBenefitRepository;
+
+    private final ProjectRepository projectRepository;
+
     @Value("${uploads_path}")
     private String uploadDir;
 
@@ -71,10 +75,13 @@ public class LocationBenefitService {
             }
             File destinationDir = new File(dir);
             if (!destinationDir.exists()) {
-                destinationDir.mkdirs();
+                boolean created = destinationDir.mkdirs();
+                if(!created) {
+                    throw new RuntimeException("Failed to create directory: " + dir);
+                }
             }
             if (file != null) {
-                if (!file.getContentType().startsWith("image/")) {
+                if (file.getContentType() != null && !file.getContentType().startsWith("image/")) {
                     response.setMessage("Only image is allowed !");
                     return response;
                 }
@@ -97,7 +104,7 @@ public class LocationBenefitService {
                                 Files.delete(imagePath);
                             }
                         } catch (IOException e) {
-                            e.printStackTrace(); // Or handle logging more gracefully
+                            log.error(e.getMessage());
                         }
                         benefit.setIconImage(iconImageName);
                     }
@@ -127,7 +134,8 @@ public class LocationBenefitService {
     public Response deleteLocationBenefit(int id) {
         Response response = new Response();
         try {
-            LocationBenefit benefit = this.locationBenefitRepository.findById(id).get();
+            LocationBenefit benefit = this.locationBenefitRepository.findById(id)
+                    .orElseThrow(()-> new IllegalArgumentException("No benefit fount with id: "+ id));
             if (benefit != null) {
                 Path imagePath = Paths.get(uploadDir, benefit.getIconImage());
                 if (Files.exists(imagePath)) {

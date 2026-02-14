@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.entities.BudgetOption;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.BudgetOptionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/budget-option")
+@RequiredArgsConstructor
 public class BudgetOptionController {
-    @Autowired
-    private BudgetOptionService budgetOptionService;
+    private final BudgetOptionService budgetOptionService;
     @GetMapping("/get-all")
     public ResponseEntity<List<BudgetOption>> getAll(){
         return new ResponseEntity<>(budgetOptionService.getAll(), HttpStatus.OK);

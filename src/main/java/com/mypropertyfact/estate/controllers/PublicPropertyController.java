@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.entities.Enquery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.EnquiryService;
 import com.mypropertyfact.estate.services.PropertyListingService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,17 +23,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/public/properties")
 @Slf4j
+@RequiredArgsConstructor
 public class PublicPropertyController {
     
     private final PropertyListingService propertyListingService;
     
     @Autowired
     private EnquiryService enquiryService;
-    
-    public PublicPropertyController(PropertyListingService propertyListingService) {
-        this.propertyListingService = propertyListingService;
-    }
-    
     /**
      * Get all approved property listings (public access)
      * GET /api/public/properties

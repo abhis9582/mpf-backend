@@ -1,18 +1,19 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.LocalityDto;
+import com.mypropertyfact.estate.dtos.LocalityDto;
 import com.mypropertyfact.estate.interfaces.LocalityService;
 import com.mypropertyfact.estate.models.Response;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/locality")
+@RequiredArgsConstructor
 public class LocalityController {
 
-    @Autowired
-    private LocalityService localityService;
+    private final LocalityService localityService;
 
     @GetMapping("/get-all")
     public ResponseEntity<?> getAllLocalities() {

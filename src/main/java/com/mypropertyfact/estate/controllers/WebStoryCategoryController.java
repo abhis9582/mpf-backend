@@ -1,18 +1,19 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.WebStoryCategoryDto;
+import com.mypropertyfact.estate.dtos.WebStoryCategoryDto;
 import com.mypropertyfact.estate.interfaces.WebStoryCategoryService;
 import com.mypropertyfact.estate.models.Response;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/web-story-category")
+@RequiredArgsConstructor
 public class WebStoryCategoryController {
 
-    @Autowired
-    private WebStoryCategoryService webStoryCategoryService;
+    private final WebStoryCategoryService webStoryCategoryService;
 
     @GetMapping("/get-all")
     public ResponseEntity<?> getAllCategories() {

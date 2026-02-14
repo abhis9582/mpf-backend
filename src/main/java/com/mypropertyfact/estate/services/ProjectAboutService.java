@@ -1,13 +1,13 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.Constants;
-import com.mypropertyfact.estate.configs.dtos.ProjectAboutDto;
+import com.mypropertyfact.estate.dtos.ProjectAboutDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectsAbout;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectAboutRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
@@ -16,12 +16,12 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectAboutService {
 
-    @Autowired
-    private ProjectAboutRepository projectAboutRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
+    private final ProjectAboutRepository projectAboutRepository;
+
+    private final ProjectRepository projectRepository;
 
     public List<Map<String, Object>> getAllProjectsAbout(){
         List<ProjectsAbout> allProjectAbout = projectAboutRepository.findAll();

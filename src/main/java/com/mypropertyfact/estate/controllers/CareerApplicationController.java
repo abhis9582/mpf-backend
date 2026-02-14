@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.dtos.CareerApplicationDto;
 import com.mypropertyfact.estate.interfaces.CareerApplicationService;
 import com.mypropertyfact.estate.models.Response;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/career")
+@RequiredArgsConstructor
 public class CareerApplicationController {
 
-    @Autowired
-    private CareerApplicationService careerApplicationService;
+    private final CareerApplicationService careerApplicationService;
 
     @GetMapping
     public ResponseEntity<List<CareerApplicationDto>> getAllApplication() {

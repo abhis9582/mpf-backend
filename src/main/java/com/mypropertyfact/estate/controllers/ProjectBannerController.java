@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.ProjectBanner;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectBannerService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/project-banner")
+@RequiredArgsConstructor
 public class ProjectBannerController {
-    @Autowired
-    private ProjectBannerService projectBannerService;
+
+    private final ProjectBannerService projectBannerService;
 
     @Transactional
     @GetMapping("/get-all")

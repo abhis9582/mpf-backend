@@ -6,6 +6,7 @@ import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.services.PropertyListingService;
 import com.mypropertyfact.estate.services.UserRoleService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,18 +26,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/property-listings")
 @Slf4j
+@RequiredArgsConstructor
 public class AdminPropertyController {
-    
     private final PropertyListingService propertyListingService;
     private final UserRoleService userRoleService;
-    
-    public AdminPropertyController(
-            PropertyListingService propertyListingService,
-            UserRoleService userRoleService) {
-        this.propertyListingService = propertyListingService;
-        this.userRoleService = userRoleService;
-    }
-    
     /**
      * Get all property listings (admin can see all)
      * GET /api/admin/property-listings

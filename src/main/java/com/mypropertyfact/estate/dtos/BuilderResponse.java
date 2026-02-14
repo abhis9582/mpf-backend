@@ -1,4 +1,4 @@
-package com.mypropertyfact.estate.configs.dtos;
+package com.mypropertyfact.estate.dtos;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.BuilderView;
 import lombok.AllArgsConstructor;

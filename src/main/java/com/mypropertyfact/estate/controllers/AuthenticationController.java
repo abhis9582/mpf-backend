@@ -4,9 +4,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.mypropertyfact.estate.configs.dtos.LoginResponse;
-import com.mypropertyfact.estate.configs.dtos.LoginUserDto;
-import com.mypropertyfact.estate.configs.dtos.RegisterUserDto;
+import com.mypropertyfact.estate.dtos.LoginResponse;
+import com.mypropertyfact.estate.dtos.LoginUserDto;
+import com.mypropertyfact.estate.dtos.RegisterUserDto;
 import com.mypropertyfact.estate.dtos.TokenRequest;
 import com.mypropertyfact.estate.entities.MasterRole;
 import com.mypropertyfact.estate.entities.User;
@@ -22,6 +22,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Slf4j
 @RequestMapping("/api/v1/auth")
 @RestController
+@RequiredArgsConstructor
 public class AuthenticationController {
 
     @Value("${google.client.id}")
@@ -60,19 +62,6 @@ public class AuthenticationController {
     private long accessTokenExpiration;
     @Value("${security.jwt.refresh.expiration-time}")
     private long refreshTokenExpiration;
-
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService,
-            UserRepository userRepository,
-            MasterRoleRepository masterRoleRepository, OTPService otpService, PasswordEncoder passwordEncoder,
-            SendEmailHandler sendEmailHandler) {
-        this.jwtService = jwtService;
-        this.authenticationService = authenticationService;
-        this.userRepository = userRepository;
-        this.masterRoleRepository = masterRoleRepository;
-        this.otpService = otpService;
-        this.passwordEncoder = passwordEncoder;
-        this.sendEmailHandler = sendEmailHandler;
-    }
 
     @PostMapping("/signup")
     public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {

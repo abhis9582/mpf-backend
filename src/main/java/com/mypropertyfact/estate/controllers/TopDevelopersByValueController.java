@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.entities.TopDevelopersByValue;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.models.TopDevelopersByValueResponse;
 import com.mypropertyfact.estate.services.TopDevelopersByValueService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +14,11 @@ import java.util.List;
 
 @RequestMapping("/api/v1/top-developers-by-value")
 @RestController
+@RequiredArgsConstructor
 public class TopDevelopersByValueController {
-    @Autowired
-    private TopDevelopersByValueService topDevelopersByValueService;
+
+    private final TopDevelopersByValueService topDevelopersByValueService;
+
     @GetMapping("/get-all")
     public ResponseEntity<List<TopDevelopersByValue>> getAll(){
         return new ResponseEntity<>(topDevelopersByValueService.getAllTopDevelopersByValue(), HttpStatus.OK);

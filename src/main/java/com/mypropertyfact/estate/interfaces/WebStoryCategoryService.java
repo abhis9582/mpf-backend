@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.interfaces;
 
-import com.mypropertyfact.estate.configs.dtos.WebStoryCategoryDto;
+import com.mypropertyfact.estate.dtos.WebStoryCategoryDto;
 import com.mypropertyfact.estate.models.Response;
 
 import java.util.List;

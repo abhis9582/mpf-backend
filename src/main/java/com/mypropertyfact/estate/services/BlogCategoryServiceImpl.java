@@ -1,12 +1,13 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.BlogCategoryDto;
+import com.mypropertyfact.estate.dtos.BlogCategoryDto;
 import com.mypropertyfact.estate.entities.BlogCategory;
 import com.mypropertyfact.estate.interfaces.BlogCategoryService;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BlogCategoryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BlogCategoryServiceImpl implements BlogCategoryService {
 
     private final BlogCategoryRepository blogCategoryRepository;
@@ -24,12 +26,6 @@ public class BlogCategoryServiceImpl implements BlogCategoryService {
     private String uploadDir;
 
     private final FileUtils fileUtils;
-
-    BlogCategoryServiceImpl(BlogCategoryRepository blogCategoryRepository,
-                            FileUtils fileUtils) {
-        this.blogCategoryRepository = blogCategoryRepository;
-        this.fileUtils = fileUtils;
-    }
 
     @Override
     public Response addUpdateBlogCategory(BlogCategory blogCategory) {

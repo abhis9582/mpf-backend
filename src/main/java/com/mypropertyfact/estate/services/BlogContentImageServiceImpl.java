@@ -7,6 +7,7 @@ import com.mypropertyfact.estate.repositories.BlogContentImageRepository;
 import com.mypropertyfact.estate.models.InvalidRequestException;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class BlogContentImageServiceImpl implements BlogContentImageService {
 
-    @Autowired
-    private BlogContentImageRepository blogContentImageRepository;
+    private final BlogContentImageRepository blogContentImageRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     @Value("${upload_dir}")
     private String dir;

@@ -3,15 +3,17 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.dtos.StateDto;
 import com.mypropertyfact.estate.interfaces.StateService;
 import com.mypropertyfact.estate.models.Response;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/state")
+@RequiredArgsConstructor
 public class StateController {
-    @Autowired
-    private StateService stateService;
+
+    private final StateService stateService;
 
     @GetMapping("/get-all")
     public ResponseEntity<?> getAllStates() {

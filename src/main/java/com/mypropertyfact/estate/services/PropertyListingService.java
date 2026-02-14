@@ -7,9 +7,9 @@ import com.mypropertyfact.estate.dtos.PropertyListingRequestDto;
 import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.repositories.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,44 +26,32 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PropertyListingService {
-    
-    @Autowired
-    private PropertyListingRepository propertyListingRepository;
-    
-    @Autowired
-    private UserRoleService userRoleService;
-    
-    @Autowired
-    private PropertyListingImageRepository propertyListingImageRepository;
-    
-    
-    @Autowired
-    private CityRepository cityRepository;
-    
-    @Autowired
-    private BuilderRepository builderRepository;
-    
-    @Autowired
-    private LocalityRepository localityRepository;
-    
-    @Autowired
-    private ProjectTypeRepository projectTypeRepository;
-    
-    @Autowired
-    private ProjectStatusRepository projectStatusRepository;
-    
-    @Autowired
-    private AmenityRepository amenityRepository;
-    
-    @Autowired
-    private FeatureRepository featureRepository;
-    
-    @Autowired
-    private MasterBenefitRepository masterBenefitRepository;
-    
-    @Autowired
-    private PropertyListingNearbyBenefitRepository propertyListingNearbyBenefitRepository;
+
+    private final PropertyListingRepository propertyListingRepository;
+
+    private final UserRoleService userRoleService;
+
+    private final PropertyListingImageRepository propertyListingImageRepository;
+
+    private final CityRepository cityRepository;
+
+    private final BuilderRepository builderRepository;
+
+    private final LocalityRepository localityRepository;
+
+    private final ProjectTypeRepository projectTypeRepository;
+
+    private final ProjectStatusRepository projectStatusRepository;
+
+    private final AmenityRepository amenityRepository;
+
+    private final FeatureRepository featureRepository;
+
+    private final MasterBenefitRepository masterBenefitRepository;
+
+    private final PropertyListingNearbyBenefitRepository propertyListingNearbyBenefitRepository;
     
     @Value("${upload_dir:uploads/}")
     private String uploadDir;
@@ -126,7 +114,7 @@ public class PropertyListingService {
         // Set Features by IDs
         if (dto.getFeatureIds() != null && !dto.getFeatureIds().isEmpty()) {
             Set<Feature> featureSet = dto.getFeatureIds().stream()
-                .map(featureId -> featureRepository.findById(featureId))
+                .map(featureRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -224,7 +212,7 @@ public class PropertyListingService {
         // Set Amenities
         if (dto.getAmenityIds() != null && !dto.getAmenityIds().isEmpty()) {
             Set<Amenity> amenitySet = dto.getAmenityIds().stream()
-                .map(amenityId -> amenityRepository.findById(amenityId))
+                .map(amenityRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -468,9 +456,7 @@ public class PropertyListingService {
                     }
                 }
                 if (subType != null && !subType.isEmpty()) {
-                    if (!subType.equalsIgnoreCase(listing.getSubType())) {
-                        return false;
-                    }
+                    return subType.equalsIgnoreCase(listing.getSubType());
                 }
                 return true;
             })
@@ -500,7 +486,7 @@ public class PropertyListingService {
         if (dto.getTransaction() != null) listing.setTransaction(dto.getTransaction());
         if (dto.getSubType() != null) listing.setSubType(dto.getSubType());
         if (dto.getTitle() != null) listing.setTitle(dto.getTitle());
-        else if (dto.getTitle() == null && (dto.getBedrooms() != null || dto.getSubType() != null || dto.getLocality() != null)) {
+        else if (dto.getBedrooms() != null || dto.getSubType() != null || dto.getLocality() != null) {
             // Regenerate title if key fields changed
             listing.setTitle(generateTitle(dto));
         }
@@ -547,7 +533,7 @@ public class PropertyListingService {
         // Update Features by IDs
         if (dto.getFeatureIds() != null && !dto.getFeatureIds().isEmpty()) {
             Set<Feature> featureSet = dto.getFeatureIds().stream()
-                .map(featureId -> featureRepository.findById(featureId))
+                .map(featureRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -647,7 +633,7 @@ public class PropertyListingService {
         // Update Amenities
         if (dto.getAmenityIds() != null && !dto.getAmenityIds().isEmpty()) {
             Set<Amenity> amenitySet = dto.getAmenityIds().stream()
-                .map(amenityId -> amenityRepository.findById(amenityId))
+                .map(amenityRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());

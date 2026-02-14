@@ -3,7 +3,7 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.ConstantMessages;
 import com.mypropertyfact.estate.common.CommonMapper;
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.LocalityDto;
+import com.mypropertyfact.estate.dtos.LocalityDto;
 import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.*;
@@ -11,6 +11,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Sort;
@@ -22,20 +23,12 @@ import java.util.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CityService {
-
     private final CityRepository cityRepository;
     private final StateRepository stateRepository;
     private final CommonMapper commonMapper;
     private final FileUtils fileUtils;
-
-    public CityService(CityRepository cityRepository, StateRepository stateRepository,
-                       FileUtils fileUtils, CommonMapper commonMapper) {
-        this.cityRepository = cityRepository;
-        this.stateRepository = stateRepository;
-        this.fileUtils = fileUtils;
-        this.commonMapper = commonMapper;
-    }
 
 //    public List<CityView> getAllCities() {
 //        return cityRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "name"));
@@ -147,7 +140,7 @@ public class CityService {
     public Response deleteCity(int id) {
         Response response = new Response();
         try {
-            City city = (City) this.cityRepository.findById(id).get();
+            City city = this.cityRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("City Not Found !"));
             if (city != null) {
                 this.cityRepository.deleteById(id);
                 response.setIsSuccess(1);
@@ -163,7 +156,7 @@ public class CityService {
     public City getSingleCity(int id) {
         City city = new City();
         try {
-            city = (City) this.cityRepository.findById(id).get();
+            city = this.cityRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("City Not Found !"));
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -245,7 +238,6 @@ public class CityService {
     }
 
     public Response addUpdateCity(MultipartFile cityImage, City city) {
-        Response response = new Response();
-        return response;
+        return new Response();
     }
 }

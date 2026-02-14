@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.entities.Amenity;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectAmenityService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +14,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/project-amenity")
+@RequiredArgsConstructor
 public class ProjectAmenityController {
-    @Autowired
-    private ProjectAmenityService projectAmenityService;
+
+    private final ProjectAmenityService projectAmenityService;
+
     @GetMapping("/all")
     public ResponseEntity<?> getAllProjectAmenity(){
         return new ResponseEntity<>(this.projectAmenityService.getAllProjectAmenity(), HttpStatus.OK);

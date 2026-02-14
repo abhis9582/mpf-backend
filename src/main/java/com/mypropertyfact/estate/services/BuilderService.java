@@ -1,13 +1,14 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.CommonMapper;
-import com.mypropertyfact.estate.configs.dtos.BuilderResponse;
+import com.mypropertyfact.estate.dtos.BuilderResponse;
 import com.mypropertyfact.estate.dtos.BuilderDto;
 import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.entities.Builder;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BuilderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class BuilderService {
-    @Autowired
-    private BuilderRepository builderRepository;
 
-    @Autowired
-    private CommonMapper commonMapper;
+    private final BuilderRepository builderRepository;
+
+
+    private final CommonMapper commonMapper;
     //Getting all builders
     public BuilderResponse getAllBuilders() {
         return new BuilderResponse(builderRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "builderName")),

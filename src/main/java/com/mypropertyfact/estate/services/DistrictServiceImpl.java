@@ -12,6 +12,7 @@ import com.mypropertyfact.estate.interfaces.DistrictService;
 import com.mypropertyfact.estate.repositories.DistrictRepository;
 import com.mypropertyfact.estate.repositories.StateRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
@@ -23,18 +24,12 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class DistrictServiceImpl implements DistrictService {
 
     private final DistrictRepository districtRepository;
     private final ObjectMapper objectMapper;
     private final StateRepository stateRepository;
-
-    DistrictServiceImpl(DistrictRepository districtRepository, ObjectMapper objectMapper,
-                        StateRepository stateRepository){
-        this.districtRepository = districtRepository;
-        this.objectMapper = objectMapper;
-        this.stateRepository = stateRepository;
-    }
 
     @Override
     public SuccessResponse addAllDetailsFromFile(MultipartFile multipartFile) {
@@ -58,7 +53,7 @@ public class DistrictServiceImpl implements DistrictService {
                 District district = new District();
                 Optional<District> districtByName = districtRepository.findByName(data.getDistrict());
                 Optional<State> state = stateRepository.findByStateName(data.getStateName());
-                if(!districtByName.isPresent()){
+                if(districtByName.isEmpty()){
                     district.setName(data.getDistrict());
                     state.ifPresent(district::setState);
                     districtRepository.save(district);
@@ -68,7 +63,7 @@ public class DistrictServiceImpl implements DistrictService {
             return new SuccessResponse(1,"Uploaded " + dataList.size() + " records successfully");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return new SuccessResponse(0, "Error: " + e.getMessage());
         }
     }
@@ -76,11 +71,6 @@ public class DistrictServiceImpl implements DistrictService {
 
     @Override
     public SuccessResponse addUpdateDistrict(DistrictDto districtDto) {
-        if(districtDto.getId() > 0){
-
-        }else{
-
-        }
         return null;
     }
 

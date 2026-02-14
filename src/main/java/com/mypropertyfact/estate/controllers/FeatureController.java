@@ -1,10 +1,11 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.FeatureDto;
+import com.mypropertyfact.estate.dtos.FeatureDto;
 import com.mypropertyfact.estate.dtos.FeatureDetailedDto;
 import com.mypropertyfact.estate.entities.Feature;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.FeatureService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/feature")
+@RequiredArgsConstructor
 public class FeatureController {
-    
-    @Autowired
-    private FeatureService featureService;
+
+    private final FeatureService featureService;
     
     @GetMapping("/get-all")
     public ResponseEntity<List<Feature>> getAllFeatures() {

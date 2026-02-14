@@ -1,10 +1,11 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.AmenityDto;
+import com.mypropertyfact.estate.dtos.AmenityDto;
 import com.mypropertyfact.estate.dtos.AmenityDetailedDto;
 import com.mypropertyfact.estate.entities.Amenity;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.AmenityService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/amenity")
+@RequiredArgsConstructor
 public class AmenityController {
-    @Autowired
-    private AmenityService amenityService;
+    private final AmenityService amenityService;
 
     @GetMapping("/get-all")
     public ResponseEntity<List<Amenity>> getAllAmenities(){

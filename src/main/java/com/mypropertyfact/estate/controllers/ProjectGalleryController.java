@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.dtos.ProjectGalleryDto;
 import com.mypropertyfact.estate.entities.ProjectGallery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectGalleryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/project-gallery")
+@RequiredArgsConstructor
 public class ProjectGalleryController {
-    @Autowired
-    private ProjectGalleryService projectGalleryService;
+
+    private final ProjectGalleryService projectGalleryService;
 
     @GetMapping("/get-all")
     public ResponseEntity<List<Map<String, Object>>> getAllProjectGallery() {

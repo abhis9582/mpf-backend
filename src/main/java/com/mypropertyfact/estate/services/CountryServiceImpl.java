@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.LocalityDto;
+import com.mypropertyfact.estate.dtos.LocalityDto;
 import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.dtos.CountryDto;
 import com.mypropertyfact.estate.dtos.StateDto;
@@ -11,6 +11,7 @@ import com.mypropertyfact.estate.entities.State;
 import com.mypropertyfact.estate.interfaces.CountryService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CountryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class CountryServiceImpl implements CountryService {
 
-    @Autowired
-    private CountryRepository countryRepository;
+
+    private final CountryRepository countryRepository;
 
     @Override
     public Response addUpdate(CountryDto countryDto) {

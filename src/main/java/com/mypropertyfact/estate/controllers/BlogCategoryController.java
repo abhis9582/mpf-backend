@@ -1,10 +1,11 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.BlogCategoryDto;
+import com.mypropertyfact.estate.dtos.BlogCategoryDto;
 import com.mypropertyfact.estate.entities.BlogCategory;
 import com.mypropertyfact.estate.interfaces.BlogCategoryService;
 import com.mypropertyfact.estate.models.ResourceNotFoundException;
 import com.mypropertyfact.estate.models.Response;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,12 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/blog-category")
+@RequiredArgsConstructor
 public class BlogCategoryController {
-    private BlogCategoryService blogCategoryService;
-    
-    public BlogCategoryController(BlogCategoryService blogCategoryService){
-        this.blogCategoryService = blogCategoryService;
-    }
+    private final BlogCategoryService blogCategoryService;
+
     @PostMapping("/add-update")
     public ResponseEntity<Response> addUpdateBlogCategory(@RequestBody BlogCategory blogCategory){
         return ResponseEntity.ok(blogCategoryService.addUpdateBlogCategory(blogCategory));

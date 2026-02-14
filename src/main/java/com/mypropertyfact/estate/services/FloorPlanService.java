@@ -1,11 +1,12 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.FloorPlanDto;
+import com.mypropertyfact.estate.dtos.FloorPlanDto;
 import com.mypropertyfact.estate.entities.FloorPlan;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.FloorPlanRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class FloorPlanService {
-    @Autowired
-    private FloorPlanRepository floorPlanRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
+
+    private final FloorPlanRepository floorPlanRepository;
+
+    private final ProjectRepository projectRepository;
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getAllPlans() {

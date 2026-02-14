@@ -6,6 +6,7 @@ import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.services.UserPropertyService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +21,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/user/properties")
 @Slf4j
+@RequiredArgsConstructor
 public class UserPropertyController {
     
     private final UserPropertyService userPropertyService;
     private final ObjectMapper objectMapper;
-    
-    public UserPropertyController(UserPropertyService userPropertyService, ObjectMapper objectMapper) {
-        this.userPropertyService = userPropertyService;
-        this.objectMapper = objectMapper;
-    }
     
     /**
      * Submit a new property (saves as DRAFT)

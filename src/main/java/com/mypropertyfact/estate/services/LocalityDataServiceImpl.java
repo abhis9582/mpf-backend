@@ -3,12 +3,13 @@ package com.mypropertyfact.estate.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mypropertyfact.estate.configs.dtos.LocalityDataResponse;
+import com.mypropertyfact.estate.dtos.LocalityDataResponse;
 import com.mypropertyfact.estate.entities.Locality;
 import com.mypropertyfact.estate.entities.LocalityData;
 import com.mypropertyfact.estate.interfaces.LocalityDataService;
 import com.mypropertyfact.estate.repositories.LocalityDataRepository;
 import com.mypropertyfact.estate.repositories.LocalityRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +18,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class LocalityDataServiceImpl implements LocalityDataService {
 
-    @Autowired
-    private LocalityDataRepository repository;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final LocalityDataRepository repository;
 
-    @Autowired
-    private LocalityRepository localityRepository;
+    private final ObjectMapper objectMapper;
+
+    private final LocalityRepository localityRepository;
 
     @Override
     public LocalityData saveLocalityData(LocalityData localityData) {

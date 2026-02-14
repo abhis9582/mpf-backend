@@ -11,7 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.mypropertyfact.estate.configs.dtos.LoginUserDto;
+import com.mypropertyfact.estate.dtos.LoginUserDto;
 import com.mypropertyfact.estate.entities.MasterRole;
 import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.services.AuthenticationService;

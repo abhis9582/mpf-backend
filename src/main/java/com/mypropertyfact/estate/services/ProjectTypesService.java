@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.CommonMapper;
-import com.mypropertyfact.estate.dtos.ProjectDetailDto;
 import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.dtos.ProjectTypeDto;
 import com.mypropertyfact.estate.entities.Project;
@@ -10,7 +9,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.ProjectTypeView;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.ProjectTypeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectTypesService {
-    @Autowired
-    private ProjectTypeRepository projectTypeRepository;
-
-    @Autowired
-    private ProjectRepository projectRepository;
-
-    @Autowired
-    private CommonMapper commonMapper;
+    
+    private final ProjectTypeRepository projectTypeRepository;
+    
+    private final ProjectRepository projectRepository;
+    
+    private final CommonMapper commonMapper;
 
     public List<ProjectTypeView> getAllProjectTypes() {
         return this.projectTypeRepository.findAllProjectedBy(Sort.by(Sort.Direction.ASC, "projectTypeName"));
@@ -44,7 +42,7 @@ public class ProjectTypesService {
                 response.setMessage("Project type already exists...");
                 return response;
             }
-            String slugUrl = projectTypes.getProjectTypeName().toLowerCase(); // Convert to lowercase
+            String slugUrl = projectTypes.getProjectTypeName().toLowerCase();
             String[] words = slugUrl.split(" "); // Split the string by spaces
             StringBuilder result = new StringBuilder();
 
@@ -62,7 +60,7 @@ public class ProjectTypesService {
 
 
             if (projectTypes.getId() > 0) {
-                ProjectTypes dbProjectTypes = this.projectTypeRepository.findById(projectTypes.getId()).get();
+                ProjectTypes dbProjectTypes = this.projectTypeRepository.findById(projectTypes.getId()).orElseThrow(()-> new IllegalArgumentException("Project type not found with id: "+ projectTypes.getId()));
                 dbProjectTypes.setProjectTypeName(projectTypes.getProjectTypeName());
                 dbProjectTypes.setSlugUrl(projectTypes.getSlugUrl());
                 dbProjectTypes.setProjectTypeDesc(projectTypes.getProjectTypeDesc());

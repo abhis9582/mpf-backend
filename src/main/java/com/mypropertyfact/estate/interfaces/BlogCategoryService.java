@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.interfaces;
 
-import com.mypropertyfact.estate.configs.dtos.BlogCategoryDto;
+import com.mypropertyfact.estate.dtos.BlogCategoryDto;
 import com.mypropertyfact.estate.entities.BlogCategory;
 import com.mypropertyfact.estate.models.Response;
 

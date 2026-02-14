@@ -1,20 +1,22 @@
 package com.mypropertyfact.estate.services;
-import com.mypropertyfact.estate.configs.dtos.ProjectFaqDto;
+import com.mypropertyfact.estate.dtos.ProjectFaqDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectFaqsRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectFaqsService {
-    @Autowired
-    private ProjectFaqsRepository projectFaqsRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
+
+    private final ProjectFaqsRepository projectFaqsRepository;
+
+    private final ProjectRepository projectRepository;
 
     public List<Map<String, Object>> getAllFaqs() {
         List<ProjectFaqs> projectFaqList = this.projectFaqsRepository.findAll();

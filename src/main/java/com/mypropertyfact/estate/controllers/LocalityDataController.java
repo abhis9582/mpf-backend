@@ -1,8 +1,9 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.LocalityDataResponse;
+import com.mypropertyfact.estate.dtos.LocalityDataResponse;
 import com.mypropertyfact.estate.entities.LocalityData;
 import com.mypropertyfact.estate.interfaces.LocalityDataService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +14,10 @@ import java.util.Map;
 
 @RequestMapping("/api/v1/locality-data")
 @RestController
+@RequiredArgsConstructor
 public class LocalityDataController {
 
-    @Autowired
-    private LocalityDataService service;
+    private final LocalityDataService service;
 
     @PostMapping("/save")
     public ResponseEntity<String> saveLocalityData(@RequestBody Map<String, Object> payload) {

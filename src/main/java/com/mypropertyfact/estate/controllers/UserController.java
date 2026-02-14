@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.services.UserService;
 import com.mypropertyfact.estate.services.UserRoleService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
@@ -17,16 +18,11 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final UserRoleService userRoleService;
-
-    public UserController(UserService userService, UserRepository userRepository, UserRoleService userRoleService) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.userRoleService = userRoleService;
-    }
 
     @GetMapping("/me")
     public ResponseEntity<User> authenticatedUser() {

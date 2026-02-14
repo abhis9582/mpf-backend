@@ -1,6 +1,5 @@
 package com.mypropertyfact.estate.common;
 
-import com.mypropertyfact.estate.configs.dtos.*;
 import com.mypropertyfact.estate.dtos.*;
 import com.mypropertyfact.estate.entities.*;
 import org.springframework.stereotype.Component;
@@ -13,44 +12,27 @@ public class CommonMapper {
     public void mapProjectToProjectDto(Project entity, ProjectDetailDto dto) {
         if (entity != null) {
             dto.setId(entity.getId());
-
             Builder builder = entity.getBuilder();
             if (builder != null) {
                 dto.setBuilderId(builder.getId());
                 dto.setBuilderName(builder.getBuilderName());
             }
-
             City city = entity.getCity();
             if (city != null) {
                 dto.setCityId(city.getId());
                 dto.setCityName(city.getName());
-
-//                State state = city.getDistrict().getState();
-//                if(state != null){
-//                    dto.setStateId(state.getId());
-//                    dto.setStateName(state.getStateName());
-//
-//                    Country country = state.getCountry();
-//                    if(country != null){
-//                        dto.setCountryId(country.getId());
-//                        dto.setCountryName(country.getCountryName());
-//                    }
-//                }
                 dto.setProjectAddress(entity.getProjectLocality().concat(", ").concat(city.getName()));
             }
-
             ProjectTypes projectTypes = entity.getProjectTypes();
             if (projectTypes != null) {
                 dto.setPropertyTypeId(projectTypes.getId());
                 dto.setPropertyTypeName(projectTypes.getProjectTypeName());
             }
-
             ProjectStatus projectStatus = entity.getProjectStatus();
             if (projectStatus != null) {
                 dto.setProjectStatusId(projectStatus.getId());
                 dto.setProjectStatusName(projectStatus.getStatusName());
             }
-
             dto.setProjectPrice(entity.getProjectPrice());
             dto.setMetaTitle(entity.getMetaTitle());
             dto.setMetaKeyword(entity.getMetaKeyword());
@@ -296,19 +278,6 @@ public class CommonMapper {
         cityDto.setMetaKeywords(city.getMetaKeyWords());
         cityDto.setMetaDescription(city.getMetaDescription());
         cityDto.setCityDescription(city.getCityDisc());
-//        if(city.getDistrict() != null) {
-//            District district = city.getDistrict();
-//            if (district.getState() != null) {
-//                State state = city.getDistrict().getState();
-//                cityDto.setStateId(state.getId());
-//                cityDto.setStateName(state.getStateName());
-//                if (state.getCountry() != null) {
-//                    Country country = state.getCountry();
-//                    cityDto.setCountryId(country.getId());
-//                    cityDto.setCountryName(country.getCountryName());
-//                }
-//            }
-//        }
     }
 
     public void mapShortProjectDetails(Project project, ProjectShortDetails projectShortDetails) {
@@ -343,7 +312,7 @@ public class CommonMapper {
         if (project.getProjectDesktopBanners() != null) {
             for (ProjectDesktopBanner banner : project.getProjectDesktopBanners()) {
                 projectShortDetails.setProjectBannerImage(banner.getDesktopImage());
-                break; // stop once you find the first valid one
+                break;
             }
         }
     }

@@ -9,7 +9,7 @@ import com.mypropertyfact.estate.repositories.EnqueryRepository;
 import com.mypropertyfact.estate.repositories.PropertyListingRepository;
 import com.mypropertyfact.estate.repositories.UserRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,16 +18,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class EnquiryService {
-    @Autowired
-    private EnqueryRepository enqueryRepository;
-    @Autowired
-    private SendEmailHandler sendEmailHandler;
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private PropertyListingRepository propertyListingRepository;
+    private final EnqueryRepository enqueryRepository;
+
+    private final SendEmailHandler sendEmailHandler;
+
+    private final UserRepository userRepository;
+
+    private final PropertyListingRepository propertyListingRepository;
 
     public List<Enquery> getAll() {
         return enqueryRepository.findAll();

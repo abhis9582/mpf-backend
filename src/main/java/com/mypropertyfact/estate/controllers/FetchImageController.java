@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -17,11 +18,15 @@ import java.nio.file.Paths;
 
 @RestController
 @RequestMapping({"/api/v1/get/images", "/api/v1/fetch-image"})
+@RequiredArgsConstructor
 public class FetchImageController {
+
     @Value("${uploads_path}")
     private String uploadDir;
+
     @Value("${upload_amenity_path}")
     private String amenityPath;
+
     @Value("${upload_icon_path}")
     private String iconPath;
 

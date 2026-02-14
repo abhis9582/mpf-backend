@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.entities.CityPriceDetail;
 import com.mypropertyfact.estate.models.CityPriceDataResponse;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.CityPriceDetailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +14,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/city-price-detail")
+@RequiredArgsConstructor
 public class CityPriceDetailController {
-    @Autowired
-    private CityPriceDetailService cityPriceDetailService;
+
+    private final CityPriceDetailService cityPriceDetailService;
+
     @GetMapping("/get")
     public ResponseEntity<List<CityPriceDataResponse>> getAllCityPriceDetail(){
         return new ResponseEntity<>(cityPriceDetailService.getAllCityPriceDetail(), HttpStatus.OK);

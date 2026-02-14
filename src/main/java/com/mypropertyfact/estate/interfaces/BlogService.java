@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.interfaces;
 
-import com.mypropertyfact.estate.configs.dtos.BlogDto;
+import com.mypropertyfact.estate.dtos.BlogDto;
 import com.mypropertyfact.estate.entities.Blog;
 import com.mypropertyfact.estate.models.Response;
 import org.springframework.data.domain.Page;

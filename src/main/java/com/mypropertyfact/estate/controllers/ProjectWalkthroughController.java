@@ -1,8 +1,9 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.ProjectWalkthroughDto;
+import com.mypropertyfact.estate.dtos.ProjectWalkthroughDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectWalkthroughService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/project-walkthrough")
+@RequiredArgsConstructor
 public class ProjectWalkthroughController {
-    @Autowired
-    private ProjectWalkthroughService projectWalkthroughService;
+
+    private final ProjectWalkthroughService projectWalkthroughService;
+
     @GetMapping("/get")
     public ResponseEntity<List<ProjectWalkthroughDto>> getAllWalkthrough(){
         return new ResponseEntity<>(this.projectWalkthroughService.getAllWalkthrough(), HttpStatus.OK);

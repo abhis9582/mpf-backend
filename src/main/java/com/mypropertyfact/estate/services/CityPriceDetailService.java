@@ -9,6 +9,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityPriceDetailRepository;
 import com.mypropertyfact.estate.repositories.HeaderRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CityPriceDetailService {
-    @Autowired
-    private CityPriceDetailRepository cityPriceDetailRepository;
-    @Autowired
-    private HeaderRepository headerRepository;
+
+    private final CityPriceDetailRepository cityPriceDetailRepository;
+
+    private final HeaderRepository headerRepository;
 
     public List<CityPriceDataResponse> getAllCityPriceDetail() {
         List<CityPriceDataResponse> response = new ArrayList<>();

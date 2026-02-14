@@ -1,11 +1,12 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.FeatureDto;
+import com.mypropertyfact.estate.dtos.FeatureDto;
 import com.mypropertyfact.estate.dtos.FeatureDetailedDto;
 import com.mypropertyfact.estate.entities.Feature;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.FeatureRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FeatureService {
-    
-    @Autowired
-    private FeatureRepository featureRepository;
-    
-    @Autowired
-    private FileUtils fileUtils;
+
+    private final FeatureRepository featureRepository;
+
+    private final FileUtils fileUtils;
     
     @Value("${upload_dir}")
     private String uploadDir;
@@ -45,8 +45,8 @@ public class FeatureService {
             response.setMessage("Feature title is required!");
             return response;
         }
-        
-        String title = featureDto.getTitle().trim();
+
+        var title = featureDto.getTitle().trim();
         
         // Check for duplicate title (case-insensitive)
         Optional<Feature> existingFeature = featureRepository.findByTitleIgnoreCase(title);

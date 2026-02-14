@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.entities.MasterRole;
 import com.mypropertyfact.estate.interfaces.MasterRoleService;
 import com.mypropertyfact.estate.models.Response;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/roles")
 @Slf4j
+@RequiredArgsConstructor
 public class RoleController {
     
     private final MasterRoleService masterRoleService;
-    
-    public RoleController(MasterRoleService masterRoleService) {
-        this.masterRoleService = masterRoleService;
-    }
-    
+
     /**
      * Get all roles
      * GET /api/admin/roles

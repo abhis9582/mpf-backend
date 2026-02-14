@@ -3,15 +3,17 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.entities.Category;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CategoryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
-    @Autowired
-    private CategoryRepository categoryRepository;
+
+    private final CategoryRepository categoryRepository;
 
     public List<Category> getAllCategory(){
         return categoryRepository.findAll();

@@ -1,10 +1,11 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.BuilderResponse;
+import com.mypropertyfact.estate.dtos.BuilderResponse;
 import com.mypropertyfact.estate.dtos.BuilderDto;
 import com.mypropertyfact.estate.entities.Builder;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.BuilderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/builder")
+@RequiredArgsConstructor
 public class BuilderController {
-    @Autowired
-    private BuilderService builderService;
+
+    private final BuilderService builderService;
 
     @GetMapping("/get-all")
     public ResponseEntity<BuilderResponse> getAllBuilders() {

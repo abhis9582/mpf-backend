@@ -1,4 +1,4 @@
-package com.mypropertyfact.estate.configs.dtos;
+package com.mypropertyfact.estate.dtos;
 
 import lombok.Data;
 import lombok.Getter;

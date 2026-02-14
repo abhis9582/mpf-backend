@@ -1,21 +1,21 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.ProjectStatusDto;
+import com.mypropertyfact.estate.dtos.ProjectStatusDto;
 import com.mypropertyfact.estate.entities.ProjectStatus;
 import com.mypropertyfact.estate.interfaces.ProjectStatusService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectStatusRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectStatusServiceImpl implements ProjectStatusService {
 
-    @Autowired
-    private ProjectStatusRepository projectStatusRepository;
+    private final ProjectStatusRepository projectStatusRepository;
 
     @Override
     public Response addUpdate(ProjectStatusDto projectStatusDto) {
@@ -25,7 +25,7 @@ public class ProjectStatusServiceImpl implements ProjectStatusService {
                 status.setStatusName(projectStatusDto.getStatusName());
                 status.setCode(projectStatusDto.getStatusName().toUpperCase().replace(" ", "_"));
                 status.setDescription(projectStatusDto.getDescription());
-                status.setActive(!projectStatusDto.isActive() ? false: true);
+                status.setActive(projectStatusDto.isActive());
                 projectStatusRepository.save(status);
             });
             return new Response(1, "Project status updated successfully...", 0);

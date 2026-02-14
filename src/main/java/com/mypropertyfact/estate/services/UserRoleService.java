@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.entities.MasterRole;
 import com.mypropertyfact.estate.entities.User;
 import com.mypropertyfact.estate.repositories.MasterRoleRepository;
 import com.mypropertyfact.estate.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,15 +14,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserRoleService {
     
     private final UserRepository userRepository;
     private final MasterRoleRepository masterRoleRepository;
-    
-    public UserRoleService(UserRepository userRepository, MasterRoleRepository masterRoleRepository) {
-        this.userRepository = userRepository;
-        this.masterRoleRepository = masterRoleRepository;
-    }
     
     /**
      * Assign multiple roles to a user

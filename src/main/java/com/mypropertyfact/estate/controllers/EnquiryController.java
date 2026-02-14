@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.entities.Enquery;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.EnquiryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/enquiry")
+@RequiredArgsConstructor
 public class EnquiryController {
-    @Autowired
-    private EnquiryService enquiryService;
+
+    private final EnquiryService enquiryService;
+
     @GetMapping("/get-all")
     public ResponseEntity<List<Enquery>> getAll(){
         return new ResponseEntity<>(enquiryService.getAll(), HttpStatus.OK);

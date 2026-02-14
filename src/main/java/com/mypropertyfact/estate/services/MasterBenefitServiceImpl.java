@@ -6,6 +6,7 @@ import com.mypropertyfact.estate.dtos.SuccessResponse;
 import com.mypropertyfact.estate.entities.MasterBenefit;
 import com.mypropertyfact.estate.interfaces.MasterBenefitService;
 import com.mypropertyfact.estate.repositories.MasterBenefitRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,16 +18,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class MasterBenefitServiceImpl implements MasterBenefitService {
 
-    @Autowired
-    private MasterBenefitRepository masterBenefitRepository;
+    private final MasterBenefitRepository masterBenefitRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     @Value("${upload_dir}")
-    String uploadDir;
+    private String uploadDir;
 
     @Override
     public SuccessResponse addUpdateBenefit(MultipartFile file, MasterBenefitDto masterBenefitDto) {

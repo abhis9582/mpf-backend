@@ -1,6 +1,6 @@
 package com.mypropertyfact.estate.interfaces;
 
-import com.mypropertyfact.estate.configs.dtos.WebStoryDto;
+import com.mypropertyfact.estate.dtos.WebStoryDto;
 import com.mypropertyfact.estate.models.Response;
 import org.springframework.web.multipart.MultipartFile;
 

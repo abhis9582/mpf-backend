@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.dtos.NearbyBenefitDetailedDto;
 import com.mypropertyfact.estate.entities.MasterBenefit;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.NearbyBenefitService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +14,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/nearby-benefit")
+@RequiredArgsConstructor
 public class NearbyBenefitController {
-    
-    @Autowired
-    private NearbyBenefitService nearbyBenefitService;
+
+    private final NearbyBenefitService nearbyBenefitService;
     
     @GetMapping("/get-all")
     public ResponseEntity<List<MasterBenefit>> getAllNearbyBenefits() {

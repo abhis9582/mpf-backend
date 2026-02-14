@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.entities.BlogContentImage;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.interfaces.BlogContentImageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +14,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/blog-image")
+@RequiredArgsConstructor
 public class BlogContentImageController {
 
-    @Autowired
-    private BlogContentImageService blogContentImageService;
+    private final BlogContentImageService blogContentImageService;
 
     @GetMapping("/get")
     public List<BlogContentImage> getAllContentImageList() {

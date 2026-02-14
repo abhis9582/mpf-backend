@@ -1,7 +1,7 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.BlogDto;
+import com.mypropertyfact.estate.dtos.BlogDto;
 import com.mypropertyfact.estate.entities.Blog;
 import com.mypropertyfact.estate.entities.BlogCategory;
 import com.mypropertyfact.estate.entities.City;
@@ -11,6 +11,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BlogCategoryRepository;
 import com.mypropertyfact.estate.repositories.BlogRepository;
 import com.mypropertyfact.estate.repositories.CityRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -30,21 +31,19 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BlogServiceImpl implements BlogService {
 
-    @Autowired
-    private BlogRepository blogRepository;
+    private final BlogRepository blogRepository;
 
-    @Autowired
-    private BlogCategoryRepository blogCategoryRepository;
+    private final BlogCategoryRepository blogCategoryRepository;
 
-    @Autowired
-    private CityRepository cityRepository;
+    private final CityRepository cityRepository;
 
     @Value("${upload_dir}")
     private String upload_dir;
-    @Autowired
-    private FileUtils fileUtils;
+
+    private final FileUtils fileUtils;
 
 
     @Override

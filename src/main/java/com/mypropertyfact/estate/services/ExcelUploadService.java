@@ -10,6 +10,8 @@ import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.LocalityRepository;
 import com.mypropertyfact.estate.repositories.ProjectTypeRepository;
 import com.mypropertyfact.estate.repositories.ZoneRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,23 +22,20 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.util.*;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ExcelUploadService {
 
-    @Autowired
-    private CityRepository cityRepository;
+    private final CityRepository cityRepository;
 
-    @Autowired
-    private ZoneRepository zoneRepository;
+    private final ZoneRepository zoneRepository;
 
-    @Autowired
-    private LocalityRepository localityRepository;
+    private final LocalityRepository localityRepository;
 
-    @Autowired
-    private ProjectTypeRepository projectTypeRepository;
+    private final ProjectTypeRepository projectTypeRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     @Transactional
     public Response uploadCityZoneLocalityExcel(MultipartFile file, Integer defaultProjectTypeId) {
@@ -223,7 +222,7 @@ public class ExcelUploadService {
         } catch (Exception e) {
             response.setIsSuccess(0);
             response.setMessage("Error processing Excel file: " + e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
         return response;

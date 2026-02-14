@@ -1,8 +1,9 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.FloorPlanDto;
+import com.mypropertyfact.estate.dtos.FloorPlanDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.FloorPlanService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +14,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/floor-plans")
+@RequiredArgsConstructor
 public class FloorPlanController {
-    @Autowired
-    private FloorPlanService floorPlanService;
+
+    private final FloorPlanService floorPlanService;
+
     @GetMapping("/get-all")
     public ResponseEntity<List<Map<String, Object>>> getAllFloorPlans(){
         return new ResponseEntity<>(this.floorPlanService.getAllPlans(), HttpStatus.OK);

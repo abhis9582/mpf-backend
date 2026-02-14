@@ -1,14 +1,14 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.WebStoryCategoryDto;
-import com.mypropertyfact.estate.configs.dtos.WebStoryDto;
+import com.mypropertyfact.estate.dtos.WebStoryCategoryDto;
+import com.mypropertyfact.estate.dtos.WebStoryDto;
 import com.mypropertyfact.estate.entities.WebStory;
 import com.mypropertyfact.estate.entities.WebStoryCategory;
 import com.mypropertyfact.estate.interfaces.WebStoryCategoryService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.WebStoryCategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class WebStoryCategoryServiceImpl implements WebStoryCategoryService {
 
-    @Autowired
-    private WebStoryCategoryRepository webStoryCategoryRepository;
+    private final WebStoryCategoryRepository webStoryCategoryRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     @Value("${upload_dir}")
     private String uploadDir;
@@ -91,6 +90,7 @@ public class WebStoryCategoryServiceImpl implements WebStoryCategoryService {
             if(category.getWebStories() != null && !category.getWebStories().isEmpty()) {
                 webStoryCategoryDto.setStoryCategoryImage(category.getWebStories().get(0).getStoryImage());
             }
+            assert category.getWebStories() != null;
             List<WebStoryDto> webStoryDtoList = category.getWebStories().stream().map(webStory -> {
                 WebStoryDto webStoryDto = new WebStoryDto();
                 webStoryDto.setCategoryId(webStory.getWebStoryCategory().getId());

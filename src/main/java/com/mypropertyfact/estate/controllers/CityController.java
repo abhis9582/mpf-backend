@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.CityService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +15,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/city")
+@RequiredArgsConstructor
 public class CityController {
-    private final CityService cityService;
 
-    public CityController(CityService cityService) {
-        this.cityService = cityService;
-    }
+    private final CityService cityService;
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllCities() {
@@ -45,11 +44,6 @@ public class CityController {
     public ResponseEntity<CityDto> getBySlug(@PathVariable("url") String url) {
         return new ResponseEntity<>(this.cityService.getBySlug(url), HttpStatus.OK);
     }
-
-//    @GetMapping("/{city}")
-//    public ResponseEntity<?> getByCityName(@PathVariable("city") String city) {
-//        return new ResponseEntity<>(this.cityService.getByCityName(city), HttpStatus.OK);
-//    }
 
     @PostMapping("/add-update")
     public ResponseEntity<Response> addUpdateCity(@RequestParam(required = false) MultipartFile cityImage,

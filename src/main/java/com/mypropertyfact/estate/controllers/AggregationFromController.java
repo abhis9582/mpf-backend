@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.entities.AggregationFrom;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.AggregationFromService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,9 +15,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/aggregationFrom")
 @Slf4j
+@RequiredArgsConstructor
 public class AggregationFromController {
-    @Autowired
-    private AggregationFromService aggregationFromService;
+    private final AggregationFromService aggregationFromService;
     @GetMapping("/get")
     public ResponseEntity<List<AggregationFrom>> getAllAggregationFrom(){
         log.info("get all aggregation function called.");

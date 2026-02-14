@@ -1,7 +1,7 @@
 package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.common.FileUtils;
-import com.mypropertyfact.estate.configs.dtos.LocalityDto;
+import com.mypropertyfact.estate.dtos.LocalityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.entities.Locality;
 import com.mypropertyfact.estate.entities.ProjectTypes;
@@ -10,6 +10,7 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import com.mypropertyfact.estate.repositories.LocalityRepository;
 import com.mypropertyfact.estate.repositories.ProjectTypeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,19 +19,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class LocalityServiceImpl implements LocalityService {
 
-    @Autowired
-    private LocalityRepository localityRepository;
+    private final LocalityRepository localityRepository;
 
-    @Autowired
-    private CityRepository cityRepository;
+    private final CityRepository cityRepository;
 
-    @Autowired
-    private ProjectTypeRepository projectTypeRepository;
+    private final ProjectTypeRepository projectTypeRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
     @Transactional
     @Override

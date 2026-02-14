@@ -4,6 +4,7 @@ import com.mypropertyfact.estate.entities.TopLocationsByTransaction;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.models.TopLocationByTransactionResponse;
 import com.mypropertyfact.estate.services.TopLocationsByTransactionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +13,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/top-locations-by-transaction")
+@RequiredArgsConstructor
 public class TopLocationsByTransactionController {
-    private TopLocationsByTransactionService topLocationsByTransactionService;
-
-    public TopLocationsByTransactionController(TopLocationsByTransactionService topLocationsByTransactionService){
-        this.topLocationsByTransactionService = topLocationsByTransactionService;
-    }
+    private final TopLocationsByTransactionService topLocationsByTransactionService;
 
     @GetMapping("/get")
     public ResponseEntity<List<TopLocationsByTransaction>> getAllTopLocationsByTransaction(){

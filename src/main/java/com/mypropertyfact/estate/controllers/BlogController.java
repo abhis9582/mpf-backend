@@ -1,10 +1,11 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.BlogDto;
+import com.mypropertyfact.estate.dtos.BlogDto;
 import com.mypropertyfact.estate.entities.Blog;
 import com.mypropertyfact.estate.interfaces.BlogService;
 import com.mypropertyfact.estate.models.Response;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -17,10 +18,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/blog")
+@RequiredArgsConstructor
 public class BlogController {
-
-    @Autowired
-    private BlogService blogService;
+    private final BlogService blogService;
 
     @PostMapping("/add-update")
     public ResponseEntity<Response> addUpdate(@RequestParam(required = false) MultipartFile image, @Valid @ModelAttribute BlogDto blogDto) {

@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.entities.ProjectTypes;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.projections.ProjectTypeView;
 import com.mypropertyfact.estate.services.ProjectTypesService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/project-types")
+@RequiredArgsConstructor
 public class ProjectTypesController {
-    @Autowired
-    private ProjectTypesService projectTypesService;
+
+    private final ProjectTypesService projectTypesService;
     @GetMapping("/get-all")
     public ResponseEntity<List<ProjectTypeView>> getAllProjectTypes(){
         return new ResponseEntity<>(this.projectTypesService.getAllProjectTypes(), HttpStatus.OK);

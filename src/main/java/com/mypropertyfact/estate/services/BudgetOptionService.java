@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.services;
 import com.mypropertyfact.estate.entities.BudgetOption;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BudgetOptionRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +11,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BudgetOptionService {
-    @Autowired
-    private BudgetOptionRepository budgetOptionRepository;
+
+    private final BudgetOptionRepository budgetOptionRepository;
 
     public List<BudgetOption> getAll(){
         return budgetOptionRepository.findAll();

@@ -21,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -29,30 +31,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ProjectService {
-    @Autowired
-    private ProjectRepository projectRepository;
-
-    @Autowired
-    private AmenityRepository amenityRepository;
-
-    @Autowired
-    private CityRepository cityRepository;
-
-    @Autowired
-    private BuilderRepository builderRepository;
-
-    @Autowired
-    private ProjectTypeRepository projectTypeRepository;
-
-    @Autowired
-    private FileUtils fileUtils;
-
-    @Autowired
-    private ProjectStatusRepository projectStatusRepository;
-
-    @Autowired
-    private CommonMapper commonMapper;
+    private final ProjectRepository projectRepository;
+    private final AmenityRepository amenityRepository;
+    private final CityRepository cityRepository;
+    private final BuilderRepository builderRepository;
+    private final ProjectTypeRepository projectTypeRepository;
+    private final FileUtils fileUtils;
+    private final ProjectStatusRepository projectStatusRepository;
+    private final CommonMapper commonMapper;
 
     @Value("${upload_dir}")
     private String uploadDir; //D:/my-property-fact/public/
@@ -100,16 +88,6 @@ public class ProjectService {
         } catch (NumberFormatException e) {
             return false;
         }
-    }
-
-    public List<ProjectDetailDto> getAllProjectsList() {
-        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        log.info("Total projects are {}", projects.size());
-        return projects.stream().map(project -> {
-            ProjectDetailDto detailDto = new ProjectDetailDto();
-            commonMapper.mapFullProjectDetailToDetailedDto(project, detailDto);
-            return detailDto;
-        }).toList();
     }
 
     @Transactional

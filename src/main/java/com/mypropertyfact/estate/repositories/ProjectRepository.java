@@ -2,6 +2,9 @@ package com.mypropertyfact.estate.repositories;
 
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.projections.ProjectView;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

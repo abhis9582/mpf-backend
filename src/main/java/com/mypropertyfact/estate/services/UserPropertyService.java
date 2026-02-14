@@ -2,10 +2,9 @@ package com.mypropertyfact.estate.services;
 
 import com.mypropertyfact.estate.dtos.UserPropertySubmissionDto;
 import com.mypropertyfact.estate.entities.*;
-import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.repositories.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,22 +18,18 @@ import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserPropertyService {
-    
-    @Autowired
-    private ProjectRepository projectRepository;
-    
-    @Autowired
-    private CityRepository cityRepository;
-    
-    @Autowired
-    private BuilderRepository builderRepository;
-    
-    @Autowired
-    private ProjectTypeRepository projectTypeRepository;
-    
-    @Autowired
-    private AmenityRepository amenityRepository;
+
+    private final ProjectRepository projectRepository;
+
+    private final CityRepository cityRepository;
+
+    private final BuilderRepository builderRepository;
+
+    private final ProjectTypeRepository projectTypeRepository;
+
+    private final AmenityRepository amenityRepository;
     
     @Value("${upload_dir}")
     private String uploadDir;
@@ -122,7 +117,10 @@ public class UserPropertyService {
             String galleryDir = uploadDir + project.getSlugURL() + File.separator;
             File destinationDir = new File(galleryDir);
             if (!destinationDir.exists()) {
-                destinationDir.mkdirs();
+                boolean created = destinationDir.mkdirs();
+                if(!created) {
+                    throw new RuntimeException("Unable to create directory.");
+                }
             }
             
             for (int i = 0; i < images.length; i++) {
@@ -168,9 +166,8 @@ public class UserPropertyService {
                 if (amenityValue instanceof Integer) {
                     // It's an ID
                     amenityRepository.findById((Integer) amenityValue).ifPresent(amenitySet::add);
-                } else if (amenityValue instanceof String) {
+                } else if (amenityValue instanceof String amenityName) {
                     // It's a name - find or create amenity by name
-                    String amenityName = (String) amenityValue;
                     Optional<Amenity> existingAmenity = amenityRepository.findByTitleIgnoreCase(amenityName);
                     
                     if (existingAmenity.isPresent()) {

@@ -1,22 +1,24 @@
 package com.mypropertyfact.estate.services;
 
-import com.mypropertyfact.estate.configs.dtos.ProjectWalkthroughDto;
+import com.mypropertyfact.estate.dtos.ProjectWalkthroughDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectWalkthrough;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import com.mypropertyfact.estate.repositories.ProjectWalkthroughRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectWalkthroughService {
-    @Autowired
-    private ProjectWalkthroughRepository projectWalkthroughRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
+
+    private final ProjectWalkthroughRepository projectWalkthroughRepository;
+
+    private final ProjectRepository projectRepository;
 
     public List<ProjectWalkthroughDto> getAllWalkthrough() {
         List<ProjectWalkthrough> allWalkthrough = this.projectWalkthroughRepository.findAll();

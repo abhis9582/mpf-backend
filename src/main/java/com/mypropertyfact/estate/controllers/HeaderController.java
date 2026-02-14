@@ -3,6 +3,7 @@ package com.mypropertyfact.estate.controllers;
 import com.mypropertyfact.estate.entities.Headers;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.HeaderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/headers")
+@RequiredArgsConstructor
 public class HeaderController {
-    @Autowired
-    private HeaderService headerService;
+
+    private final HeaderService headerService;
+
     @GetMapping("/get")
     public ResponseEntity<List<Headers>> getAllHeaders(){
         return new ResponseEntity<>(headerService.getAllHeaders(), HttpStatus.OK);

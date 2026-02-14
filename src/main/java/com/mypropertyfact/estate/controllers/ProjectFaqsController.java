@@ -1,9 +1,10 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.ProjectFaqDto;
+import com.mypropertyfact.estate.dtos.ProjectFaqDto;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.ProjectFaqsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/project-faqs")
+@RequiredArgsConstructor
 public class ProjectFaqsController {
-    @Autowired
-    private ProjectFaqsService projectFaqsService;
+
+    private final ProjectFaqsService projectFaqsService;
+
     @GetMapping("/get-all")
     public ResponseEntity<List<Map<String, Object>>> getAllFaq(){
         return new ResponseEntity<>(this.projectFaqsService.getAllFaqs(), HttpStatus.OK);

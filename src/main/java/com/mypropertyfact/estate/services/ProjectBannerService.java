@@ -13,7 +13,7 @@ import com.mypropertyfact.estate.repositories.ProjectBannerRepository;
 import com.mypropertyfact.estate.repositories.ProjectDesktopBannerRepository;
 import com.mypropertyfact.estate.repositories.ProjectMobileBannerRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -22,28 +22,23 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectBannerService {
 
-    @Autowired
-    private ProjectBannerRepository projectBannerRepository;
+    private final ProjectBannerRepository projectBannerRepository;
 
-    @Autowired
-    private ProjectRepository projectRepository;
+    private final ProjectRepository projectRepository;
 
-    @Autowired
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
-    @Autowired
-    private ProjectMobileBannerRepository projectMobileBannerRepository;
+    private final ProjectMobileBannerRepository projectMobileBannerRepository;
 
-    @Autowired
-    private ProjectDesktopBannerRepository projectDesktopBannerRepository;
+    private final ProjectDesktopBannerRepository projectDesktopBannerRepository;
 
     @Value("${uploads_path}")
     private String uploadDir;
 
-    @Autowired
-    private CommonMapper commonMapper;
+    private final CommonMapper commonMapper;
 
     public List<ProjectDetailDto> getAllBanners() {
         List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));

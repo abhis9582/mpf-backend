@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.entities.MasterRole;
 import com.mypropertyfact.estate.interfaces.MasterRoleService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.MasterRoleRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,13 +15,10 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MasterRoleServiceImpl implements MasterRoleService {
     
     private final MasterRoleRepository masterRoleRepository;
-    
-    public MasterRoleServiceImpl(MasterRoleRepository masterRoleRepository) {
-        this.masterRoleRepository = masterRoleRepository;
-    }
     
     @Override
     public List<MasterRole> getAllRoles() {

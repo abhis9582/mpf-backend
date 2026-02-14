@@ -7,33 +7,30 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.models.TopDevelopersByValueResponse;
 import com.mypropertyfact.estate.repositories.HeaderRepository;
 import com.mypropertyfact.estate.repositories.TopDevelopersByValueRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TopDevelopersByValueService {
-    private TopDevelopersByValueRepository topDevelopersByValueRepository;
-    private HeaderRepository headerRepository;
-
-    TopDevelopersByValueService(TopDevelopersByValueRepository topDevelopersByValueRepository,
-                                HeaderRepository headerRepository){
-        this.topDevelopersByValueRepository = topDevelopersByValueRepository;
-        this.headerRepository = headerRepository;
-    }
+    private final TopDevelopersByValueRepository topDevelopersByValueRepository;
+    private final HeaderRepository headerRepository;
 
     public List<TopDevelopersByValue> getAllTopDevelopersByValue(){
         List<Object[]> res = topDevelopersByValueRepository.getAllData();
-        List<TopDevelopersByValue> developersByValue =  res.stream().map(item->{
-            TopDevelopersByValue ress = new TopDevelopersByValue();
-            ress.setId((int)item[0]);
-            ress.setDeveloperName((String)item[1]);
-            ress.setNoOfTransactions((String) item[2]);
-            ress.setSaleRentValue((String) item[3]);
-            return ress;
+        return res.stream().map(item->{
+            TopDevelopersByValue response = new TopDevelopersByValue();
+            response.setId((int)item[0]);
+            response.setDeveloperName((String)item[1]);
+            response.setNoOfTransactions((String) item[2]);
+            response.setSaleRentValue((String) item[3]);
+            return response;
         }).collect(Collectors.toList());
-        return developersByValue;
     }
 
     public Response addUpdateTopDevelopersByValue(TopDevelopersByValue topDevelopersByValue){
@@ -100,7 +97,7 @@ public class TopDevelopersByValueService {
 
                 List<Headers> headers = headerRepository.getTopDevelopersHeaders();
 
-                if(response.getHeaders().size() < 1){
+                if(response.getHeaders().isEmpty()){
                     response.setHeaders(headers);
                 }
 
@@ -128,7 +125,7 @@ public class TopDevelopersByValueService {
             }
             return new ArrayList<>(dataMap.values());
         }catch (Exception e){
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return null;
     }

@@ -5,6 +5,7 @@ import com.mypropertyfact.estate.dtos.NearbyBenefitDetailedDto;
 import com.mypropertyfact.estate.entities.MasterBenefit;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.MasterBenefitRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,13 +19,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class NearbyBenefitService {
-    
-    @Autowired
-    private MasterBenefitRepository masterBenefitRepository;
-    
-    @Autowired
-    private FileUtils fileUtils;
+
+    private final MasterBenefitRepository masterBenefitRepository;
+
+    private final FileUtils fileUtils;
     
     @Value("${upload_dir}")
     private String uploadDir;

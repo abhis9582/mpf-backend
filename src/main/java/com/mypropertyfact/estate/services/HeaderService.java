@@ -4,15 +4,17 @@ import com.mypropertyfact.estate.Constants;
 import com.mypropertyfact.estate.entities.Headers;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.HeaderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class HeaderService {
-    @Autowired
-    private HeaderRepository headerRepository;
+
+    private final HeaderRepository headerRepository;
 
     public List<Headers> getAllHeaders(){
         return headerRepository.findAll();

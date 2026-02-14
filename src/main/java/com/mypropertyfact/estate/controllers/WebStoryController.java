@@ -1,8 +1,9 @@
 package com.mypropertyfact.estate.controllers;
 
-import com.mypropertyfact.estate.configs.dtos.WebStoryDto;
+import com.mypropertyfact.estate.dtos.WebStoryDto;
 import com.mypropertyfact.estate.interfaces.WebStoryService;
 import com.mypropertyfact.estate.models.Response;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/web-story")
+@RequiredArgsConstructor
 public class WebStoryController {
 
-    @Autowired
-    private WebStoryService webStoryService;
+    private final WebStoryService webStoryService;
 
     @GetMapping("/get-all")
     public ResponseEntity<?> getAllWebStories() {
