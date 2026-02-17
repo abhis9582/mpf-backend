@@ -26,6 +26,11 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    @GetMapping
+    public ResponseEntity<List<ProjectShortDetails>> getShortDetails() {
+        return new ResponseEntity<>(projectService.getAllProjects(), HttpStatus.OK);
+    }
+
     @PostMapping("/add-new")
     public ResponseEntity<Response> saveProject(
             @RequestParam(required = false) MultipartFile projectLogo,
@@ -62,11 +67,6 @@ public class ProjectController {
     @PostMapping("/add-update-amenity")
     public ResponseEntity<Response> addUpdateAmenity(@RequestBody ProjectAmenityDto projectAmenityDto) {
         return new ResponseEntity<>(projectService.addUpdateAmenity(projectAmenityDto), HttpStatus.OK);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<ProjectShortDetails>> getShortDetails() {
-        return new ResponseEntity<>(projectService.getShortDetails(), HttpStatus.OK);
     }
 
     @GetMapping("/all-floor-types")

@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.repositories;
 
+import com.mypropertyfact.estate.dtos.ProjectShortDetails;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.projections.ProjectView;
 
@@ -81,4 +82,39 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
             ORDER BY p.projectName ASC
             """)
     List<Project> findProjectsByType(Integer typeId, boolean newLaunch);
+
+    @Query("""
+            SELECT new com.mypropertyfact.estate.dtos.ProjectShortDetails(
+                p.id,
+                p.projectName,
+                p.projectPrice,
+                p.slugURL,
+                p.projectLocality,
+                p.projectConfiguration,
+                p.status,
+                b.builderName,
+                ps.statusName,
+                pt.projectTypeName,
+                c.name,
+                CONCAT(p.projectLocality, ', ', c.name),
+                p.projectThumbnail,
+                p.projectLogo,
+                pdb.desktopImage,
+                b.slugUrl
+            )
+            FROM Project p
+            LEFT JOIN p.projectStatus ps
+            LEFT JOIN p.city c
+            LEFT JOIN p.builder b
+            LEFT JOIN p.projectDesktopBanners pdb
+            LEFT JOIN p.projectTypes pt
+            WHERE
+                (pdb.id IS NULL OR pdb.id = (
+                    SELECT MIN(pdb2.id)
+                    FROM ProjectDesktopBanner pdb2
+                    WHERE pdb2.project = p
+                ))
+            """)
+    List<ProjectShortDetails> findAllProjectedBy();
+
 }

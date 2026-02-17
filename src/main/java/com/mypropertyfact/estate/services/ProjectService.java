@@ -10,7 +10,6 @@ import com.mypropertyfact.estate.entities.*;
 import com.mypropertyfact.estate.models.ProjectAmenityDto;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -82,17 +81,6 @@ public class ProjectService {
         };
     }
 
-    private boolean isNumeric(String str) {
-        if (str == null)
-            return false;
-        try {
-            Float.parseFloat(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
     @Transactional
     public Response addUpdateAmenity(ProjectAmenityDto dto) {
         Optional<Project> dbProject = projectRepository.findById(dto.getProjectId());
@@ -132,6 +120,7 @@ public class ProjectService {
             Optional<Project> projectBySlugNoFilter = projectRepository.findBySlugURLWithAllRelationsNoFilter(url);
             if (projectBySlugNoFilter.isPresent()) {
                 Project project = projectBySlugNoFilter.get();
+                log.info("Project found with slug: {} - ID: {}, Name: {}", url, project.getId(), project.getProjectName());
             } else {
                 // Try with simple findBySlugURL to verify slug exists at all
                 Optional<Project> projectBySlug = projectRepository.findBySlugURL(url);
@@ -391,26 +380,15 @@ public class ProjectService {
         project.setStatus(dto.isStatus());
     }
 
-    @Transactional
-    @Cacheable(value = "projectShortDetails")
-    public List<ProjectShortDetails> getShortDetails() {
-        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        log.info("Total projects are {}", projects.size());
-        return projects.stream().map(project -> {
-            ProjectShortDetails detailDto = new ProjectShortDetails();
-            commonMapper.mapShortProjectDetails(project, detailDto);
-            return detailDto;
-        }).toList();
-    }
-
     public Set<String> getAllFloorTypes() {
-        List<Project> projects = projectRepository.findAll(Sort.by(Sort.Direction.ASC, "projectName"));
-        Set<String> uniqueBhk = new HashSet<>();
-        projects.stream().map(project -> {
-            uniqueBhk.addAll(List.of(project.getProjectConfiguration().split(",")));
-            return null;
-        }).toList();
-        return uniqueBhk;
+        List<ProjectShortDetails> projects = projectRepository.findAllProjectedBy();
+        return projects
+                .stream()
+                .map(ProjectShortDetails::getProjectConfiguration)
+                .filter(Objects::nonNull)
+                .flatMap(config-> Arrays.stream(config.split(",")))
+                .map(String::trim)
+                .collect(Collectors.toSet());
     }
 
     @Transactional
@@ -439,6 +417,7 @@ public class ProjectService {
         }
         try {
             String savedFileName = fileUtils.saveOriginalImage(file, uploadDir);
+            log.info("Saved file name: {}", savedFileName);
             response.setMessage("Projects uploaded successfully");
             response.setIsSuccess(1);
         } catch (Exception e) {
@@ -454,6 +433,8 @@ public class ProjectService {
         return fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
     }
 
-    
+    public List<ProjectShortDetails> getAllProjects() {
+        return projectRepository.findAllProjectedBy();
+    }
 
 }
