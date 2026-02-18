@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.controllers;
 
+import com.mypropertyfact.estate.dtos.CityDetailDto;
 import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.models.Response;
@@ -9,9 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/city")
@@ -35,13 +33,8 @@ public class CityController {
         return new ResponseEntity<>(this.cityService.deleteCity(id), HttpStatus.OK);
     }
 
-    @GetMapping("/get-single/{id}")
-    public ResponseEntity<?> getSingleRecord(@PathVariable("id") int id) {
-        return new ResponseEntity<>(this.cityService.getSingleCity(id), HttpStatus.OK);
-    }
-
     @GetMapping("/get/{url}")
-    public ResponseEntity<CityDto> getBySlug(@PathVariable("url") String url) {
+    public ResponseEntity<CityDetailDto> getBySlug(@PathVariable("url") String url) {
         return new ResponseEntity<>(this.cityService.getBySlug(url), HttpStatus.OK);
     }
 
@@ -50,9 +43,4 @@ public class CityController {
                                                   @RequestBody City city) {
         return new ResponseEntity<>(cityService.addUpdateCity(cityImage, city), HttpStatus.OK);
     }
-    @GetMapping("/get-all-cities")
-    public ResponseEntity<List<Map<String, Object>>> getAllCityList() {
-        return ResponseEntity.ok(cityService.getAllCityList());
-    }
-
 }

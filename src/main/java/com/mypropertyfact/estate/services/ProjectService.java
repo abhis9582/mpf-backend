@@ -12,7 +12,6 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -381,7 +380,7 @@ public class ProjectService {
     }
 
     public Set<String> getAllFloorTypes() {
-        List<ProjectShortDetails> projects = projectRepository.findAllProjectedBy();
+        List<ProjectShortDetails> projects = projectRepository.findAllProjects();
         return projects
                 .stream()
                 .map(ProjectShortDetails::getProjectConfiguration)
@@ -393,38 +392,13 @@ public class ProjectService {
 
     @Transactional
     public List<ProjectShortDetails> getProjectInParts(Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("projectName").ascending());
-        Page<Project> projects = projectRepository.findAll(pageable);
-        return projects.stream().map(project -> {
-            ProjectShortDetails details = new ProjectShortDetails();
-            commonMapper.mapShortProjectDetails(project, details);
-            return details;
-        }).toList();
-    }
-
-    // Handling project upload by excel file
-    public Response uploadProjects(MultipartFile file) {
-        Response response = new Response();
-        if (file == null) {
-            response.setMessage("File is required");
-            response.setIsSuccess(0);
-            return response;
+        List<ProjectShortDetails> allProjects = projectRepository.findAllProjects();
+        int start = page * size;
+        int end = Math.min(start + size, allProjects.size());
+        if(start > allProjects.size()) {
+            return List.of();
         }
-        if (!isExcelFile(file)) {
-            response.setMessage("File should be an excel file");
-            response.setIsSuccess(0);
-            return response;
-        }
-        try {
-            String savedFileName = fileUtils.saveOriginalImage(file, uploadDir);
-            log.info("Saved file name: {}", savedFileName);
-            response.setMessage("Projects uploaded successfully");
-            response.setIsSuccess(1);
-        } catch (Exception e) {
-            response.setMessage(e.getMessage());
-            response.setIsSuccess(0);
-        }
-        return response;
+        return allProjects.subList(start, end);
     }
 
     // Checking if file is an excel file
@@ -434,7 +408,7 @@ public class ProjectService {
     }
 
     public List<ProjectShortDetails> getAllProjects() {
-        return projectRepository.findAllProjectedBy();
+        return projectRepository.findAllProjects();
     }
 
 }

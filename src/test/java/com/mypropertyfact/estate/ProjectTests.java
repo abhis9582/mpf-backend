@@ -20,7 +20,7 @@ public class ProjectTests {
     public void getAllProjects() {
         long start = System.currentTimeMillis();
         log.info("Project fetching started at: {}", start);
-        List<ProjectShortDetails> allProjectedBy = projectRepository.findAllProjectedBy();
+        List<ProjectShortDetails> allProjectedBy = projectRepository.findAllProjects();
         log.info("Total projects are: {}", allProjectedBy.size());
         long end = System.currentTimeMillis();
         log.info("Project fetching completed at : {}", end);
