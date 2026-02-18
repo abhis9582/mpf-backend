@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtService {
@@ -192,6 +194,7 @@ public class JwtService {
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
                 if ("token".equals(c.getName())) {
+                    log.info("Token {}", c.getValue());
                     token = c.getValue();
                     break;
                 }
