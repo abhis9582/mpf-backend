@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.*;
 import java.io.IOException;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -147,28 +148,6 @@ public class ProjectExcelUploadService {
                     saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row, dataRowIndex, colIndex,
                             projectDir,
                             "PROJECT LOGO IMAGE", (p, name) -> p.setProjectLogo(name), 200, 50);
-                    saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row, dataRowIndex, colIndex,
-                            projectDir,
-                            "PROJECT THUMBNAIL IMAGE", (p, name) -> p.setProjectThumbnail(name), THUMBNAIL_W,
-                            THUMBNAIL_H);
-                    saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row, dataRowIndex, colIndex,
-                            projectDir,
-                            "LOCATION MAP IMAGE", (p, name) -> p.setLocationMap(name), LOCATION_MAP_W, LOCATION_MAP_H);
-                    // saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row,
-                    // dataRowIndex, colIndex, projectDir,
-                    // "PROJECT FEATURE IMAGE", (p, name) -> p.setProjectLogo(name), 792, 203);
-                    // saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row,
-                    // dataRowIndex, colIndex, projectDir,
-                    // "Mobile image 1", (p, name) -> p.setProjectLogo(name), 792, 203);
-                    // saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row,
-                    // dataRowIndex, colIndex, projectDir,
-                    // "Mobile image 2", (p, name) -> p.setProjectLogo(name), 792, 203);
-                    // saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row,
-                    // dataRowIndex, colIndex, projectDir,
-                    // "Desktop image 1", (p, name) -> p.setProjectLogo(name), 792, 203);
-                    // saveImageFromEmbeddedOrZip(embeddedImages, imageMap, project, row,
-                    // dataRowIndex, colIndex, projectDir,
-                    // "Desktop image 2", (p, name) -> p.setProjectLogo(name), 792, 203);
 
                     boolean isNew = project.getId() == 0;
                     projectRepository.save(project);
@@ -591,7 +570,17 @@ public class ProjectExcelUploadService {
         }
         if (data == null) {
             // Fallback: cell value = file name in zip
-            saveImageFromMap(imageMap, project, row, colIndex, projectDir, columnName, setter, w, h);
+            // Ozar-96_Desktop Banner_My-Property-Fact
+            Set<String> imageNames = imageMap.keySet().stream().filter(image-> image.contains(project.getProjectName().replace(" ", "-"))).collect(Collectors.toSet());
+            for (String name: imageNames) {
+                String[] s = name.split("_");
+                if(s.length > 1) {
+                    String projectName = s[0].replace("-", " ");
+                    String imageType = s[1];
+                    saveImageFromMap(imageMap, project, row, colIndex, projectDir, name, setter, w, h,
+                            projectName, imageType);
+                }
+            }
             return;
         }
         String saved = fileUtils.saveImageFromBytes(data, suggestedName, projectDir, w, h);
@@ -601,17 +590,26 @@ public class ProjectExcelUploadService {
 
     private void saveImageFromMap(Map<String, byte[]> imageMap, Project project, Row row,
             Map<String, Integer> colIndex, String projectDir, String columnName,
-            java.util.function.BiConsumer<Project, String> setter, int w, int h) {
-        if (row == null)
-            return;
-        String fileName = getCell(colIndex, row, columnName);
-        if (fileName == null || fileName.trim().isEmpty())
-            return;
-        byte[] data = findImageInMap(imageMap, fileName.trim());
-        if (data == null)
-            return;
-        String saved = fileUtils.saveImageFromBytes(data, fileName.trim(), projectDir, w, h);
-        if (saved != null)
-            setter.accept(project, saved);
+            java.util.function.BiConsumer<Project, String> setter, int w, int h,
+                                  String projectName, String imageType) {
+//        if (row == null)
+//            return;
+//        if (columnName == null || columnName.trim().isEmpty())
+//            return;
+//        byte[] data = findImageInMap(imageMap, columnName.trim());
+//        if (data == null)
+//            return;
+        if(imageType.startsWith("Desktop")) {
+            String type = imageType.contains("-") ? imageType.replace("-", " ") : imageType;
+            String[] s = type.split(" ");
+            projectName = projectName.replace(" ", "-") + "_" + imageType;
+            int ind = Integer.parseInt(s[s.length - 1]);
+            for(int i=0;i<ind-1;i++) {
+                byte[] data = findImageInMap(imageMap, projectName);
+                String saved = fileUtils.saveImageFromBytes(data, imageType, projectDir, w, h);
+                if (saved != null)
+                    setter.accept(project, saved);
+            }
+        }
     }
 }
