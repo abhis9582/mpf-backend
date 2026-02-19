@@ -4,7 +4,6 @@ import com.mypropertyfact.estate.dtos.LocalityDto;
 import com.mypropertyfact.estate.interfaces.LocalityService;
 import com.mypropertyfact.estate.models.Response;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -9,7 +9,6 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectAmenityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

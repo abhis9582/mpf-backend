@@ -6,7 +6,6 @@ import com.mypropertyfact.estate.interfaces.BlogService;
 import com.mypropertyfact.estate.models.Response;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

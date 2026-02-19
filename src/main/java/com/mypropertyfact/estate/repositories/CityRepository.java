@@ -1,7 +1,6 @@
 package com.mypropertyfact.estate.repositories;
 
 import com.mypropertyfact.estate.dtos.CityDetailDto;
-import com.mypropertyfact.estate.dtos.CityDto;
 import com.mypropertyfact.estate.entities.City;
 import com.mypropertyfact.estate.projections.CityView;
 import org.springframework.data.domain.Sort;

@@ -121,12 +121,10 @@ public class AuthenticationController {
             String email = payload.getEmail();
             String name = (String) payload.get("name");
             User user;
-            String userStatus;
             Optional<User> existingUser = userRepository.findByEmail(email);
             if (existingUser.isPresent()) {
                 // User already registered
                 user = existingUser.get();
-                userStatus = "old";
             } else {
                 // Register new user
                 RegisterUserDto registerUserDto = new RegisterUserDto();
@@ -139,7 +137,6 @@ public class AuthenticationController {
                 registerUserDto.setFullName(userFullName);
                 registerUserDto.setPassword(UUID.randomUUID().toString()); // random password since using Google login
                 user = authenticationService.signupWithoutPassword(registerUserDto);
-                userStatus = "new";
             }
             String jwtToken = jwtService.generateToken(user);
             String refreshToken = jwtService.generateRefreshToken(user);

@@ -8,7 +8,6 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.ProjectGalleryRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

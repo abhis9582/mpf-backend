@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mypropertyfact.estate.dtos.UserPropertySubmissionDto;
 import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.User;
-import com.mypropertyfact.estate.enums.ProjectApprovalStatus;
 import com.mypropertyfact.estate.services.UserPropertyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +76,7 @@ public class UserPropertyController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) auth.getPrincipal();
             
-            Project project = userPropertyService.submitForApproval(id, currentUser.getId());
+            userPropertyService.submitForApproval(id, currentUser.getId());
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -102,9 +101,6 @@ public class UserPropertyController {
     @GetMapping
     public ResponseEntity<?> getUserProperties() {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
-            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             
@@ -126,12 +122,7 @@ public class UserPropertyController {
      */
     @GetMapping("/status/{status}")
     public ResponseEntity<?> getPropertiesByStatus(@PathVariable String status) {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) auth.getPrincipal();
-            
-            ProjectApprovalStatus approvalStatus = ProjectApprovalStatus.valueOf(status.toUpperCase());
-            
+        try {            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("status", status);
