@@ -6,7 +6,6 @@ import com.mypropertyfact.estate.entities.Amenity;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.services.AmenityService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,5 +43,10 @@ public class AmenityController {
     @PostMapping("/post-multiple-amenities")
     public ResponseEntity<Response> postMultipleAmenities(@ModelAttribute AmenityDetailedDto dto){
         return ResponseEntity.ok(amenityService.postMultipleAmenities(dto));
+    }
+
+    @GetMapping("/get-by-project-id/{projectId}")
+    public ResponseEntity<List<Amenity>> getAmenitiesByProjectId(@PathVariable("projectId") int projectId){
+        return new ResponseEntity<>(this.amenityService.getAmenitiesByProjectId(projectId), HttpStatus.OK);
     }
 }

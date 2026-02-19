@@ -55,6 +55,9 @@ public class AuthenticationController {
     private final PasswordEncoder passwordEncoder;
     private final SendEmailHandler sendEmailHandler;
 
+    @Value("${cookies.domain}")
+    private String cookiesDomain;
+
     @Value("${http.secure}")
     private boolean httpSecure;
 
@@ -79,7 +82,7 @@ public class AuthenticationController {
         ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
                 .httpOnly(true)
                 .secure(httpSecure)
-                .domain(".mypropertyfact.in")
+                .domain(cookiesDomain)
                 .path("/")
                 .sameSite(httpSecure ? "None" : "Lax")
                 .maxAge(accessTokenExpiration / 1000) // 1 day
@@ -87,7 +90,7 @@ public class AuthenticationController {
         ResponseCookie refresh = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(httpSecure)
-                .domain(".mypropertyfact.in")
+                .domain(cookiesDomain)
                 .path("/")
                 .sameSite(httpSecure ? "None" : "Lax")
                 .maxAge(refreshTokenExpiration / 1000) // 7 day
@@ -143,7 +146,7 @@ public class AuthenticationController {
             ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
                     .httpOnly(true)
                     .secure(httpSecure)
-                    .domain(".mypropertyfact.in")
+                    .domain(cookiesDomain)
                     .path("/")
                     .sameSite(httpSecure ? "None" : "Lax")
                     .maxAge(accessTokenExpiration / 1000) // 1 day
@@ -151,7 +154,7 @@ public class AuthenticationController {
             ResponseCookie refresh = ResponseCookie.from("refreshToken", refreshToken)
                     .httpOnly(true)
                     .secure(httpSecure)
-                    .domain(".mypropertyfact.in")
+                    .domain(cookiesDomain)
                     .path("/")
                     .sameSite(httpSecure ? "None" : "Lax")
                     .maxAge(refreshTokenExpiration / 1000) // 7 day
@@ -540,7 +543,7 @@ public class AuthenticationController {
         ResponseCookie accessCookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
                 .secure(httpSecure)
-                .domain(".mypropertyfact.in")
+                .domain(cookiesDomain)
                 .path("/")
                 .sameSite(httpSecure ? "None" : "Lax")
                 .maxAge(0)
@@ -548,7 +551,7 @@ public class AuthenticationController {
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(httpSecure)
-                .domain(".mypropertyfact.in")
+                .domain(cookiesDomain)
                 .path("/")
                 .sameSite(httpSecure ? "None" : "Lax")
                 .maxAge(0)
@@ -575,7 +578,7 @@ public class AuthenticationController {
         ResponseCookie newCookie = ResponseCookie.from("token", newAccessToken)
                 .httpOnly(true)
                 .secure(httpSecure)
-                .domain(".mypropertyfact.in")
+                .domain(cookiesDomain)
                 .path("/")
                 .sameSite(httpSecure ? "None" : "Lax")
                 .maxAge(accessTokenExpiration / 1000) // 1 day

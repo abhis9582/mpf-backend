@@ -1,5 +1,6 @@
 package com.mypropertyfact.estate.repositories;
 
+import com.mypropertyfact.estate.entities.Project;
 import com.mypropertyfact.estate.entities.ProjectFaqs;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,6 @@ public interface ProjectFaqsRepository extends JpaRepository<ProjectFaqs, Intege
     List<Object[]> getAllWithProjectName();
 
     List<ProjectFaqs> findBySlugUrl(String url);
+
+    List<ProjectFaqs> findByProject(Project project);
 }

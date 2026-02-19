@@ -10,7 +10,6 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.AmenityRepository;
 import com.mypropertyfact.estate.repositories.ProjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -167,6 +166,10 @@ public class AmenityService {
         amenityRepository.delete(amenity);
 
         return new Response(1, "Amenity deleted successfully...", 0);
+    }
+
+    public List<Amenity> getAmenitiesByProjectId(int projectId) {
+        return amenityRepository.findByProjectsId(projectId);
     }
 
 }
