@@ -2,6 +2,8 @@ package com.mypropertyfact.estate.configs;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -70,8 +73,9 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(corsProperties.isAllowCredentials());
         List<String> origins = normalizeCorsList(corsProperties.getAllowedOrigins(),
-                "http://localhost:3000", "http://127.0.0.1:3000");
+                "http://localhost:3000", "https://mypropertyfact.in");
         config.setAllowedOriginPatterns(origins);
+        log.info("Allowed Origins: {}", origins);
         config.setAllowedMethods(normalizeCorsList(corsProperties.getAllowedMethods(),
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(normalizeCorsList(corsProperties.getAllowedHeaders(), "*"));
