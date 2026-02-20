@@ -13,5 +13,5 @@ public class BuilderDto {
     private String builderName;
     private String builderDescription;
     private String slugURL;
-    private List<ProjectDetailDto> projectList;
+    private List<ProjectShortDetails> projectList;
 }
