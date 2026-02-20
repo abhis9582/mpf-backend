@@ -4,7 +4,6 @@ import com.mypropertyfact.estate.entities.AggregationFrom;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.AggregationFromRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

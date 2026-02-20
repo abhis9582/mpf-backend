@@ -12,7 +12,6 @@ import com.mypropertyfact.estate.repositories.BlogCategoryRepository;
 import com.mypropertyfact.estate.repositories.BlogRepository;
 import com.mypropertyfact.estate.repositories.CityRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

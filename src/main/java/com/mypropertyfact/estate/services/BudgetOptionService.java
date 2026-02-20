@@ -4,7 +4,6 @@ import com.mypropertyfact.estate.entities.BudgetOption;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.BudgetOptionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

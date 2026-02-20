@@ -12,9 +12,6 @@ import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -399,12 +396,6 @@ public class ProjectService {
             return List.of();
         }
         return allProjects.subList(start, end);
-    }
-
-    // Checking if file is an excel file
-    private boolean isExcelFile(MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        return fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
     }
 
     public List<ProjectShortDetails> getAllProjects() {

@@ -10,7 +10,6 @@ import com.mypropertyfact.estate.interfaces.LocalityDataService;
 import com.mypropertyfact.estate.repositories.LocalityDataRepository;
 import com.mypropertyfact.estate.repositories.LocalityRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

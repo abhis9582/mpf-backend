@@ -6,7 +6,6 @@ import com.mypropertyfact.estate.entities.MasterBenefit;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.MasterBenefitRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

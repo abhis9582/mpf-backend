@@ -7,7 +7,6 @@ import com.mypropertyfact.estate.interfaces.CareerApplicationService;
 import com.mypropertyfact.estate.models.Response;
 import com.mypropertyfact.estate.repositories.CareerApplicationRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
